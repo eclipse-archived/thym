@@ -2,15 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.jboss.tools.aerogear</groupId>
-		<artifactId>cordova</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<groupId>org.eclipse.thym</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>org.jboss.tools.aerogear.cordova</groupId>
+	<groupId>org.eclipse.thym</groupId>
 	<artifactId>tests</artifactId>
-	<name>Aerogear/Cordova Tests</name>
-	
+	<name>Eclipse THyM tests</name>
 	<packaging>pom</packaging>
+	
 	<modules>
 		<module>org.jboss.tools.aerogear.hybrid.test</module>
 	</modules>

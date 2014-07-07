@@ -2,21 +2,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.jboss.tools.aerogear</groupId>
-		<artifactId>cordova</artifactId>
-		<version>1.1.0-SNAPSHOT</version>
+		<groupId>org.eclipse.thym</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>org.jboss.tools.aerogear.cordova</groupId>
+	<groupId>org.eclipse.thym</groupId>
 	<artifactId>plugins</artifactId>
-	<name>Aerogear/Cordova plugins</name>
-	
+	<name>Eclipse THyM plugins</name>
 	<packaging>pom</packaging>
+	
 	<modules>
-		<module>org.jboss.tools.aerogear.hybrid.core</module>
-		<module>org.jboss.tools.aerogear.hybrid.ios.core</module>
-		<module>org.jboss.tools.aerogear.hybrid.ios.ui</module>
-		<module>org.jboss.tools.aerogear.hybrid.ui</module>
-		<module>org.jboss.tools.aerogear.hybrid.android.core</module>
-		<module>org.jboss.tools.aerogear.hybrid.android.ui</module>
+		<module>org.eclipse.thym.core</module>
+		<module>org.eclipse.thym.ios.core</module>
+		<module>org.eclipse.thym.ios.ui</module>
+		<module>org.eclipse.thym.ui</module>
+		<module>org.eclipse.thym.android.core</module>
+		<module>org.eclipse.thym.android.ui</module>
 	</modules>
 </project>
