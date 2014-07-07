@@ -2,15 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.thym.android.ui;singleton:=true
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 0.1.0.qualifier
 Bundle-Activator: org.eclipse.thym.android.ui.AndroidUI
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.debug.ui;bundle-version="[3.8.0,4.0.0)",
- org.eclipse.thym.android.core;bundle-version="1.0.0",
- org.eclipse.thym.core;bundle-version="1.0.0",
- org.eclipse.thym.ui;bundle-version="1.0.0"
+ org.eclipse.thym.android.core;bundle-version="0.1.0",
+ org.eclipse.thym.core;bundle-version="0.1.0",
+ org.eclipse.thym.ui;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.ui.dialogs,

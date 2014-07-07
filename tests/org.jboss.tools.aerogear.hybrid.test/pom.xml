@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>org.eclipse.thym.tests</groupId>
 	<artifactId>org.eclipse.thym.test</artifactId>
-	<version>1.1.0-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<packaging>eclipse-test-plugin</packaging>
 
 	<properties>
