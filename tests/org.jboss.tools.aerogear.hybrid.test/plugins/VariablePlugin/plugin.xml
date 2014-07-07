@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="org.eclipse.variable"
+    version="1.0.0">
+
+    <name>Use Variables</name>
+
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="config.xml" parent="/widget">
+            <feature name="variablePlugin">
+              <param name="android-package" value="com.variable.Plugin"/>
+            </feature> 
+        </config-file>
+    </platform>
+ 	<preference name="API_KEY" />
+</plugin>

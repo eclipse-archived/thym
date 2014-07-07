@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="platformImages" name="Platform mages" schema="schema/platformImage.exsd"/>
+   <extension-point id="hybridMobileStatusHandler" name="Hybrid Mobile Status Handler" schema="schema/hybridMobileStatusHandler.exsd"/>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            canFinishEarly="false"
+            category="org.eclipse.thym.ui.category"
+            class="org.eclipse.thym.ui.wizard.project.NewHybridProjectWizard"
+            hasPages="true"
+            icon="icons/etool16/newcordovaprj_wiz.png"
+            id="org.eclipse.thym.ui.NewHybridProjectWizard"
+            name="Hybrid Mobile (Cordova) Application Project"
+            project="true">
+         <keywordReference
+               id="org.eclipse.thym.ui.keyword">
+         </keywordReference>
+      </wizard>
+      <category
+            id="org.eclipse.thym.ui.category"
+            name="Mobile">
+      </category>
+   </extension>
+  <extension point="org.eclipse.ui.editors">
+    <editor
+          class="org.eclipse.thym.ui.config.internal.ConfigEditor"
+          default="true"
+          icon="icons/obj16/cordova_16.png"
+          id="org.eclipse.thym.ui.config.internal.ConfigEditor"
+          name="Cordova Configuration Editor">
+       <contentTypeBinding
+             contentTypeId="org.eclipse.thym.core.configType">
+       </contentTypeBinding>
+    </editor>
+  </extension>
+  <extension
+        point="org.eclipse.ui.preferencePages">
+     <page
+           class="org.eclipse.thym.ui.internal.preferences.HybridMobilePreferencePage"
+           id="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
+           name="Hybrid Mobile">
+        <keywordReference
+              id="org.eclispe.thym.ui.keyword">
+        </keywordReference>
+     </page>
+     <page
+           category="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
+           class="org.eclipse.thym.ui.internal.preferences.EnginePreferencesPage"
+           id="org.eclipse.thym.ui.internal.preferences.EnginePreferencesPage"
+           name="Engines">
+        <keywordReference
+              id="org.eclipse.thym.ui.keyword">
+        </keywordReference>
+     </page>
+  </extension>
+  <extension
+        point="org.eclipse.core.runtime.preferences">
+     <initializer
+           class="org.eclipse.thym.ui.internal.preferences.PreferenceInitializer">
+     </initializer>
+  </extension>
+  <extension
+        point="org.eclipse.ui.exportWizards">
+     <wizard
+           category="org.eclipse.thym.ui.category"
+           class="org.eclipse.thym.ui.wizard.export.NativeProjectExportWizard"
+           icon="icons/etool16/exportnativeprj_wiz.png"
+           id="org.eclipse.thym.ui.exportNativeProjectWizard"
+           name="Export Native Platform Project">
+        <keywordReference
+              id="org.eclipse.thym.ui.keyword">
+        </keywordReference>
+     </wizard>
+     <wizard
+           category="org.eclipse.thym.ui.category"
+           class="org.eclipse.thym.ui.wizard.export.NativeBinaryExportWizard"
+           icon="icons/etool16/exportnativeprj_wiz.png"
+           id="org.eclipse.thym.ui.exportNativeBinaryWizard"
+           name="Export Mobile Application">
+        <keywordReference
+              id="org.eclipse.thym.ui.keyword">
+        </keywordReference>
+     </wizard>
+     <category
+           id="org.eclipse.thym.ui.category"
+           name="Mobile">
+     </category>
+  </extension>
+  <extension
+        point="org.eclipse.ui.ide.projectNatureImages">
+     <image
+           icon="icons/ovr16/cordova_botovr.png"
+           id="org.eclipse.thym.ui.HybridAppNatureImage"
+           natureId="org.eclipse.thym.core.HybridAppNature">
+     </image>
+  </extension>
+  <extension
+        point="org.eclipse.ui.navigator.navigatorContent">
+     <navigatorContent
+           contentProvider="org.eclipse.thym.ui.plugins.navigator.internal.PluginContentProvider"
+           icon="icons/icon32/plug32.png"
+           id="org.eclipse.thym.ui.pluginNavigatorContent"
+           labelProvider="org.eclipse.ui.model.WorkbenchLabelProvider"
+           name="Cordova Plugin Content"
+           priority="normal">
+        <enablement>
+        	<and>
+	        	<adapt type="org.eclipse.core.resources.IFolder">
+                    <test property="org.eclipse.core.resources.name" value="plugins" />
+                    <test property="org.eclipse.core.resources.path" value="/*/plugins" />
+					<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.thym.core.HybridAppNature"/>
+            	</adapt>
+            </and>
+        </enablement>
+        <actionProvider
+              class="org.eclipse.thym.ui.plugins.navigator.internal.PluginActionProvider"
+              id="org.eclipse.thym.ui.pluginActionProvider"
+              priority="normal">
+        </actionProvider>
+        <actionProvider
+              class="org.eclipse.thym.ui.plugins.navigator.internal.CordovaPluginActionProvider">
+           <enablement>
+              <instanceof
+                    value="org.eclipse.thym.core.plugin.CordovaPlugin">
+              </instanceof>
+           </enablement>
+        </actionProvider>
+     </navigatorContent>
+     <commonFilter
+           activeByDefault="true"
+           class="org.eclipse.thym.ui.plugins.navigator.internal.PluginsFolderContentFilter"
+           description="Filters the contents of the folders for the installed Cordova Plugins"
+           id="org.eclipse.thym.ui.pluginsFolderFilter"
+           name="Cordova Plugins Folder Filter"
+           visibleInUI="true">
+     </commonFilter>
+  </extension>
+  <extension
+        point="org.eclipse.ui.navigator.viewer">
+     <viewerContentBinding
+           viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+        <includes>
+           <contentExtension
+                 pattern="org.eclipse.thym.ui.*">
+           </contentExtension>
+        </includes>
+     </viewerContentBinding>
+  </extension>
+  <extension
+        point="org.eclipse.core.runtime.adapters">
+     <factory
+           adaptableType="org.eclipse.thym.core.plugin.CordovaPlugin"
+           class="org.eclipse.thym.ui.internal.CordovaPluginAdapterFactory">
+        <adapter
+              type="org.eclipse.ui.views.properties.IPropertySource">
+        </adapter>
+        <adapter
+              type="org.eclipse.ui.model.IWorkbenchAdapter">
+        </adapter>
+        <adapter
+              type="org.eclipse.core.resources.IResource">
+        </adapter>
+     </factory>
+  </extension>
+  <extension
+        point="org.eclipse.ui.propertyPages">
+     <page
+           class="org.eclipse.thym.ui.internal.properties.EnginePropertyPage"
+           id="org.eclipse.thym.ui.internal.properties.enginePropertyPage"
+           name="Hybrid Mobile Engine" >
+        <enabledWhen>
+          <adapt type="org.eclipse.core.resources.IProject">
+                  <test property="org.eclipse.core.resources.projectNature" value="org.eclipse.thym.core.HybridAppNature"/>
+             </adapt>    
+        </enabledWhen>
+     </page>
+  </extension>
+  <extension
+        point="org.eclipse.debug.core.statusHandlers">
+     <statusHandler
+           class="org.eclipse.thym.ui.internal.status.EngineStatusHandler"
+           code="100"
+           id="org.eclipse.thym.ui.engineStatusHandler"
+           plugin="org.eclipse.thym.core">
+     </statusHandler>
+  </extension>
+  <extension
+        point="org.eclipse.thym.ui.hybridMobileStatusHandler">
+     <statusHandler
+           class="org.eclipse.thym.ui.internal.status.EngineStatusHandler"
+           code="100"
+           id="org.eclipse.thym.ui.engineStatusHandler"
+           plugin="org.eclipse.thym.core">
+     </statusHandler>
+     <statusHandler
+           class="org.eclipse.thym.ui.internal.status.ConfigXMLStatusHandler"
+           code="423"
+           id="org.eclipse.thym.ui.configxmStatusandler"
+           plugin="org.eclipse.thym.core">
+     </statusHandler>
+  </extension>
+  <extension
+        point="org.eclipse.ui.importWizards">
+     <wizard
+           category="org.eclipse.thym.ui.category"
+           class="org.eclipse.thym.ui.internal.wizard.imports.HybridMobileProjectImportWizard"
+           icon="icons/etool16/newcordovaprj_wiz.png"
+           id="org.eclipse.thym.ui.HybridMobileProjectImportWizard"
+           name="Import Cordova  Project">
+        <keywordReference
+              id="org.eclipse.thym.ui.keyword">
+        </keywordReference>
+     </wizard>
+     <category
+           id="org.eclipse.thym.ui.category"
+           name="Mobile">
+     </category>
+  </extension>
+  <extension
+        point="org.eclipse.ui.keywords">
+     <keyword
+           id="org.eclipse.thym.ui.keyword"
+           label="hybrid mobile cordova">
+     </keyword>
+  </extension>
+</plugin>

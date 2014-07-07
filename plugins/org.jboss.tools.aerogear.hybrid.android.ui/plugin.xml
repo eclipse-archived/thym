@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.eclipse.thym.android.ui.AndroidEmulatorLaunchShortcut"
+            icon="icons/elcl16/android_icon.png"
+            id="org.eclipse.thym.ui.launch.emulator"
+            label="Run on Android Emulator"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+      <shortcut
+            class="org.eclipse.thym.android.ui.AndroidDeviceLaunchShortcut"
+            icon="icons/elcl16/android_icon.png"
+            id="org.eclipse.thym.ui.launch.device"
+            label="Run on Android Device"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+ <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.thym.android.ui.AndroidLaunchConfigurationTabGroup"
+            description="Android Emulator"
+            id="org.eclipse.thym.android.ui.AndroildLaunchConfigurationTabGroup"
+            type="org.eclipse.thym.android.core.AndroidLaunchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
+ <extension
+       point="org.eclipse.thym.ui.platformImages">
+    <platformImage 
+          icon="icons/elcl16/android_icon.png"
+          id="org.eclipse.thym.android.ui.platformImage"
+          projectBuilder="org.eclipse.thym.android.core.projectBuilder"
+          platformSupport="org.eclipse.thym.android.core.platformSupport">
+    </platformImage>
+ </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="$nl$/icons/elcl16/android_icon.png"
+            configTypeID="org.eclipse.thym.android.core.AndroidLaunchConfigurationType"
+            id="org.eclipse.thym.android.ui.AndroidLaunchConfigurationTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
+            class="org.eclipse.thym.android.ui.internal.preferences.AndroidPreferencePage"
+            id="org.eclipse.thym.android.ui.AndroidPreferencePages"
+            name="Android">
+         <keywordReference
+               id="org.eclipse.thym.ui.keyword">
+         </keywordReference>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+            class="org.eclipse.thym.android.ui.internal.statushandler.AVDStatusHandler"
+            code="210"
+            id="org.eclipse.thym.android.ui.AVDStatusHandler"
+            plugin="org.eclipse.thym.android.core">
+      </statusHandler>
+   </extension>
+   <extension
+         point="org.eclipse.thym.ui.hybridMobileStatusHandler">
+      <statusHandler
+            class="org.eclipse.thym.android.ui.internal.statushandler.MissingSDKStatusHandler"
+            code="200"
+            id="org.eclipse.thym.android.ui.missingSDKStatusHandler"
+            plugin="org.eclipse.thym.android.core">
+      </statusHandler>
+   </extension>
+</plugin>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.eclipse.thym.core.platformSupport" name="Native Platform Support" schema="schema/platformSupport.exsd"/>
+   <extension-point id="org.eclipse.thym.core.projectBuilder" name="Native Binary Builder" schema="schema/projectBuilder.exsd"/>
+   <extension
+         id="org.eclipse.thym.core.HybridAppNature"
+         name="Hybrid Mobile Application Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="org.eclipse.thym.core.natures.HybridAppNature">
+         </run>
+      </runtime>
+      <requires-nature
+            id="org.eclipse.wst.jsdt.core.jsNature">
+      </requires-nature>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            base-type="org.eclipse.core.runtime.xml"
+            describer="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2:widget"
+            file-names="config.xml"
+            id="org.eclipse.thym.core.configType"
+            name="Aerogear Hybrid App Config File"
+            priority="high">
+      </content-type>
+   </extension>
+   <extension
+         point="org.eclipse.wst.xml.core.catalogContributions">
+      <catalogContribution>
+         <uri name="http://www.w3.org/ns/widgets"
+               uri="res/w3c-xsd/widget.xsd">
+         </uri></catalogContribution>
+   </extension>
+   <extension
+         point="org.eclipse.wst.jsdt.core.JsGlobalScopeContainerInitializer">
+      <JsGlobalScopeContainerInitializer
+            class="org.eclipse.thym.core.internal.libraries.CordovaLibraryJsContainerInitializer"
+            id="org.eclipse.thym.core.CordovaContainerInitializer">
+      </JsGlobalScopeContainerInitializer>
+   </extension>
+</plugin>

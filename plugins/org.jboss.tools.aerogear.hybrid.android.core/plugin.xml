@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.thym.android.core.adt.AndroidLaunchDelegate"
+            id="org.eclipse.thym.android.core.AndroidLaunchConfigurationType"
+            modes="run"
+            name="Android Emulator">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.platformSupport">
+      <platform
+            projectGenerator="org.eclipse.thym.android.core.adt.AndroidProjectGenerator"
+            id="org.eclipse.thym.android.core.platformSupport"
+            platform="Android"
+            platformID="android"
+            pluginInstallActionFactory="org.eclipse.thym.android.core.adt.AndroidPluginInstallationActionsFactory"
+            libraryResolver="org.eclipse.thym.android.core.adt.AndroidLibraryResolver">
+            
+      </platform>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.projectBuilder">
+      <builder
+            delegate="org.eclipse.thym.android.core.adt.BuildDelegate"
+            id="org.eclipse.thym.android.core.projectBuilder"
+            platform="Android">
+      </builder>
+   </extension>
+
+</plugin>

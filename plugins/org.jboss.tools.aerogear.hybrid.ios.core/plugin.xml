@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchDelegate"
+            id="org.eclipse.thym.ios.core.IOSSimulatorLaunchConfigType"
+            modes="run"
+            name="iOS Simulator">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.platformSupport">
+      <platform
+            projectGenerator="org.eclipse.thym.ios.core.xcode.XcodeProjectGenerator"
+            id="org.eclipse.thym.ios.core.platformSupport"
+            platform="iOS (XCode)"
+            platformID="ios"
+            pluginInstallActionFactory="org.eclipse.thym.ios.core.xcode.IOSPluginInstallationActionsFactory"
+            libraryResolver="org.eclipse.thym.ios.core.xcode.IosLibraryResolver">
+         <enablement>
+            <systemTest
+                  property="os.name"
+                  value="Mac OS X">
+            </systemTest>
+         </enablement>
+      </platform>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.projectBuilder">
+      <builder
+            delegate="org.eclipse.thym.ios.core.xcode.XCodeBuild"
+            id="org.eclipse.thym.ios.core.nativeBuilder"
+            platform="iOS (XCode)">
+            <enablement>
+            <systemTest
+                  property="os.name"
+                  value="Mac OS X">
+            </systemTest>
+         </enablement>
+      </builder>
+   </extension>
+</plugin>

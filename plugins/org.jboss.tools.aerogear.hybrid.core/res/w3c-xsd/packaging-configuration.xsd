@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" targetNamespace="http://www.w3.org/ns/widgets"
+	xmlns:widgets="http://www.w3.org/ns/widgets">
+	<xs:import schemaLocation="common.xsd" />
+	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="xml.xsd" />
+	<xs:element name="widget">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="widgets:group.widgetContent">
+					<xs:attribute ref="xml:lang" />
+					<xs:attribute name="id" type="xs:anyURI" />
+					<xs:attribute name="version" />
+					<xs:attribute name="height" type="xs:positiveInteger" />
+					<xs:attribute name="width" type="xs:positiveInteger" />
+					<xs:attribute name="viewmodes">
+						<xs:simpleType>
+							<xs:list itemType="widgets:group.listName">
+							</xs:list>
+						</xs:simpleType>
+					</xs:attribute>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:simpleType name="group.listName">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="floating" />
+			<xs:enumeration value="windowed" />
+			<xs:enumeration value="maximized" />
+			<xs:enumeration value="fullscreen" />
+			<xs:enumeration value="minimized" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="group.widgetContent">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:choice>
+				<xs:element ref="widgets:name" />
+				<xs:element ref="widgets:description" />
+				<xs:element ref="widgets:icon" />
+				<xs:element ref="widgets:author" />
+				<xs:element ref="widgets:license" />
+				<xs:element ref="widgets:content" />
+				<xs:element ref="widgets:feature" />
+				<xs:element ref="widgets:preference" />
+			</xs:choice>
+			<xs:element ref="widgets:access" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:element name="name">
+		<xs:complexType mixed="true">
+			<xs:attribute ref="xml:lang" />
+			<xs:attribute name="dir">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:enumeration value="ltr" />
+						<xs:enumeration value="rtl" />
+						<xs:enumeration value="rlo" />
+						<xs:enumeration value="lro" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="short" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="description">
+		<xs:complexType mixed="true">
+			<xs:attribute ref="xml:lang" />
+			<xs:attribute name="dir">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:enumeration value="ltr" />
+						<xs:enumeration value="rtl" />
+						<xs:enumeration value="rlo" />
+						<xs:enumeration value="lro" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="icon">
+		<xs:complexType>
+			
+			<xs:attribute name="src" use="required" type="xs:anyURI" />
+			<xs:attribute name="height" type="xs:positiveInteger" />
+			<xs:attribute name="width" type="xs:positiveInteger" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="author">
+		<xs:complexType mixed="true">
+			<xs:attribute ref="xml:lang" />
+			<xs:attribute name="dir">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:enumeration value="ltr" />
+						<xs:enumeration value="rtl" />
+						<xs:enumeration value="rlo" />
+						<xs:enumeration value="lro" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="href" type="xs:anyURI" />
+			<xs:attribute name="email">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value=".+@.+" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="license">
+		<xs:complexType mixed="true">
+			<xs:attribute ref="xml:lang" />
+			<xs:attribute name="dir">
+				<xs:simpleType>
+					<xs:restriction base="xs:token">
+						<xs:enumeration value="ltr" />
+						<xs:enumeration value="rtl" />
+						<xs:enumeration value="rlo" />
+						<xs:enumeration value="lro" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
+			<xs:attribute name="href" type="xs:anyURI" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="content">
+		<xs:complexType>
+			
+			<xs:attribute name="src" use="required" type="xs:anyURI" />
+			<xs:attribute name="type" />
+			<xs:attribute name="encoding" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="feature">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element minOccurs="0" maxOccurs="unbounded" ref="widgets:param" />
+			</xs:sequence>
+			<xs:attribute name="name" use="required" type="xs:anyURI" />
+			<xs:attribute name="required" type="xs:boolean" />
+		    </xs:complexType>
+	</xs:element>
+	<xs:element name="param">
+		<xs:complexType>
+			<xs:attribute name="name" use="required" />
+			<xs:attribute name="value" use="required" />
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="preference">
+		<xs:complexType>
+			<xs:attribute ref="xml:lang" />
+			<xs:attribute name="name" use="required" />
+			<xs:attribute name="value" />
+			<xs:attribute name="readonly" type="xs:boolean" />
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

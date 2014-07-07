@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="org.eclipse.thym.test" version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>TestPlugin</name>
+    <description>A plugin for testing thym</description>
+    <js-module name="TestPlugin" src="www/TestPlugin.js">
+        <clobbers target="cordova.plugins.TestPlugin" />
+    </js-module>
+</plugin>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.eclipse.thym.ios.ui.IOSLaunchShortcut"
+            icon="icons/elcl16/ios_icon.png"
+            id="org.eclipse.thym.ios.ui.launch"
+            label="Run on iOS Simulator"
+            modes="run">
+         <contextualLaunch>
+			<enablement>
+                <with variable="selection">
+					<count value="1"/>
+                <iterate>
+				<and>
+				<systemTest
+          			property="os.name"
+          			value="Mac OS X" />
+          		 <adapt  type="org.eclipse.core.resources.IResource">
+          		 <test property="org.eclipse.core.resources.projectNature" 
+                    value="org.eclipse.thym.core.HybridAppNature" /> 
+                 </adapt>   	
+				</and>
+				</iterate>
+         	    </with>
+         	</enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.thym.ios.ui.IOSSimLaunchConfigurationTabGroup"
+            description="iOS simulator"
+            id="org.eclipse.thym.ios.ui.IOSSimlaunchConfigurationTabGroup"
+            type="org.eclipse.thym.ios.core.IOSSimulatorLaunchConfigType">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.thym.ui.platformImages">
+      <platformImage
+            icon="icons/elcl16/ios_icon.png"
+            id="org.eclipse.thym.ios.ui.platformImage"
+            projectBuilder="org.eclipse.thym.ios.core.nativeBuilder"
+            platformSupport="org.eclipse.thym.ios.core.platformSupport">
+      </platformImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="$nl$/icons/elcl16/ios_icon.png"
+            configTypeID="org.eclipse.thym.ios.core.IOSSimulatorLaunchConfigType"
+            id="org.eclipse.thym.ios.ui.IOSSimulatorLaunchConfigTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+</plugin>
