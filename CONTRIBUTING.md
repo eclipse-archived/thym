@@ -54,7 +54,7 @@ At any time, you can pull changes from the upstream and merge them onto your mas
 ````
 And then [generate a pull-request](http://help.github.com/pull-requests/) where we can
 review the proposed changes, comment on them, discuss them with you,
-and if everything is good merge the changes right into the official
+and if everything is good merge the changes right into the official repository.
 
 ## Building 
 
