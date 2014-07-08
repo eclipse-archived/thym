@@ -27,7 +27,7 @@ At any time, you can pull changes from the upstream and merge them onto your mas
     $ git push origin                   # pushes all the updates to your fork, which should be in-sync with 'upstream'
 
    
-* Create a topic branch based on master, Please avoid working directly on the
+* Create a topic branch based on master, Please avoid working directly on the master
 ````
    $ git checkout -b my_contribution
 ````
@@ -55,6 +55,12 @@ At any time, you can pull changes from the upstream and merge them onto your mas
 And then [generate a pull-request](http://help.github.com/pull-requests/) where we can
 review the proposed changes, comment on them, discuss them with you,
 and if everything is good merge the changes right into the official repository.
+
+## Setting up Eclipse IDE
+
+We recommend using and enabling the following plugins in Eclipse: JDT, PDE, EGit and GitHub connectors
+
+In order to resolve the various dependencies of Thym, you can find some target-definition files on the  repository, under top-level folder target-platforms. Import the target-platforms folder in your workspace and open the current main .target file (if there are more than one, see on parent pom the value of target-platform property which references the main one). Upon opening, the target content will be downloaded. When complete, you can press the Set as Target Platform link in the top right corner to update the target platform. PDE will then load the content of the target file, so it will be all set to resolve the various dependencies.
 
 ## Building 
 
