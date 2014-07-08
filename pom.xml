@@ -12,10 +12,12 @@
 		<tycho-extras-version>${tycho-version}</tycho-extras-version>
 		<!-- skip for local builds, set it to true on Eclipse.org infrastructure -->
 		<cbi.jarsigner.skip>true</cbi.jarsigner.skip>
-		 <tycho.scmUrl>scm:git:https://github.com/eclipse/thym.git</tycho.scmUrl>
+		<tycho.scmUrl>scm:git:https://github.com/eclipse/thym.git</tycho.scmUrl>
+		<target-platform>luna.R</target-platform>
 	</properties>
 
 	<modules>
+		<module>target-platforms</module>
 		<module>plugins</module>
 		<module>features</module>
 		<module>tests</module>
@@ -51,6 +53,13 @@ http://www.eclipse.org/legal/epl-v10.htm
 				<version>${tycho-version}</version>
 				<configuration>
 					<resolver>p2</resolver>
+					<target>
+						<artifact>
+							<groupId>org.eclipse.thym.target-platforms</groupId>
+							<artifactId>${target-platform}</artifactId>
+							<version>0.1.0-SNAPSHOT</version>
+						</artifact>
+					</target>
 					<environments>
 						<environment>
 							<os>linux</os>
@@ -199,12 +208,5 @@ http://www.eclipse.org/legal/epl-v10.htm
 		</pluginRepository>
 	</pluginRepositories>
 
-	<repositories>
-		<repository>
-			<id>luna</id>
-			<url>http://download.eclipse.org/releases/luna</url>
-			<layout>p2</layout>
-		</repository>
-	</repositories>
 </project>
 	

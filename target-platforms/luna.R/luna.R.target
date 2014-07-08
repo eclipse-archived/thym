@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><?pde version="3.6"?>
+<target includeMode="feature" name="THyM Target">
+  <locations>
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/"/>
+      <unit id="org.apache.commons.codec" version="1.3.0.v201101211617"/>
+      <unit id="org.apache.commons.io" version="2.0.1.v201105210651"/>
+      <unit id="org.apache.httpcomponents.httpclient" version="4.2.6.v201311072007"/>
+      <unit id="org.apache.httpcomponents.httpcore" version="4.2.5.v201311072007"/>
+      <unit id="com.google.gson" version="2.1.0.v201303041604"/>
+      <unit id="org.junit" version="4.11.0.v201303080030"/>
+      <unit id="com.ibm.icu.base" version="52.1.0.v201404171520"/>
+    </location>
+
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/eclipse/updates/4.4/R-4.4-201406061215/"/>
+      <unit id="org.eclipse.platform.feature.group" version="4.4.0.v20140606-1558"/>
+      <unit id="org.eclipse.equinox.p2.discovery.feature.feature.group" version="1.0.200.v20140512-1802"/>
+      <unit id="org.eclipse.jdt.feature.group" version="3.10.0.v20140606-1536"/>
+    </location>
+
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/rt/ecf/3.8.1/site.p2/"/>
+      <unit id="org.eclipse.ecf.core.feature.feature.group" version="1.1.0.v20140528-1625"/>
+      <unit id="org.eclipse.ecf.filetransfer.feature.feature.group" version="3.9.0.v20140528-1625"/>
+      <unit id="org.eclipse.ecf.filetransfer.httpclient4.feature.feature.group" version="3.8.1.v20140528-1625"/>
+    </location>
+
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/egit/updates-3.4"/>
+      <unit id="org.eclipse.jgit.feature.group" version="3.4.0.201406110918-r"/>
+    </location>
+
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/webtools/downloads/drops/R3.6.0/R-3.6.0-20140602160322/repository/"/>
+      <unit id="org.eclipse.wst.jsdt.feature.feature.group" version="1.6.0.v201405071612-7G7FFyXFBBoPc8Pvc8c0wn"/>
+      <unit id="org.eclipse.wst.xml_core.feature.feature.group" version="3.6.0.v201405062148-7C7OG-8F7RZHQZIgP0NyQn"/>
+      <unit id="org.eclipse.wst.xml_ui.feature.feature.group" version="3.6.0.v201405062148-7H7NFm0DxumWv9-7bhgNooiVMQ_TBruLpRz012TF"/>
+      <unit id="org.eclipse.wst.common_core.feature.feature.group" version="3.6.0.v201405010300-7B7EFVqF7RZHOsJnPz0RDOO"/>
+      <unit id="org.eclipse.wst.common_ui.feature.feature.group" version="3.6.0.v201405010300-7C7CFhKEdhOaz-oWh9oTk1tKoQz01SEPP"/>
+      <unit id="org.eclipse.wst.common.fproj.feature.group" version="3.6.0.v201405011300-377F8N8s735555393B7B"/>
+    </location>
+
+    <location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
+      <repository location="http://download.eclipse.org/modeling/emf/emf/updates/2.10milestones/"/>
+      <!-- Transitive dependencies from platform -->
+      <unit id="org.eclipse.emf.common.feature.group" version="2.10.0.v20140514-1158"/>
+      <unit id="org.eclipse.emf.ecore.feature.group" version="2.10.0.v20140514-1158"/>
+    </location>
+
+  </locations>
+  <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+</target>
