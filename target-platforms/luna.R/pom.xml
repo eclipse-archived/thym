@@ -1,0 +1,13 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.eclipse.thym</groupId>
+		<artifactId>target-platforms</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+	</parent>
+	<groupId>org.eclipse.thym.target-platforms</groupId>
+	<artifactId>luna.R</artifactId>
+	<name>Eclipse THyM Target Platform for Luna SR0</name>
+	<packaging>eclipse-target-definition</packaging>
+</project>
