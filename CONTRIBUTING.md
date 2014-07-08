@@ -14,21 +14,19 @@ top of things.
 
 ## Making changes
 
-* Clone your fork:
-
+* Clone your fork
+````
     $ git clone git@github.com:<you>/thym.git
     $ cd thym
     $ git remote add upstream git@github.com:eclipse/thym.git
-  
-At any time, you can pull changes from the upstream and merge them onto your master:
+````  
+At any time, you can pull changes from the upstream and merge them onto your master.  The general idea is to keep your 'master' branch in-sync with the 'upstream/master'.
 
     $ git checkout master               # switches to the 'master' branch
     $ git pull upstream master          # fetches all 'upstream' changes and merges 'upstream/master' onto your 'master' branch
     $ git push origin                   # pushes all the updates to your fork, which should be in-sync with 'upstream'
 
-The general idea is to keep your 'master' branch in-sync with the
-'upstream/master'.
-
+   
 * Create a topic branch based on master, Please avoid working directly on the
 
    $ git checkout -b my_contribution
@@ -60,7 +58,7 @@ and if everything is good merge the changes right into the official
 
 ## Building 
 
-Building _Thym_  requires +Maven (3.1+). 
+Building _Thym_  requires Maven (3.1+). 
 
 This command will run the build:
 
