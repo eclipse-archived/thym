@@ -28,9 +28,9 @@ At any time, you can pull changes from the upstream and merge them onto your mas
 
    
 * Create a topic branch based on master, Please avoid working directly on the
-
+````
    $ git checkout -b my_contribution
-
+````
 * Make changes for the bug or feature.
 * Make sure you have added the necessary tests for your changes.
 * Make sure that a full build (with unit tests) runs successfully. 
@@ -49,9 +49,9 @@ At any time, you can pull changes from the upstream and merge them onto your mas
 ````
    Note that the "Signed-off-by" entry is required see [details](http://wiki.eclipse.org/Development_Resources/Contributing_via_Git).
 * You can then push your topic branch and its changes into your public fork repository:
-
+````
 	$ git push origin my_contribution         # pushes your topic branch into your fork
-
+````
 And then [generate a pull-request](http://help.github.com/pull-requests/) where we can
 review the proposed changes, comment on them, discuss them with you,
 and if everything is good merge the changes right into the official
@@ -61,6 +61,6 @@ and if everything is good merge the changes right into the official
 Building _Thym_  requires Maven (3.1+). 
 
 This command will run the build:
-
+````
     $ mvn clean verify
-
+````
