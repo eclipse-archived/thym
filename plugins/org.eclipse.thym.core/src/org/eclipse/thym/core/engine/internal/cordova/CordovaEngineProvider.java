@@ -12,16 +12,23 @@ package org.eclipse.thym.core.engine.internal.cordova;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -43,9 +50,15 @@ import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
+import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 import com.github.zafarkhaja.semver.Version;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineSearchListener {
 	
@@ -58,25 +71,8 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	
 	public static final String CUSTOM_CORDOVA_ENGINE_ID = "custom_cordova";
 	
-	private static HashMap<String, Ref> downloadeableVersionsCache = new HashMap<String, Ref>();
 	private static ArrayList<HybridMobileEngine> engineList;
-	
-	private Platform[] platforms = new Platform[] {new Platform("ios","https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git" ),
-												   new Platform("android","https://git-wip-us.apache.org/repos/asf?p=cordova-android.git"),
-												   new Platform("wp8", "https://git-wip-us.apache.org/repos/asf?p=cordova-wp8.git"),
-												   new Platform("blaackberry10","https://git-wip-us.apache.org/repos/asf?p=cordova-blackberry.git"),
-												   new Platform("firefoxos","https://git-wip-us.apache.org/repos/asf?p=cordova-firefoxos.git"),
-												   new Platform("windows8", "https://git-wip-us.apache.org/repos/asf?p=cordova-windows.git")
-												  };
 
-	private class Platform{
-		String id;
-		String uri;
-		public Platform(String id, String uri){
-			this.id = id;
-			this.uri = uri;
-		}
-	}
 	
 	/**
 	 * List of engines that are locally available. This is the list of engines that 
@@ -168,29 +164,62 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	 * @return
 	 * @throws CoreException
 	 */
-	public String[] getDownloadableVersions() throws CoreException{
-		if(downloadeableVersionsCache.isEmpty()){
-			try {
-				Collection<Ref> refs = Git.lsRemoteRepository().setRemote("https://git-wip-us.apache.org/repos/asf/cordova-ios.git").setHeads(false).setTags(true).call();
-				for (Iterator<Ref> iterator = refs.iterator(); iterator.hasNext();) {
-					Ref ref =  iterator.next();
-					String[] parts = ref.getName().split("/");
-					Version v = Version.valueOf(parts[parts.length-1]);
-					if(v.greaterThanOrEqualTo(MIN_VERSION)){
-						downloadeableVersionsCache.put(v.toString(),ref);
-					}
-				}
-			} catch (GitAPIException e) {
-				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"Unable to retrieve downloadable versions list",e));
+	public List<DownloadableCordovaEngine> getDownloadableVersions() throws CoreException{
+		
+		ArrayList<DownloadableCordovaEngine> downloadableCordovaEngines = new ArrayList<DownloadableCordovaEngine>();
+		try {
+			URL url = FileLocator.find(HybridCore.getContext().getBundle(), new Path("/res/platforms.json"), null);
+			Reader r;
+			if(url == null ){
+				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Could not read downloadable engine list"));
 			}
+			r = new InputStreamReader(url.openStream());
+
+			JsonReader reader = new JsonReader(r);
+			JsonParser parser = new JsonParser();
+			JsonObject root = (JsonObject) parser.parse(reader);
+			Set<Entry<String, JsonElement>> versions = root.entrySet();
+			for (Iterator<Entry<String, JsonElement>> iterator = versions.iterator(); iterator.hasNext();) {
+				Entry<String, JsonElement> entry = iterator.next();
+				JsonObject version = entry.getValue().getAsJsonObject();
+				DownloadableCordovaEngine engine = new DownloadableCordovaEngine();
+				engine.setVersion(entry.getKey());
+				Set<Entry<String, JsonElement>> libs = version.entrySet();
+				for (Iterator<Entry<String, JsonElement>> libsIterator = libs.iterator(); libsIterator.hasNext();) {
+					Entry<String, JsonElement> lib = libsIterator.next();
+					LibraryDownloadInfo info = new LibraryDownloadInfo();
+					info.setPlatformId(lib.getKey());
+					info.setDownloadURL(lib.getValue().getAsJsonObject()
+							.get("download_url").getAsString());
+					engine.addLibraryInfo(info);
+				}
+				downloadableCordovaEngines.add(engine);
+			}
+		} catch (IOException e) {
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Could not read downloadable engine list",e));
 		}
-		return downloadeableVersionsCache.keySet().toArray(new String[downloadeableVersionsCache.size()]);
+		return downloadableCordovaEngines;
 	}
-	
+	private DownloadableCordovaEngine getDownloadableCordovaEngine(String version){
+		try {
+			List<DownloadableCordovaEngine> versions = getDownloadableVersions();
+
+			for (DownloadableCordovaEngine downloadableCordovaEngine : versions) {
+				if (version.equals(downloadableCordovaEngine.getVersion())) {
+					return downloadableCordovaEngine;
+				}
+			}
+		}catch(CoreException e){
+			HybridCore.log(IStatus.ERROR, "Could not retrieve downloadable engine list", e);
+		}
+		return null;
+	}
 	public void downloadEngine(String version, IProgressMonitor monitor, String... platforms) {
 		if(monitor == null ){
 			monitor = new NullProgressMonitor();
 		}
+		
+		DownloadableCordovaEngine theEngine = getDownloadableCordovaEngine(version);
 		
 		IRetrieveFileTransfer transfer = HybridCore.getDefault().getFileTransferService();
 		IFileID remoteFileID;
@@ -201,10 +230,10 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		monitor.beginTask("Download Cordova Engine "+version, platformSize *100 +1);
 		monitor.worked(1);
 		for (int i = 0; i < platformSize; i++) {
-			Platform p = getPlatform(platforms[i]);
-			Assert.isNotNull(p);
+			LibraryDownloadInfo downloadInfo = theEngine.getPlatformLibraryInfo(platforms[i]);
+			Assert.isNotNull(downloadInfo); //platforms.json does not have info on platform
 			try {
-				URI uri = URI.create(p.uri +";a=snapshot;h=" + version + ";sf=tgz");
+				URI uri = URI.create(downloadInfo.getDownloadURL());
 				remoteFileID = FileIDFactory.getDefault().createFileID(transfer.getRetrieveNamespace(), uri);
 				SubProgressMonitor sm = new SubProgressMonitor(monitor, 100);
 				if(monitor.isCanceled()){
@@ -231,23 +260,21 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		resetEngineList();
 	}
 	
-	private Platform getPlatform(String platformId){
-		for (int i = 0; i < platforms.length; i++) {
-			if(platforms[i].id.equals(platformId))
-				return platforms[i];
-		}
-		return null;
-	}
-	
 	/**
 	 * Check if the platform is supported by this provider.
 	 * 
 	 * @param platformId
 	 * @return
 	 */
-	public boolean isSupportedPlatform(String platformId){
+	public boolean isSupportedPlatform(String version, String platformId){
 		Assert.isNotNull(platformId);
-		return getPlatform(platformId) != null;
+		Assert.isNotNull( version);
+		DownloadableCordovaEngine engine = getDownloadableCordovaEngine(version);
+		if(engine == null ){
+			return false;
+		}
+		LibraryDownloadInfo lib = engine.getPlatformLibraryInfo(platformId);
+		return lib != null;
 	}
 
 

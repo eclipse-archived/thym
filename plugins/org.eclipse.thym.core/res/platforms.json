@@ -1,0 +1,62 @@
+{
+  '3.5.0' = {
+              'ios'= {
+                      download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.5.0;sf=tgz',
+                      version: '3.5.0'
+              },
+              'android' = {
+                            download_url:'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.5.0;sf=tgz',
+                            version: '3.5.0'
+              }
+   },
+   '3.4.0' = {
+              'ios' = {
+                        download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.4.1;sf=tgz',
+                        version: '3.4.1'
+              },
+              'android' = {
+                           download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.4.0;sf=tgz',
+                           version:'3.4.0'
+              }
+   },
+   '3.3.0' = {
+              'ios' = {
+                        download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.3.0;sf=tgz',
+                        version: '3.3.0'
+              },
+              'android' = {
+                           download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.3.0;sf=tgz',
+                           version:'3.3.0'
+              }
+   },
+   '3.2.0' = {
+              'ios' = {
+                        download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.2.0;sf=tgz',
+                        version: '3.2.0'
+              },
+              'android' = {
+                           download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.2.0;sf=tgz',
+                           version:'3.2.0'
+              }
+   },
+   '3.1.0' = {
+              'ios' = {
+                        download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.1.0;sf=tgz',
+                        version: '3.1.0'
+              },
+              'android' = {
+                           download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.1.0;sf=tgz',
+                           version:'3.1.0'
+              }
+   },
+   '3.0.0' = {
+              'ios' = {
+                        download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.0.0;sf=tgz',
+                        version: '3.0.0'
+              },
+              'android' = {
+                           download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.0.0;sf=tgz',
+                           version:'3.0.0'
+              }              
+   }     
+}
