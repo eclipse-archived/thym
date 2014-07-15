@@ -18,22 +18,39 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 public class PlatformLibrary{
-	private String platformId;
-	private IPath location;
+	private final String platformId;
+	private final IPath location;
 	private HybridMobileLibraryResolver resolver;
 	
 	public PlatformLibrary(String platformId, IPath location){
+		Assert.isNotNull(platformId);
+		Assert.isNotNull(location);
 		this.platformId = platformId;
 		this.location = location;
+		
 	}
 	
 	public String getPlatformId() {
 		return platformId;
 	}
 
-
 	public IPath getLocation() {
 		return location;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof PlatformLibrary){
+			PlatformLibrary that = (PlatformLibrary)obj;
+			return platformId.equals(that.getPlatformId()) 
+						&& location.equals(that.getLocation());
+		}
+		return super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return location.hashCode();
 	}
 
 	public HybridMobileLibraryResolver getPlatformLibraryResolver(){

@@ -18,8 +18,6 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,20 +39,16 @@ import org.eclipse.ecf.filetransfer.identity.FileCreateException;
 import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
+import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.engine.PlatformLibrary;
-import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 import com.github.zafarkhaja.semver.Version;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -189,8 +183,9 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 					Entry<String, JsonElement> lib = libsIterator.next();
 					LibraryDownloadInfo info = new LibraryDownloadInfo();
 					info.setPlatformId(lib.getKey());
-					info.setDownloadURL(lib.getValue().getAsJsonObject()
-							.get("download_url").getAsString());
+					JsonObject infoJsonObj = lib.getValue().getAsJsonObject();
+					info.setDownloadURL(infoJsonObj.get("download_url").getAsString());
+					info.setVersion(infoJsonObj.get("version").getAsString());
 					engine.addLibraryInfo(info);
 				}
 				downloadableCordovaEngines.add(engine);
@@ -239,7 +234,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 				if(monitor.isCanceled()){
 					return;
 				}
-				transfer.sendRetrieveRequest(remoteFileID, new EngineDownloadReceiver(version, platforms[i], lock, sm), null);
+				transfer.sendRetrieveRequest(remoteFileID, new EngineDownloadReceiver(downloadInfo.getVersion(), platforms[i], lock, sm), null);
 			} catch (FileCreateException e) {
 				HybridCore.log(IStatus.ERROR, "Engine download file create error", e);
 			} catch (IncomingFileTransferException e) {
@@ -326,7 +321,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 
 	@Override
 	public void libraryFound(PlatformLibrary library) {
-		String version = library.getPlatformLibraryResolver().detectVersion();
+		String version = getEngineVersion(library);
 		if(version == null ){
 			return;
 		}
@@ -341,6 +336,22 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 				engine.addPlatformLib(library);
 			}
 		}
+	}
+
+	private String getEngineVersion(PlatformLibrary library) {
+		String libVersion = library.getPlatformLibraryResolver().detectVersion();
+		try{
+			List<DownloadableCordovaEngine> engines = getDownloadableVersions();
+			for (DownloadableCordovaEngine cordovaEngine : engines) {
+				LibraryDownloadInfo platformLibraryInfo = cordovaEngine.getPlatformLibraryInfo(library.getPlatformId());
+				if(platformLibraryInfo != null && platformLibraryInfo.getVersion().equals(libVersion) ){
+					return cordovaEngine.getVersion();
+				}
+			}
+		}catch (CoreException e){
+			HybridCore.log(IStatus.WARNING, "Could not read downloadable engines", e);
+		}
+		return libVersion;
 	}
 
 

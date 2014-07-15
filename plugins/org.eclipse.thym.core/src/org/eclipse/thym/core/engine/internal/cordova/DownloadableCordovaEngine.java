@@ -18,6 +18,8 @@ public class DownloadableCordovaEngine {
 	public static class LibraryDownloadInfo{
 		private String platformId;
 		private String downloadURL;
+		private String version;
+		
 		public String getPlatformId() {
 			return platformId;
 		}
@@ -29,6 +31,12 @@ public class DownloadableCordovaEngine {
 		}
 		public void setDownloadURL(String downloadURI) {
 			this.downloadURL = downloadURI;
+		}
+		public String getVersion() {
+			return version;
+		}
+		public void setVersion(String version) {
+			this.version = version;
 		}
 	}
 	
