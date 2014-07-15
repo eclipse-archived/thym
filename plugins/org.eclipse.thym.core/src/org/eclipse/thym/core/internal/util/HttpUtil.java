@@ -16,8 +16,10 @@ import java.net.URISyntaxException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
+import org.apache.http.conn.params.ConnRouteParams;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.eclipse.core.net.proxy.IProxyData;
@@ -33,13 +35,24 @@ public class HttpUtil {
 	 * 
 	 * @param client
 	 */
-	public static void setupProxy(DefaultHttpClient client ){
+	public static void setupProxy(final DefaultHttpClient client ){
 		client.setRoutePlanner(new HttpRoutePlanner() {
 			
 			@Override
 			public HttpRoute determineRoute(HttpHost target, HttpRequest request,
 					HttpContext context) throws HttpException {
-				IProxyService proxy =  HybridCore.getDefault().getProxyService();
+				
+				//use forced route if one exists
+				HttpRoute route = ConnRouteParams.getForcedRoute(request.getParams());
+			   	if (route != null)
+				   return route;
+			   
+			   	// if layered, is it secure?
+			   	final Scheme scheme = client.getConnectionManager().getSchemeRegistry().getScheme(target);
+			   	final boolean secure = scheme.isLayered();
+			   	
+
+				final IProxyService proxy =  HybridCore.getDefault().getProxyService();
 				HttpHost host =null;
 				try {
 					IProxyData[] proxyDatas = proxy.select(new URI(target.toURI()));
@@ -53,9 +66,9 @@ public class HttpUtil {
 					HybridCore.log(IStatus.ERROR, "Incorrect URI", e);
 				}
 				if(host == null ){
-					return new HttpRoute(target);
+					return new HttpRoute(target, null, secure);
 				}
-				return new HttpRoute(target, null, host, false);
+				return new HttpRoute(target, null, host, secure);
 			}
 		});
 		

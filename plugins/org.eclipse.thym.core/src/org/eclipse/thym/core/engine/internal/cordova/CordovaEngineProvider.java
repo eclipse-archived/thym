@@ -12,27 +12,18 @@ package org.eclipse.thym.core.engine.internal.cordova;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.ecf.filetransfer.IncomingFileTransferException;
 import org.eclipse.ecf.filetransfer.identity.FileCreateException;
@@ -49,10 +40,6 @@ import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.L
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 import com.github.zafarkhaja.semver.Version;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 
 public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineSearchListener {
 	
@@ -151,49 +138,10 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return path;
 	}
 	
-	/**
-	 * Returns a list of all the tags on the Apache repository. This method does not 
-	 * filter any of the tags. It is up to the clients to filter.
-	 * 
-	 * @return
-	 * @throws CoreException
-	 */
 	public List<DownloadableCordovaEngine> getDownloadableVersions() throws CoreException{
-		
-		ArrayList<DownloadableCordovaEngine> downloadableCordovaEngines = new ArrayList<DownloadableCordovaEngine>();
-		try {
-			URL url = FileLocator.find(HybridCore.getContext().getBundle(), new Path("/res/platforms.json"), null);
-			Reader r;
-			if(url == null ){
-				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Could not read downloadable engine list"));
-			}
-			r = new InputStreamReader(url.openStream());
+		DefaultEngineRepoProvider engineRepo = new DefaultEngineRepoProvider();
+		return engineRepo.getEngines();
 
-			JsonReader reader = new JsonReader(r);
-			JsonParser parser = new JsonParser();
-			JsonObject root = (JsonObject) parser.parse(reader);
-			Set<Entry<String, JsonElement>> versions = root.entrySet();
-			for (Iterator<Entry<String, JsonElement>> iterator = versions.iterator(); iterator.hasNext();) {
-				Entry<String, JsonElement> entry = iterator.next();
-				JsonObject version = entry.getValue().getAsJsonObject();
-				DownloadableCordovaEngine engine = new DownloadableCordovaEngine();
-				engine.setVersion(entry.getKey());
-				Set<Entry<String, JsonElement>> libs = version.entrySet();
-				for (Iterator<Entry<String, JsonElement>> libsIterator = libs.iterator(); libsIterator.hasNext();) {
-					Entry<String, JsonElement> lib = libsIterator.next();
-					LibraryDownloadInfo info = new LibraryDownloadInfo();
-					info.setPlatformId(lib.getKey());
-					JsonObject infoJsonObj = lib.getValue().getAsJsonObject();
-					info.setDownloadURL(infoJsonObj.get("download_url").getAsString());
-					info.setVersion(infoJsonObj.get("version").getAsString());
-					engine.addLibraryInfo(info);
-				}
-				downloadableCordovaEngines.add(engine);
-			}
-		} catch (IOException e) {
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Could not read downloadable engine list",e));
-		}
-		return downloadableCordovaEngines;
 	}
 	private DownloadableCordovaEngine getDownloadableCordovaEngine(String version){
 		try {
