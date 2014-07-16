@@ -12,10 +12,7 @@ package org.eclipse.thym.core.plugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.Iterator;
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -25,23 +22,21 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+/**
+ * Helper for DOM parsing of the Cordova plugin.xml
+ * 
+ * @author Gorkem Ercan
+ *
+ */
 public class CordovaPluginXMLHelper {
 	
 	public static final String PLGN_PROPERTY_INFO = "info";
@@ -52,92 +47,56 @@ public class CordovaPluginXMLHelper {
 	public static final String PLGN_PROPERTY_AUTHOR = "author";
 	public static final String PLGN_PROPERTY_VERSION = "version";
 	public static final String PLGN_PROPERTY_PLATFORM = "platform";
-	
 	public static final String PLGN_PROPERTY_ID = "id";
 
-	private static class PluginXMLNamespaceContext implements NamespaceContext{
-
-		private Document document;
-		
-		public PluginXMLNamespaceContext(Document doc ) {
-			this.document = doc;
-		}
-		
-		@Override
-		public String getNamespaceURI(String prefix) {
-			if (prefix.equals(XMLConstants.DEFAULT_NS_PREFIX)) {
-				return document.lookupNamespaceURI(null);
+	
+	
+	public static Element getPlatformNode(Document document, String platform){
+		NodeList nodes = getNodes(document.getDocumentElement(), "platform");
+		for(int i = 0; i< nodes.getLength(); i++){
+			Node n = nodes.item(i);
+			String platformName = getAttributeValue(n, "name");
+			if(platformName != null && platformName.equals(platform)){
+				return (Element) n;
 			}
-			return document.lookupNamespaceURI(prefix);
 		}
-
-		@Override
-		public String getPrefix(String namespaceURI) {
-			return document.lookupPrefix(namespaceURI);
-		}
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public Iterator getPrefixes(String arg0) {
-			return null;
-		}
-		
-	}
-	
-	private static final XPathFactory xpathFactory = XPathFactory.newInstance();;
-	
-	public static Node getPlatformNode(Document document, String platform){
-		try {
-			XPath xpath = getXPath(document);
-			XPathExpression expression = xpath.compile("./:platform[@name=\""+platform+"\"]");
-			Node node =	(Node) expression.evaluate(document.getDocumentElement(), XPathConstants.NODE);
-			return node;
-		} catch (XPathExpressionException e) {
-			HybridCore.log(IStatus.ERROR, "Can not evaluate xpath expression", e);
-			return null;
-		}
+		return null;
 	}
 
-	private static XPath getXPath(Document doc) {
-		XPath xpath = xpathFactory.newXPath();
-		xpath.setNamespaceContext(new PluginXMLNamespaceContext(doc));
-		return xpath;
+	public static NodeList getSourceFileNodes(Element node){
+		return getNodes(node, "source-file");
 	}
 	
-	public static NodeList getSourceFileNodes(Node node){
-		return getNodes(node, "./:source-file");
+	public static NodeList getResourceFileNodes(Element node){
+		return getNodes(node, "resource-file");
 	}
 	
-	public static NodeList getResourceFileNodes(Node node){
-		return getNodes(node, "./:resource-file");
+	public static NodeList getHeaderFileNodes(Element node){
+		return getNodes(node, "header-file");
 	}
 	
-	public static NodeList getHeaderFileNodes(Node node){
-		return getNodes(node, "./:header-file");
+	public static NodeList getAssets(Element node){
+		return getNodes(node, "asset");
 	}
 	
-	public static NodeList getAssets(Node node){
-		return getNodes(node, "./:asset");
-	}
-	
-	public static NodeList getConfigFileNodes(Node node) {
-		return getNodes(node, "./:config-file");
+	public static NodeList getConfigFileNodes(Element node) {
+		return getNodes(node, "config-file");
 	}	
 	
-	public static NodeList getPreferencesNodes(Node node) {
-		return getNodes(node, "./:preference");
+	public static NodeList getPreferencesNodes(Element node) {
+		return getNodes(node, "preference");
 	}	
 	
-	public static NodeList getLibFileNodes(Node node) {
-		return getNodes(node, "./:lib-file");
+	public static NodeList getLibFileNodes(Element node) {
+		return getNodes(node, "lib-file");
 	}
 	
-	public static NodeList getFrameworks(Node node){
-		return getNodes(node, "./:framework");
+	public static NodeList getFrameworks(Element node){
+		return getNodes(node, "framework");
 	}
 	
-	public static NodeList getDependencies(Node node){
-		return getNodes(node, "./:dependency");
+	public static NodeList getDependencies(Element node){
+		return getNodes(node, "dependency");
 	}
 	
 	/**
@@ -145,24 +104,16 @@ public class CordovaPluginXMLHelper {
 	 * @param node
 	 * @return name node or null
 	 */
-	public static Node getNameNode(Node node){
-		NodeList list = getNodes(node, "./:name");
+	public static Node getNameNode(Element node){
+		NodeList list = getNodes(node, "name");
 		if(list.getLength() == 1){
 			return list.item(0);
 		}
 		return null;
 	}
 		
-	private static NodeList getNodes(Node node, String xpathExpression){
-		try{
-			XPath xpath = getXPath(node.getOwnerDocument()); 
-			XPathExpression expression = xpath.compile(xpathExpression);
-			return (NodeList) expression.evaluate(node, XPathConstants.NODESET);
-		}
-		catch(XPathExpressionException e ){
-			HybridCore.log(IStatus.ERROR, "Can not evaluate xpath expression", e);
-			return null;
-		}
+	private static NodeList getNodes(Element element, String nodeName ){
+		return element.getElementsByTagName(nodeName);
 	}
 	
 	public static String getAttributeValue(Node node, String attribute){
@@ -194,7 +145,7 @@ public class CordovaPluginXMLHelper {
 	}
 
 	public static CordovaPlugin createCordovaPlugin(InputStream contents) throws CoreException {
-		Document doc = XMLUtil.loadXML(contents,true);
+		Document doc = XMLUtil.loadXML(contents,false);
 		CordovaPlugin plugin = new CordovaPlugin();
 		Element rootNode = doc.getDocumentElement();
 		plugin.setId(getAttributeValue(rootNode, PLGN_PROPERTY_ID));
@@ -206,12 +157,12 @@ public class CordovaPluginXMLHelper {
 		plugin.setKeywords(getChildNodeValue(rootNode, PLGN_PROPERTY_KEYWORDS));
 		plugin.setInfo(getChildNodeValue(rootNode, PLGN_PROPERTY_INFO));
 		//js-modules
-		NodeList moduleNodes = getNodes(rootNode, "//:js-module");
+		NodeList moduleNodes = getNodes(rootNode, "js-module");
 		for (int i = 0; i < moduleNodes.getLength(); i++) {
 			Node n = moduleNodes.item(i);
 
 			PluginJavaScriptModule module = new PluginJavaScriptModule();
-			if(n.getParentNode().getLocalName().equals("platform")){
+			if(n.getParentNode().getNodeName().equals("platform")){
 				module.setPlatform(getAttributeValue(n.getParentNode(), PLGN_PROPERTY_NAME));
 			}
 			module.setName(plugin.getId()+"."+getAttributeValue(n, PLGN_PROPERTY_NAME));

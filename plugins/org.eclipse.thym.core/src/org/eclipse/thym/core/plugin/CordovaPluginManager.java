@@ -67,6 +67,7 @@ import org.eclipse.thym.core.plugin.actions.CopyFileAction;
 import org.eclipse.thym.core.plugin.actions.DependencyInstallAction;
 import org.eclipse.thym.core.plugin.actions.PluginInstallRecordAction;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
@@ -116,7 +117,7 @@ public class CordovaPluginManager {
 			return;
 		Document doc = null;
 		try{
-			doc = XMLUtil.loadXML(pluginFile); 
+			doc = XMLUtil.loadXML(pluginFile, false); 
 		}catch(CoreException e ){
 			//Convert the SAXParseException exceptions to HybridMobileStatus because
 			//it may indicate a broken plugin.xml or an platform not supported 
@@ -212,7 +213,7 @@ public class CordovaPluginManager {
 		if( !pluginFile.exists() ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
 		}
-		Document doc = XMLUtil.loadXML(pluginFile); 
+		Document doc = XMLUtil.loadXML(pluginFile, false); 
 		
 		FileOverwriteCallback cb = new FileOverwriteCallback() {
 			@Override
@@ -476,7 +477,7 @@ public class CordovaPluginManager {
 			
 		File pluginHome = getPluginHomeDirectory(plugin);
 		File pluginFile = new File(pluginHome, PlatformConstants.FILE_XML_PLUGIN);
-		Document doc = XMLUtil.loadXML(pluginFile); 
+		Document doc = XMLUtil.loadXML(pluginFile, false); 
 		//TODO: check  supported engines
 		ArrayList<IPluginInstallationAction> allActions = new ArrayList<IPluginInstallationAction>();
 		AbstractPluginInstallationActionsFactory actionFactory = platform.getPluginInstallationActionsFactory(this.project.getProject(), 
@@ -486,7 +487,7 @@ public class CordovaPluginManager {
 		// See JBIDE-16544 
 		allActions.addAll(getCommonAndPlatformJSModuleActions(plugin, platform.getPlatformId(), actionFactory)); // add all js-module actions
 		
-		Node node = getPlatformNode(doc, platform.getPlatformId());
+		Element node = getPlatformNode(doc, platform.getPlatformId());
 		if( node != null ){
 			allActions.addAll(getAssetActionsForPlatform(doc.getDocumentElement(),actionFactory ));// add common assets
 			allActions.addAll(getConfigFileActionsForPlatform(doc.getDocumentElement(), actionFactory)); // common config changes
@@ -514,14 +515,14 @@ public class CordovaPluginManager {
 	private List<IPluginInstallationAction> collectAllConfigXMLActionsForSupporredPlatforms(Document doc){
 		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		List<Node> nodes = new ArrayList<Node>();
+		List<Element> nodes = new ArrayList<Element>();
 		nodes.add(doc.getDocumentElement());
 		for (PlatformSupport platform : platforms) {
-			Node platformNode = getPlatformNode(doc, platform.getPlatformId());
+			Element platformNode = getPlatformNode(doc, platform.getPlatformId());
 			if(platformNode != null)
 				nodes.add(platformNode);
 		}
-		for(Node node: nodes){
+		for(Element node: nodes){
 			NodeList configFiles = getConfigFileNodes(node);
 			for (int i = 0; i < configFiles.getLength(); i++) {
 				Node current = configFiles.item(i);
@@ -547,15 +548,14 @@ public class CordovaPluginManager {
 	private List<IPluginInstallationAction> collectVariablePreferencesForSupportedPlatforms(Document doc){
 		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		List<Node> nodes = new ArrayList<Node>();
+		List<Element> nodes = new ArrayList<Element>();
 		nodes.add(doc.getDocumentElement());
 		for (PlatformSupport platform : platforms) {
-			Node platformNode = getPlatformNode(doc, platform.getPlatformId());
+			Element platformNode = getPlatformNode(doc, platform.getPlatformId());
 			if(platformNode != null)
 				nodes.add(platformNode);
 		}
-		for(Node node: nodes){
-			
+		for(Element node: nodes){
 			NodeList preferences = getPreferencesNodes(node);
 			for( int i = 0; i < preferences.getLength(); i++){
 				Node current = preferences.item(i);
@@ -572,7 +572,7 @@ public class CordovaPluginManager {
 	}
 	
 	
-	private List<IPluginInstallationAction> collectActionsForPlatform(Node node, AbstractPluginInstallationActionsFactory factory) throws CoreException{
+	private List<IPluginInstallationAction> collectActionsForPlatform(Element node, AbstractPluginInstallationActionsFactory factory) throws CoreException{
 
 		ArrayList<IPluginInstallationAction> actionsList = new ArrayList<IPluginInstallationAction>(); 
 		actionsList.addAll(getSourceFilesActionsForPlatform(node, factory));
@@ -585,7 +585,7 @@ public class CordovaPluginManager {
 		return actionsList;
 	}
 
-	private List<IPluginInstallationAction> getFrameworkActionsForPlatfrom(Node node,
+	private List<IPluginInstallationAction> getFrameworkActionsForPlatfrom(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList frameworks = getFrameworks(node);
@@ -599,7 +599,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getLibFileActionsForPlatform(Node node,
+	private List<IPluginInstallationAction> getLibFileActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList libFiles = getLibFileNodes(node);
@@ -613,7 +613,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction>  getConfigFileActionsForPlatform(Node node,
+	private List<IPluginInstallationAction>  getConfigFileActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList configFiles = getConfigFileNodes(node);
@@ -636,7 +636,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 	
-	private List<IPluginInstallationAction> getHeaderFileActionsForPlatform(Node node,
+	private List<IPluginInstallationAction> getHeaderFileActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList headerFiles = CordovaPluginXMLHelper.getHeaderFileNodes(node);
@@ -651,7 +651,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getResourceFileActionsForPlatform(Node node,
+	private List<IPluginInstallationAction> getResourceFileActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList resourceFiles = getResourceFileNodes(node);
@@ -663,7 +663,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getSourceFilesActionsForPlatform(Node node,
+	private List<IPluginInstallationAction> getSourceFilesActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList sourceFiles = getSourceFileNodes(node);
@@ -680,7 +680,7 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getAssetActionsForPlatform(Node node,
+	private List<IPluginInstallationAction> getAssetActionsForPlatform(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		NodeList assets = getAssets(node);

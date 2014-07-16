@@ -26,7 +26,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class, 
 	WidgetModelTest.class, CordovaPluginRegistryTest.class,HybridProjectConventionsTest.class, 
-	InstallActionsTest.class,PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class, TestBundleHttpStorage.class})
+	InstallActionsTest.class,PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class, TestBundleHttpStorage.class,PluginXMLHelperTests.class})
 public class AllHybridTests {
 
 }
