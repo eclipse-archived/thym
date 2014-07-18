@@ -1,0 +1,4 @@
+update.id = org.jboss.tools.aerogear.hybrid.feature.feature.group
+update.range = 0.0.0
+update.severity = 0
+update.description = Update JBoss Tools Hybrid Mobile Tools with Eclipse Thym components
