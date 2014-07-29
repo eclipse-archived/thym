@@ -165,17 +165,19 @@ public abstract class AbstractProjectGeneratorDelegate {
 			FileUtils.fileCopy(toURL(sourceFile), toURL(destinationFile));
 		}else{
 			IContainer container = (IContainer) resource;
-			IResource[] childs = null;
+			IResource[] children = null;
 			try {
-				childs = container.members();
+				children = container.members();
 			} catch (CoreException e) {
 				// isAccessible() call before is guarding this, should never happen.
 				HybridCore.log(IStatus.ERROR, "Copying resources to generated project", e);
 			}
 			
 			destinationFile.mkdir();
-			for (int i = 0; i < childs.length; i++) {
-				copyResource(childs[i], workspaceRoot, root);
+			if (children != null) {
+				for (IResource child : children) {
+					copyResource(child, workspaceRoot, root);
+				}
 			}
 		}
 	}

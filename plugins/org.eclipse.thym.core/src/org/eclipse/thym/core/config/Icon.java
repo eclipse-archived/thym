@@ -28,5 +28,5 @@ public class Icon extends ImageResourceBase {
 			return false;
 		return super.equals(obj);
 	}
-
+	
 }

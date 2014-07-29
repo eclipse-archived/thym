@@ -35,7 +35,7 @@ public class Access extends AbstractConfigObject{
 		origin.setValue(getNodeAttribute(node,null, ACCESS_ATTR_ORIGIN));
 		String str = getNodeAttribute(node, null, ACCESS_ATTR_SUBDOMAINS);
 		if(str != null && !str.isEmpty()){
-			subdomains.setValue( new Boolean(str));
+			subdomains.setValue(Boolean.parseBoolean(str));
 		}
 		str = getNodeAttribute(node, null, ACCESS_ATTR_BROWSER_ONLY);
 		if(str != null && !str.isEmpty()){

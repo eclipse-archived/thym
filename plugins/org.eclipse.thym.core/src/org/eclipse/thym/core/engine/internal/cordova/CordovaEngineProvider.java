@@ -69,7 +69,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 												   new Platform("windows8", "https://git-wip-us.apache.org/repos/asf?p=cordova-windows.git")
 												  };
 
-	private class Platform{
+	private static class Platform{
 		String id;
 		String uri;
 		public Platform(String id, String uri){

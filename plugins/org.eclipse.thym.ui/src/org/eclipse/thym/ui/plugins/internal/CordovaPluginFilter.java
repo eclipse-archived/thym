@@ -12,7 +12,8 @@ package org.eclipse.thym.ui.plugins.internal;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+
 import org.eclipse.equinox.internal.p2.ui.discovery.util.PatternFilter;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
@@ -41,12 +42,13 @@ public class CordovaPluginFilter extends PatternFilter {
 		}
 		Map<String, String> maintainers = pluginInfo.getMaintainers();
 		if (maintainers != null && !maintainers.isEmpty()) {
-			Set<String> keys = maintainers.keySet();
-			for (String key : keys) {
+			for (Entry<String, String> entry : maintainers.entrySet()) {
+				String key = entry.getKey();
 				if (wordMatches(key) || wordMatches(maintainers.get(key))) {
 					return true;
 				}
-			}}
+			}
+		}
 		return false;
 		
 	}

@@ -41,11 +41,11 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 		src.setValue(getNodeAttribute(node,  null,IMAGERESOURCE_ATTR_SRC));
 		String s = getNodeAttribute(node, null, IMAGERESOURCE_ATTR_WIDTH);
 		if ( s != null ){
-			width.setValue(new Integer(s));
+			width.setValue(Integer.parseInt(s));
 		}
 		s = getNodeAttribute(node, null, IMAGERESOURCE_ATTR_HEIGHT);
 		if ( s!= null ){
-			height.setValue(new Integer(s));
+			height.setValue(Integer.parseInt(s));
 		}
 		platform.setValue(getNodeAttribute(node, NS_PHONEGAP_1_0, IMAGERESOURCE_ATTR_PLATFORM));
 		density.setValue(getNodeAttribute(node, NS_PHONEGAP_1_0, IMAGERESOURCE_ATTR_DENSITY));
@@ -106,6 +106,9 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 			return false;
 		if (obj == this) 
 			return true;
+		if (! (obj instanceof ImageResourceBase)) {
+			return false;
+		}
 		ImageResourceBase that = (ImageResourceBase) obj;
 		return equalField(that.getSrc(), this.getSrc());
 	}

@@ -113,7 +113,7 @@ public class XMLConfigFileAction implements IPluginInstallationAction {
 	@Override
 	public String[] filesToOverwrite() {
 		// nothing is overwritten but modified
-		return null;
+		return new String[0];
 	}
 	
 

@@ -69,7 +69,7 @@ public class PluginInstallRecordAction implements IPluginInstallationAction{
 
 	@Override
 	public String[] filesToOverwrite() {
-		return null;
+		return new String[0];
 	}
 
 	@Override

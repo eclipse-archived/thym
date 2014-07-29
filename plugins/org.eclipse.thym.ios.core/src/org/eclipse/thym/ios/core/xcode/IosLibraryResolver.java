@@ -141,7 +141,9 @@ public class IosLibraryResolver extends HybridMobileLibraryResolver {
 				try {
 					reader = new BufferedReader(new FileReader(versionFile));
 					String version = reader.readLine();
-					return version.trim();
+					if (version != null) {
+						return version.trim();
+					}
 				} finally {
 					if (reader != null)
 						reader.close();

@@ -75,7 +75,7 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 	@Override
 	public String[] filesToOverwrite() {
 		// no need to report here.
-		return null;
+		return new String[0];
 	}
 
 }
