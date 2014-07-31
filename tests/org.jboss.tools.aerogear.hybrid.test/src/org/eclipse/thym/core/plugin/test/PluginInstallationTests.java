@@ -28,6 +28,7 @@ import org.eclipse.thym.core.config.Preference;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.internal.util.FileUtils;
+import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
@@ -82,7 +83,7 @@ public class PluginInstallationTests {
 	public void installPluginTest() throws CoreException{
 		installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		IProject prj = project.getProject();
-		IFolder plgFolder = prj.getFolder("/plugins/"+PLUGIN_ID_TESTPLUGIN);
+		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
 		assertNotNull(plgFolder);
 		assertTrue(plgFolder.exists());
 	}
@@ -140,6 +141,21 @@ public class PluginInstallationTests {
 		assertNotNull( restorables);
 		assertTrue(restorables.size() == 0);// installed plugins do not appear on the restorable list
 	}
+	
+	@Test
+	public void installPluginToProjectWithoutPluginsFolder() throws CoreException{
+		IProject prj = project.getProject();
+		IFolder pluginsFolder  = prj.getFolder(PlatformConstants.DIR_PLUGINS);
+		assertNotNull(pluginsFolder);
+		assertTrue(pluginsFolder.exists());
+		pluginsFolder.delete( true, new NullProgressMonitor());
+		assertFalse(pluginsFolder.exists());
+		installPlugin(PLUGIN_DIR_TESTPLUGIN);
+		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
+		assertNotNull(plgFolder);
+		assertTrue(plgFolder.exists());
+	}
+	
 
 	private CordovaPluginManager installPlugin(String pluginsSubdir) throws CoreException {
 		CordovaPluginManager pm = getCordovaPluginManager();

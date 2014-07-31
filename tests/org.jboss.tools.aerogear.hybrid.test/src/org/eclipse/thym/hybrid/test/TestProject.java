@@ -22,12 +22,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
-import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
+import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
+import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -54,7 +54,7 @@ public class TestProject {
 	}
 	
 	
-	public IStatus isProjectValid() throws CoreException{
+	private IStatus isProjectValid() throws CoreException{
 		IProject project = getProject();
 		if( !project.hasNature(HybridAppNature.NATURE_ID ) ){
 			return error("project does not have hybrid application nature");

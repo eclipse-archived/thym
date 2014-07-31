@@ -137,14 +137,14 @@ public class CordovaPluginManager {
 		if( !pluginFile.exists() ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin directory, no plugin.xml exists"));
 		}
-		IResource dir = this.project.getProject().findMember("/"+PlatformConstants.DIR_PLUGINS);
-		if(dir == null || dir.getLocation() == null ){
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"project is missing the plugins directory"));
+		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
+		if( plugins == null || !plugins.exists() ){
+			plugins.create(true, true, monitor);
 		}
 		
 		
 		List<IPluginInstallationAction> actions = collectInstallActions(
-				directory, doc, id, dir, overwrite);
+				directory, doc, id, plugins, overwrite);
 		actions.add(getPluginInstallRecordAction(doc));
 		runActions(actions,false,overwrite,monitor); 
 		resetInstalledPlugins();
@@ -209,6 +209,9 @@ public class CordovaPluginManager {
 		if(id == null || !isPluginInstalled(id))
 			return;
 		IResource dir = this.project.getProject().findMember("/"+PlatformConstants.DIR_PLUGINS+"/"+id);
+		if(dir == null || !dir.exists() ){//No plugins folder abort
+			return;
+		}
 		File pluginFile = new File(dir.getLocation().toFile(), PlatformConstants.FILE_XML_PLUGIN);
 		if( !pluginFile.exists() ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
@@ -425,8 +428,10 @@ public class CordovaPluginManager {
 				}
 			};
 			IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
-			synchronized (installedPlugins) {
-				plugins.accept(visitor,IResource.DEPTH_ONE,false);
+			if(plugins != null && plugins.exists()){
+				synchronized (installedPlugins) {
+					plugins.accept(visitor,IResource.DEPTH_ONE,false);
+				}
 			}
 		}
 		HybridCore.trace(NLS.bind("Updated plugin list in {0} ms", (System.currentTimeMillis() - start)));
