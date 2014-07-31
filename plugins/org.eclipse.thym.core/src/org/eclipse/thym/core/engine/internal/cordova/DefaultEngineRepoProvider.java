@@ -54,7 +54,7 @@ import com.google.gson.stream.JsonReader;
  */
 public class DefaultEngineRepoProvider {
 	
-	private static final String REPO_JSON_URL = "http://raw.githubusercontent.com/eclipse/thym/master/plugins/org.eclipse.thym.core/res/platforms.json";	
+	private static final String REPO_JSON_URL = "https://raw.githubusercontent.com/eclipse/thym/master/plugins/org.eclipse.thym.core/res/platforms.json";	
 	
 	
 	private InputStream getRemoteJSonStream(){
