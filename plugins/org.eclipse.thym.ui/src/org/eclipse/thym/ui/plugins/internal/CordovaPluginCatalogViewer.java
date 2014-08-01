@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -125,6 +127,18 @@ public class CordovaPluginCatalogViewer extends FilteredViewer {
 		resources = new CordovaPluginWizardResources(container.getDisplay());
 		
 		StructuredViewer viewer = new ControlListViewer(container, SWT.BORDER) {
+			@Override
+			protected void doUpdateContent() {
+				super.doUpdateContent();
+				ScrolledComposite scroll = getControl();
+				Composite control = (Composite)scroll.getContent();
+				if(control.getChildren().length > 0){
+					Point size = control.computeSize(scroll.getClientArea().width - 20, SWT.DEFAULT, true);
+					control.setSize(size);
+					scroll.setMinSize(size);
+				}
+			}
+			
 			@Override
 			protected ControlListItem<CordovaRegistryPluginInfo> doCreateItem(
 					Composite parent, Object element) {
