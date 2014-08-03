@@ -12,6 +12,7 @@ package org.eclipse.thym.android.ui.internal.preferences;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.widgets.Composite;
@@ -44,16 +45,25 @@ public class AndroidPreferencePage
 		public AndroidSDKDirectoryFieldEditor(String prefAndroidSdkLocation,
 				String string, Composite fieldEditorParent) {
 			super(prefAndroidSdkLocation, string, fieldEditorParent);
-			setEmptyStringAllowed(false);
+			setEmptyStringAllowed(true);
 		}
 
 		@Override
-		protected boolean doCheckState() {
+		protected boolean doCheckState() {			
 			String filename = getTextControl().getText();
 			filename = filename.trim();
+			if(filename.isEmpty()){
+				this.getPage().setMessage("A location for the Android SDK must be specified", IStatus.WARNING);
+				return true;
+			}else{
+				// clear the warning message
+				this.getPage().setMessage(null);
+			}
+			
 			if(!filename.endsWith(File.separator)){
 				filename = filename+ File.separator;
 			}
+			
 				
 			File file = new File(filename);
 			if (!file.isDirectory()){
@@ -72,10 +82,10 @@ public class AndroidPreferencePage
 		
 		@Override
 		public void setValidateStrategy(int value) {
-			
 			super.setValidateStrategy(VALIDATE_ON_KEY_STROKE);
 		}
 	}
+	
 	public AndroidPreferencePage() {
 		super(GRID);
 		setPreferenceStore(HybridUI.getDefault().getPreferenceStore());
@@ -92,13 +102,13 @@ public class AndroidPreferencePage
 		AndroidSDKDirectoryFieldEditor editor = new AndroidSDKDirectoryFieldEditor(AndroidConstants.PREF_ANDROID_SDK_LOCATION, 
 				"Android SDK Directory:", getFieldEditorParent());
 		addField(editor);
-
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
+		//nothing to do 
 	}
 	
 }
