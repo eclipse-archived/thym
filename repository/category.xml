@@ -4,4 +4,8 @@
       <category name="THyM"/>
    </feature>
    <category-def name="THyM" label="Eclipse THyM: The Hybrid Mobile"/>
+    <feature id="org.eclipse.thym.feature.source" version="0.0.0">
+      <category name="THyM"/>
+   </feature>
+
 </site>
