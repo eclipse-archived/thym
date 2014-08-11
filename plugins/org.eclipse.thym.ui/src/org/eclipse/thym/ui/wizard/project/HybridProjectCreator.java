@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
@@ -44,6 +45,7 @@ import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
 import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.eclipse.wst.jsdt.core.JavaScriptModelException;
+import org.eclipse.wst.jsdt.internal.core.util.ConvertUtility;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Widget;
@@ -113,17 +115,26 @@ public class HybridProjectCreator {
 		return project;
 	}
 	
-	
-
-
 	private void setUpJavaScriptProject(IProgressMonitor monitor,
 			IProject project) throws JavaScriptModelException {
-		IIncludePathEntry entry = JavaScriptCore.newContainerEntry(new Path(CordovaLibraryJsContainerInitializer.CONTAINER_ID));
 		IJavaScriptProject javascriptProject = JavaScriptCore.create(project);
 		IIncludePathEntry[] entries = javascriptProject.getRawIncludepath();
-		IIncludePathEntry[] newEntries = Arrays.copyOf(entries, entries.length +1);
-		newEntries[newEntries.length -1 ] = entry;
-		javascriptProject.setRawIncludepath(newEntries, monitor);
+		List<IIncludePathEntry> entryList = new ArrayList<IIncludePathEntry>(Arrays.asList(entries));
+		
+		IIncludePathEntry cordovaLibEntry = JavaScriptCore.newContainerEntry(new Path(CordovaLibraryJsContainerInitializer.CONTAINER_ID));
+		entryList.add(cordovaLibEntry);
+		
+		//remove all source entries
+		for (IIncludePathEntry aEntry : entryList) {
+			if(IIncludePathEntry.CPE_SOURCE == aEntry.getEntryKind()){
+				entryList.remove(aEntry);
+			}
+		}
+		// add www
+		IIncludePathEntry wwwSrcEntry = JavaScriptCore.newSourceEntry(project.getFolder("www").getFullPath());
+		entryList.add(wwwSrcEntry);
+		
+		javascriptProject.setRawIncludepath(entryList.toArray(new IIncludePathEntry[entryList.size()]), monitor);
 	}
 
 	
@@ -138,7 +149,6 @@ public class HybridProjectCreator {
 		} catch (CoreException e) {
 			HybridCore.log(IStatus.ERROR, "Error updating application name and id to config.xml", e);
 		}
-		
 	}
 
 
