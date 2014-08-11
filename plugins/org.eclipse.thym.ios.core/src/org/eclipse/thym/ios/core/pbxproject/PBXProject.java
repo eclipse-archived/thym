@@ -284,7 +284,7 @@ public class PBXProject {
 	    {
 	    }
 
-	    String randomNum = new Integer(prng.nextInt()).toString();
+	    String randomNum = Integer.toString(prng.nextInt());
 	    String ref = new String(Hex.encodeHex(md.digest(randomNum.getBytes())));
 	    return ref.toUpperCase().substring(0, 24);
 	  }

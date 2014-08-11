@@ -55,7 +55,7 @@ public class CreateFileAction implements IPluginInstallationAction {
 		if(target.exists()){
 			return new String[]{target.toString()};
 		}
-		return null;
+		return new String[0];
 	}
 
 }

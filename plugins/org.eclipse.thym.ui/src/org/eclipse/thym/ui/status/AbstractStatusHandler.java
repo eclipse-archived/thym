@@ -24,13 +24,14 @@ public abstract class AbstractStatusHandler {
 	
 	protected static Shell getShell(){
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if (window == null) {
-			IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
-			if (windows.length > 0) {
-				return windows[0].getShell();
-			}
-		} 
-		return window.getShell();
+		if (window != null) {
+			return window.getShell();
+		}
+		IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+		if (windows.length > 0) {
+			return windows[0].getShell();
+		}
+		return null;
 	}
 
 }

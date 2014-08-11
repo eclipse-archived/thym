@@ -61,7 +61,7 @@ public class JSModuleAction implements IPluginInstallationAction {
 		if(target.exists()){
 			return new String[]{target.toString()};
 		}
-		return null;
+		return new String[0];
 	}
 
 }

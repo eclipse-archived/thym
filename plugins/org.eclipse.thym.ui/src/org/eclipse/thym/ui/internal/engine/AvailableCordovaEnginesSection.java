@@ -136,7 +136,7 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 		
 	}
 	
-	private class CordovaEnginesContentProvider implements IStructuredContentProvider{
+	private static class CordovaEnginesContentProvider implements IStructuredContentProvider{
 		private List<HybridMobileEngine> engines;
 		
 		@Override
@@ -183,11 +183,12 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 				return NLS.bind(bind, new String[]{engine.getName(), engine.getVersion()});
 			case 1:
 				 List<PlatformLibrary> platforms =  engine.getPlatformLibs();
-				 String platformString = "";
+				 StringBuilder platformString = new StringBuilder();;
 				 for (PlatformLibrary lib : platforms) {
-					platformString += lib.getPlatformId() +" ";
+					platformString.append(lib.getPlatformId());
+					platformString.append(' ');
 				}
-				return platformString;
+				return platformString.toString();
 			case 2: return null;
 			default:
 				Assert.isTrue(false);
@@ -209,7 +210,7 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 		
 	}
 	
-	private class EngineVersionComparator extends ViewerComparator{
+	private static class EngineVersionComparator extends ViewerComparator{
 		private boolean descending = true;
 
 		

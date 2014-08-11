@@ -99,7 +99,7 @@ public class CopyFileAction implements IPluginInstallationAction {
 			}
 			return new String[]{target.toString()};
 		}
-		return null;
+		return new String[0];
 	}
 
 }

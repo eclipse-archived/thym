@@ -54,7 +54,7 @@ public class ConfigXMLUpdateAction extends XMLConfigFileAction {
 				feature.setName(featureNode.getAttribute("name"));
 				String required = featureNode.getAttribute("required");
 				boolean isRequired = Boolean.parseBoolean(required);
-				if(required != null && isRequired) {
+				if(isRequired) {
 					feature.setRequired(isRequired);
 				}
 				widget.addFeature(feature);

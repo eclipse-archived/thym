@@ -38,7 +38,6 @@ import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.eclipse.wst.jsdt.core.JsGlobalScopeContainerInitializer;
 import org.eclipse.wst.jsdt.core.compiler.libraries.LibraryLocation;
 import org.eclipse.wst.jsdt.core.infer.DefaultInferrenceProvider;
-import org.osgi.framework.Bundle;
 
 public class CordovaLibraryJsContainerInitializer extends JsGlobalScopeContainerInitializer {
 	public static final String CONTAINER_ID = "org.eclipse.thym.core.CordovaContainerInitializer";
