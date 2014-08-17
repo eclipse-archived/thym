@@ -13,10 +13,12 @@ package org.eclipse.thym.core.plugin.test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -154,6 +156,31 @@ public class PluginInstallationTests {
 		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
 		assertNotNull(plgFolder);
 		assertTrue(plgFolder.exists());
+	}
+	
+	@Test
+	public void installPluginFromGit() throws CoreException{
+		CordovaPluginManager pm = getCordovaPluginManager();
+		URI uri = URI.create("https://github.com/apache/cordova-plugin-console.git#r0.2.0");
+		pm.installPlugin(uri, new FileOverwriteCallback() {
+				
+			@Override
+			public boolean isOverwiteAllowed(String[] files) {
+				return true;
+			}
+		}, new NullProgressMonitor());
+		List<CordovaPlugin> plugins = pm.getInstalledPlugins();
+		boolean found = false;
+		for (CordovaPlugin cordovaPlugin : plugins) {
+			if("org.apache.cordova.core.console".equals(cordovaPlugin.getId())){
+				assertFalse(found);
+				found =true;
+				assertEquals("0.2.0",cordovaPlugin.getVersion());
+				break;
+			}
+		}
+		assertTrue("git installed plugin not found",found);
+		
 	}
 	
 

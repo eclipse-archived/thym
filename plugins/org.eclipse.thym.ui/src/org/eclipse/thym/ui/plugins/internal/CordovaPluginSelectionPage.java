@@ -160,11 +160,16 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		gitTab.setControl(grpRepositoryUrl);
 		grpRepositoryUrl.setLayout(new GridLayout(2, false));
 		
+		Label lblGitUrlInfo = new Label(grpRepositoryUrl, SWT.NULL);
+		GridDataFactory.fillDefaults().span(2, 1).applyTo(lblGitUrlInfo);
+		lblGitUrlInfo.setText("Specify a url to a git repository, an optional git-ref and an optional sub directory");
+				
 		Label lblUrl = new Label(grpRepositoryUrl, SWT.NONE);
 		lblUrl.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblUrl.setText("URL:");
 		
 		gitUrlTxt = new Text(grpRepositoryUrl, SWT.BORDER);
+		gitUrlTxt.setMessage("http://my.git.com#v1.0.0:/a/sub/dir");
 		gitUrlTxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		gitUrlTxt.addListener(SWT.Modify, new Listener() {
 			
@@ -346,8 +351,6 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		return super.getNextPage();
 	}
 	
-	
-	
 	public int getPluginSourceType(){
 		TabItem selected = getSelectedTabItem();
 		if(selected == gitTab )
@@ -358,12 +361,10 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	}
 	
 	public String getSelectedDirectory(){
-		System.out.println("getSelectedDirectory");
 		return this.destinationDirectoryGroup.getValue();
 	}
 	
 	public String getSpecifiedGitURL(){
-		System.out.println("getSpecifiedGitUrl");
 		return this.gitUrlTxt.getText();
 	}
 	

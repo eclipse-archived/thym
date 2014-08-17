@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
@@ -40,12 +39,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
-import org.eclipse.thym.ui.HybridUI;
-import org.eclipse.wst.jsdt.core.IIncludePathEntry;
-import org.eclipse.wst.jsdt.core.IJavaScriptProject;
-import org.eclipse.wst.jsdt.core.JavaScriptCore;
-import org.eclipse.wst.jsdt.core.JavaScriptModelException;
-import org.eclipse.wst.jsdt.internal.core.util.ConvertUtility;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Widget;
@@ -56,6 +49,11 @@ import org.eclipse.thym.core.internal.libraries.CordovaLibraryJsContainerInitial
 import org.eclipse.thym.core.internal.util.ConfigJSon;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.natures.HybridAppNature;
+import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.wst.jsdt.core.IIncludePathEntry;
+import org.eclipse.wst.jsdt.core.IJavaScriptProject;
+import org.eclipse.wst.jsdt.core.JavaScriptCore;
+import org.eclipse.wst.jsdt.core.JavaScriptModelException;
 import org.osgi.framework.Bundle;
 
 public class HybridProjectCreator {

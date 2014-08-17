@@ -29,18 +29,14 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 	private final HybridProject project;
 	private final String dependencyPluginId;
 	private final URI uri;
-	private final String commit;
-	private final String  subdir;
 	private final FileOverwriteCallback overwriteCallback;
 	
 	
 	public DependencyInstallAction(String dependencyId, URI uri,
-			String commit, String subdir, HybridProject project, FileOverwriteCallback overwrite) {
+			 HybridProject project, FileOverwriteCallback overwrite) {
 		this.project = project;
 		this.uri = uri;
 		this.dependencyPluginId = dependencyId;
-		this.commit = commit;
-		this.subdir = subdir;
 		this.overwriteCallback = overwrite;
 	}
 
@@ -49,7 +45,7 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 		CordovaPluginManager pluginManager = project.getPluginManager();
 		if(!pluginManager.isPluginInstalled(dependencyPluginId)){
 			if( uri != null){
-				pluginManager.installPlugin(uri,commit,subdir, overwriteCallback, new NullProgressMonitor());
+				pluginManager.installPlugin(uri,overwriteCallback, new NullProgressMonitor());
 			}else{//install from registry
 				CordovaPluginRegistryManager manager = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
 				CordovaRegistryPlugin plugin = manager.getCordovaPluginInfo(dependencyPluginId);

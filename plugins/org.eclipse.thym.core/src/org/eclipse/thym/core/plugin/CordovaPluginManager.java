@@ -48,6 +48,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CanceledException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
@@ -138,7 +139,7 @@ public class CordovaPluginManager {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin directory, no plugin.xml exists"));
 		}
 		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
-		if( plugins == null || !plugins.exists() ){
+		if( !plugins.exists() ){
 			plugins.create(true, true, monitor);
 		}
 		
@@ -169,27 +170,41 @@ public class CordovaPluginManager {
 	 * @param monitor 
 	 * @throws CoreException
 	 */
-	public void installPlugin(URI uri, String commit, String subdir,FileOverwriteCallback overwrite,IProgressMonitor monitor) throws CoreException{
+	public void installPlugin(URI uri, FileOverwriteCallback overwrite,IProgressMonitor monitor) throws CoreException{
 		File tempRepoDirectory = new File(FileUtils.getTempDirectory(), "cordova_plugin_tmp_"+Long.toString(System.currentTimeMillis()));
 		tempRepoDirectory.deleteOnExit();
 		try {
 			if(monitor.isCanceled())
 				return;
 			monitor.subTask("Clone plugin repository");
-			Git git = Git.cloneRepository().setDirectory(tempRepoDirectory).setURI(uri.toString()).call();
-			if(commit != null && !monitor.isCanceled()){
-				git.checkout().setName(commit).call();
-			}
-			monitor.worked(1);
-			SubProgressMonitor sm = new SubProgressMonitor(monitor, 1);
-			sm.setTaskName("Installing to "+this.project.getProject().getName());
+			Git git = Git.cloneRepository().setDirectory(tempRepoDirectory).setURI(uri.getScheme()+":" + uri.getSchemeSpecificPart()).call();
 			File pluginDirectory = tempRepoDirectory;
-			if(subdir != null ){
-				pluginDirectory = new File(tempRepoDirectory, subdir);
-				if(!pluginDirectory.isDirectory()){
-					throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, subdir + " does not exist in this repo"));
+			String fragment = uri.getFragment();
+		
+			if(fragment != null ){
+				int idx = fragment.indexOf(':');
+				if(idx <0 ){
+					idx = fragment.length();
+				}
+				String commit = fragment.substring(0, idx);
+				String subdir = fragment.substring(Math.min(idx+1, fragment.length()));
+				if(monitor.isCanceled()){
+					throw new CanceledException("Plug-in installation cancelled");
+				}
+				if(commit != null && !commit.isEmpty()){
+					git.checkout().setName(commit).call();
+				}
+				monitor.worked(1);
+				
+				if(subdir != null && !subdir.isEmpty()){
+					pluginDirectory = new File(tempRepoDirectory, subdir);
+					if(!pluginDirectory.isDirectory()){
+						throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, 
+								NLS.bind("{0} directory does not exist in this git repository", subdir ) ));
+					}
 				}
 			}
+			SubProgressMonitor sm = new SubProgressMonitor(monitor, 1);
 			this.installPlugin(pluginDirectory,overwrite,sm);
 		} catch (GitAPIException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Error cloning the plugin repository", e));
@@ -351,9 +366,6 @@ public class CordovaPluginManager {
 	 * @throws CoreException
 	 */
 	public List<RestorableCordovaPlugin> getRestorablePlugins(IProgressMonitor monitor) throws CoreException{
-		if(monitor == null ){
-			monitor = new NullProgressMonitor();
-		}
 		Widget widget  = WidgetModel.getModel(this.project).getWidgetForRead();
 		if(widget == null ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Unable to read config.xml"));
@@ -396,9 +408,21 @@ public class CordovaPluginManager {
 				if(!url.endsWith(".git")){
 					url= url+".git";
 				}
+				if(commit != null || subdir != null ){
+					url = url+"#";
+					if(commit!=null){
+						url = url+commit;
+					}
+					if(subdir != null ){
+						url=url+":"+subdir;
+					}
+				}
+				
+				
+				
 				uri = URI.create(url);
 			}
-			DependencyInstallAction action = new DependencyInstallAction(dependencyId, uri, commit, subdir, this.project, overwrite);
+			DependencyInstallAction action = new DependencyInstallAction(dependencyId, uri, this.project, overwrite);
 			actions.add(action);
 		}
 		File destination = new File(dir.getLocation().toFile(), id);

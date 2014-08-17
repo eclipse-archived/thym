@@ -133,7 +133,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 			break;
 		case PLUGIN_SOURCE_GIT:
 			URI uri = URI.create(pageThree.getSpecifiedGitURL());
-			pm.installPlugin(uri,null,null,cb,monitor );
+			pm.installPlugin(uri,cb,monitor );
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
 			List<CordovaRegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
