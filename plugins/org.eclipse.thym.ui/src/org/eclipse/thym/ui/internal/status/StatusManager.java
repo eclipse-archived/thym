@@ -75,12 +75,13 @@ public class StatusManager {
 	
 	private static void initHandlers(){
 		if(handlers != null ) return;
-		handlers = new HashMap<String, AbstractStatusHandler>();
+		HashMap<String, AbstractStatusHandler> initHandles = new HashMap<String, AbstractStatusHandler>();
 		List<HybridMobileStatusExtension> extensions = HybridUI.getHybridMobileStatusExtensions();
 		for (HybridMobileStatusExtension extension : extensions) {
 			String key = makeHandlerKey(extension.getPluginID() ,extension.getCode());
-			handlers.put(key, extension.getHandler());
+			initHandles.put(key, extension.getHandler());
 		}
+		handlers = initHandles;
 	}
 	
 	private static String makeHandlerKey(String pluginID, int code){
