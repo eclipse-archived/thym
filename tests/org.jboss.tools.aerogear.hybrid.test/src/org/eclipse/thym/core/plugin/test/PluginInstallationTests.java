@@ -49,7 +49,9 @@ public class PluginInstallationTests {
 	private static File pluginsDirectroy;
 	private TestProject project;
 	private final static String PLUGIN_DIR_TESTPLUGIN = "testPlugin";
+	private final static String PLUGIN_DIR_NAMESPACEPLUGIN = "NamespacePlugin";
 	private final static String PLUGIN_ID_TESTPLUGIN = "org.eclipse.thym.test";
+	private final static String PLUGIN_ID_NAMESPACEPLUGIN = "org.eclipse.thym.test.namespace";
 	private final static String PLUGIN_DIR_VARIABLE = "VariablePlugin";
 	private final static String PLUGIN_ID_VARIABLE = "org.eclipse.variable";
 	
@@ -89,6 +91,16 @@ public class PluginInstallationTests {
 		assertNotNull(plgFolder);
 		assertTrue(plgFolder.exists());
 	}
+	
+	@Test
+	public void installPluginNamespace() throws CoreException{
+		installPlugin(PLUGIN_DIR_NAMESPACEPLUGIN);
+		IProject prj = project.getProject();
+		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_NAMESPACEPLUGIN);
+		assertNotNull(plgFolder);
+		assertTrue(plgFolder.exists());
+	}
+	
 	
 	@Test
 	public void installVariablePluginTest() throws CoreException{

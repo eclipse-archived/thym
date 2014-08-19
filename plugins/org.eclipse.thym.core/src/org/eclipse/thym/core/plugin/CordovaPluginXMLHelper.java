@@ -10,27 +10,20 @@
  *******************************************************************************/
 package org.eclipse.thym.core.plugin;
 
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 /**
  * Helper for DOM parsing of the Cordova plugin.xml
  * 
@@ -128,18 +121,14 @@ public class CordovaPluginXMLHelper {
 	
 	public static String stringifyNode(Node node){
 		try {
-			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-			Source source = new DOMSource(node);
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			Result result = new StreamResult(out);
-			transformer.transform(source, result);
-			return out.toString();
-			
-		} catch (TransformerConfigurationException e) {
-			return null;
-		} catch (TransformerFactoryConfigurationError e) {
-			return null;
-		} catch (TransformerException e) {
+			DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+			DOMImplementationLS impl = (DOMImplementationLS)registry.getDOMImplementation("LS");
+			LSSerializer writer = impl.createLSSerializer();
+			writer.getDomConfig().setParameter("xml-declaration", Boolean.FALSE);
+			String str = writer.writeToString(node);
+			return str;
+		} catch (Exception e) {
+			HybridCore.log(IStatus.ERROR, "Error resolving node for injection", e);
 			return null;
 		}
 	}

@@ -429,7 +429,7 @@ public class CordovaPluginManager {
 		
 		CopyFileAction copy = new CopyFileAction(directory, destination);
 		actions.add(copy);
-		actions.addAll(collectAllConfigXMLActionsForSupporredPlatforms(doc));
+		actions.addAll(collectAllConfigXMLActionsForSupportedPlatforms(doc));
 		actions.addAll(collectVariablePreferencesForSupportedPlatforms(doc));
 		return actions;
 	}
@@ -541,7 +541,7 @@ public class CordovaPluginManager {
 		return actions;
 	}
 
-	private List<IPluginInstallationAction> collectAllConfigXMLActionsForSupporredPlatforms(Document doc){
+	private List<IPluginInstallationAction> collectAllConfigXMLActionsForSupportedPlatforms(Document doc){
 		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		List<Element> nodes = new ArrayList<Element>();
