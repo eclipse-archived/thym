@@ -172,6 +172,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 		createProjectsList(workArea);
 		createOptionsGroup(workArea);
 		restoreFromHistory();
+		setPageComplete(validatePage());
 		Dialog.applyDialogFont(workArea);
 	}
 
@@ -232,21 +233,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 					projectList.setChecked(candidate, false);
 					return;
 				}
-				//Update conflicts 
-				for(ProjectCandidate elem: candidates ){
-					Widget w1 = elem.getWidget();
-					Widget w2 = candidate.getWidget();
-					if(w1.getId().equals(w2.getId()) &&
-							w1.getName().equals(w2.getName()) &&
-							!elem.configLocation.equals(candidate.configLocation)){
-						if(projectList.getChecked(elem)){
-							projectList.setChecked(candidate, false);
-						}else{
-							elem.conflicts = event.getChecked();
-						}
-					}
-					
-				}
+				updateConflicts(candidate, event.getChecked());
 				projectList.refresh(true);
 				setPageComplete(validatePage());
 			}
@@ -275,7 +262,10 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			public void handleEvent(Event event) {
 				if(candidates != null ){
 					for (ProjectCandidate candie : candidates) {
-						projectList.setChecked(candie, true);
+						if(!candie.conflicts && !candie.exists()){
+							projectList.setChecked(candie, true);
+							updateConflicts(candie, true);
+						}
 					}
 				}
 				setPageComplete(validatePage());
@@ -286,8 +276,13 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			
 			@Override
 			public void handleEvent(Event event) {
-					projectList.setCheckedElements(new Object[0]);
-					setPageComplete(false);
+				if (candidates != null) {
+					for (ProjectCandidate candie : candidates) {
+						projectList.setChecked(candie, false);
+						updateConflicts(candie, false);
+					}
+				}
+				setPageComplete(false);
 			}
 		});
 		
@@ -359,7 +354,23 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			updateProjectsList(selectedDirectory);
 		}
 	}
-
+	private void updateConflicts(ProjectCandidate candidate, boolean checked){
+		for(ProjectCandidate elem: candidates ){
+			Widget w1 = elem.getWidget();
+			Widget w2 = candidate.getWidget();
+			if(w1.getId().equals(w2.getId()) &&
+					w1.getName().equals(w2.getName()) &&
+					!elem.configLocation.equals(candidate.configLocation)){
+				if(projectList.getChecked(elem)){
+					projectList.setChecked(candidate, false);
+				}else{
+					elem.conflicts = checked;
+				}
+			}
+			
+		}
+		
+	}
 	private void updateProjectsList(final String selectedDirectory) {
 		if(selectedDirectory == null || selectedDirectory.isEmpty()){
 			candidates = null;
@@ -571,6 +582,16 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 	private boolean validatePage(){
 		final Object[] selectedCandidates = projectList.getCheckedElements();
 		if(selectedCandidates.length < 1 ){
+			String msg = null;
+			if(candidates != null ){
+				for (ProjectCandidate candie : candidates){
+					if(candie.exists()){
+						msg = "Some projects cannot be imported because they already exist in the workspace";
+					}
+				}
+			}
+			setMessage(msg, WARNING);
+			setErrorMessage(null);
 			return false;
 		}
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -585,7 +606,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			}
 			final IProject handle= workspace.getRoot().getProject(pc.getProjectName());
 			if (handle.exists()) {
-				setErrorMessage(NLS.bind("Project {0} already exists", pc.getProjectName()));
+				setErrorMessage(NLS.bind("Project {0} already exists in the workspace", pc.getProjectName()));
 				return false;
 			}			
 			
@@ -607,9 +628,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			}
 			
 			IPath projectPath = null;
-			if(copyFiles){
-				projectPath= projectLocation;
-			}else{
+			if(!copyFiles){
 				projectPath = new Path(pc.wwwLocation.getParentFile().toString());
 			}
 			final IStatus locationStatus= workspace.validateProjectLocation(handle, projectPath);
@@ -618,6 +637,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 				return false;
 			}
 		}
+		setMessage(null);
 		setErrorMessage(null);
 		return true;
 	}
