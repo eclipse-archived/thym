@@ -92,6 +92,10 @@ public abstract class AbstractProjectGeneratorDelegate {
 			}
 			monitor.beginTask(NLS.bind("Generate Native Project for {0}",this.getProjectName()), 50);
 			HybridProject hybridProject = HybridProject.getHybridProject(getProject());
+			if(hybridProject == null ){
+				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
+						NLS.bind("Project {0} is missing or not a Hybrid Mobile project", getProjectName())));
+			}
 			HybridMobileEngine engine = hybridProject.getActiveEngine();
 			if(engine == null){
 				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(project, 
