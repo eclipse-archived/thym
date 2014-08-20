@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.ui;
 
+import static org.eclipse.thym.core.HybridProjectLaunchConfigConstants.ATTR_BUILD_SCOPE;
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_DEVICE_FAMILY;
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_SIMULATOR_SDK_VERSION;
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_64BIT;
@@ -17,7 +18,6 @@ import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.AT
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_TALL;
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.VAL_DEVICE_FAMILY_IPAD;
 import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.VAL_DEVICE_FAMILY_IPHONE;
-import static org.eclipse.thym.core.HybridProjectLaunchConfigConstants.ATTR_BUILD_SCOPE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +34,7 @@ import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -49,12 +50,12 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.ios.core.xcode.XCodeBuild;
 import org.eclipse.thym.ios.core.xcode.XCodeSDK;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.HybridProject;
 
 public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 	private Text textProject;
@@ -66,6 +67,31 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 	private ComboViewer comboViewer;
 	private Button btn64Bit;
 	
+	private final class SDKContentProvider implements
+			IStructuredContentProvider {
+		private XCodeSDK[] simulators;
+		
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			this.simulators = (XCodeSDK[]) newInput;
+		}
+
+		@Override
+		public void dispose() {
+			
+		}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			if(simulators == null ){
+				return new Object[0];
+			}
+			return simulators;
+		}
+
+
+	}
+
 	private class DirtyListener implements Listener{
 		@Override
 		public void handleEvent(Event event) {
@@ -132,35 +158,7 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		comboSDKVer.addListener(SWT.Selection, dirtyFlagListener);
 	
 		comboViewer = new ComboViewer(comboSDKVer);
-		comboViewer.setContentProvider(new IStructuredContentProvider() {
-			
-			@Override
-			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			}
-			
-			@Override
-			public void dispose() {
-				
-			}
-			
-			@Override
-			public Object[] getElements(Object inputElement) {
-				try{
-					XCodeBuild build = new XCodeBuild();
-					List<XCodeSDK> list = build.showSdks();
-					ArrayList<XCodeSDK> simulators = new ArrayList<XCodeSDK>(list.size());
-					for (XCodeSDK sdk : list) {
-						if(sdk.isSimulator()){
-							simulators.add(sdk);
-						}
-					}
-					return simulators.toArray();
-				}
-				catch (CoreException e) {
-						return new Object[0];
-					}
-			}
-		});
+		comboViewer.setContentProvider(new SDKContentProvider());
 		comboViewer.setLabelProvider( new LabelProvider() {
 			@Override
 			public String getText(Object element) {
@@ -168,7 +166,7 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 				return sdk.getDescription();
 			}
 		});
-		comboViewer.setInput(new Object());
+		comboViewer.setInput(getSimulatorSDKS());
 		
 		Label lblDeviceFamily = new Label(grpSimulator, SWT.NONE);
 		lblDeviceFamily.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
@@ -224,11 +222,17 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		
 		try{ 
 			String sdkVer = configuration.getAttribute(ATTR_SIMULATOR_SDK_VERSION,new String());
-			int index = comboSDKVer.indexOf(sdkVer);
-			if(index <0 )//it is possible that the selected SDK version is no longer available
-				index=0; // it can be either uninstalled or the launch config is shared. fall back to default
-			comboSDKVer.select(index);
-			
+			SDKContentProvider contentProvider = (SDKContentProvider) comboViewer.getContentProvider();
+			//it is possible that the selected SDK version is no longer available
+			// it can be either uninstalled or the launch config is shared. fall back to default
+			comboSDKVer.select(0);
+			if(contentProvider.simulators != null){
+				for (XCodeSDK sim : contentProvider.simulators) {
+					if(sim.getIdentifierString().equals(sdkVer)){
+						comboViewer.setSelection(new StructuredSelection(sim));
+					}
+				}
+			}
 		}catch(CoreException ce){
 			
 		}
@@ -282,4 +286,22 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 	public String getName() {
 		return "Simulator";
 	}
+	
+	private XCodeSDK[] getSimulatorSDKS() {
+		try{
+			XCodeBuild build = new XCodeBuild();
+			List<XCodeSDK> list = build.showSdks();
+			ArrayList<XCodeSDK> simulators = new ArrayList<XCodeSDK>(list.size());
+			for (XCodeSDK sdk : list) {
+				if(sdk.isSimulator()){
+					simulators.add(sdk);
+				}
+			}
+			return simulators.toArray(new XCodeSDK[simulators.size()]);
+		}
+		catch (CoreException e) {
+				return new XCodeSDK[0];
+		}
+	}
+	
 }
