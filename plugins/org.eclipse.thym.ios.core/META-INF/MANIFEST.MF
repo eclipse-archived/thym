@@ -15,8 +15,8 @@ Bundle-ClassPath: .,
  lib/dd-plist.jar
 Export-Package: org.eclipse.thym.ios.core;x-friends:="org.eclipse.thym.ios.ui",
  org.eclipse.thym.ios.core.pbxproject,
- org.eclipse.thym.ios.core.simulator;x-friends:="org.eclipse.thym.core.ios.ui",
- org.eclipse.thym.ios.core.xcode;x-friends:="org.eclipse.thym.core.ios.ui"
+ org.eclipse.thym.ios.core.simulator;x-friends:="org.eclipse.thym.ios.ui",
+ org.eclipse.thym.ios.core.xcode;x-friends:="org.eclipse.thym.ios.ui"
 Bundle-Localization: plugin
 Import-Package: org.apache.commons.codec.binary,
  org.apache.commons.io
