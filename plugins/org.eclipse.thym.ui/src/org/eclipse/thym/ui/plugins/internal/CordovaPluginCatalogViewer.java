@@ -13,8 +13,6 @@ package org.eclipse.thym.ui.plugins.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.equinox.internal.p2.ui.discovery.util.ControlListItem;
-import org.eclipse.equinox.internal.p2.ui.discovery.util.ControlListViewer;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.FilteredViewer;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.PatternFilter;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.SelectionProviderAdapter;
@@ -26,8 +24,6 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
-import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
@@ -126,19 +122,7 @@ public class CordovaPluginCatalogViewer extends FilteredViewer {
 	protected StructuredViewer doCreateViewer(Composite container) {
 		resources = new CordovaPluginWizardResources(container.getDisplay());
 		
-		StructuredViewer viewer = new ControlListViewer(container, SWT.BORDER) {
-			@Override
-			protected void doUpdateContent() {
-				super.doUpdateContent();
-				ScrolledComposite scroll = getControl();
-				Composite control = (Composite)scroll.getContent();
-				if(control.getChildren().length > 0){
-					Point size = control.computeSize(scroll.getClientArea().width - 20, SWT.DEFAULT, true);
-					control.setSize(size);
-					scroll.setMinSize(size);
-				}
-			}
-			
+		StructuredViewer viewer = new PluginControlListViewer(container, SWT.BORDER) {
 			@Override
 			protected ControlListItem<CordovaRegistryPluginInfo> doCreateItem(
 					Composite parent, Object element) {

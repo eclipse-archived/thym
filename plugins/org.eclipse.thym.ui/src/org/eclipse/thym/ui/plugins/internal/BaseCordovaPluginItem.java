@@ -10,11 +10,9 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.plugins.internal;
 
-import org.eclipse.equinox.internal.p2.ui.discovery.util.ControlListItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-@SuppressWarnings("restriction")
 public abstract class BaseCordovaPluginItem<T> extends ControlListItem<T>{
 
 	protected final CordovaPluginWizardResources resources;

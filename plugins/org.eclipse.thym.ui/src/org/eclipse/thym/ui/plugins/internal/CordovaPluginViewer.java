@@ -13,8 +13,6 @@ package org.eclipse.thym.ui.plugins.internal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.equinox.internal.p2.ui.discovery.util.ControlListItem;
-import org.eclipse.equinox.internal.p2.ui.discovery.util.ControlListViewer;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.FilteredViewer;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.PatternFilter;
 import org.eclipse.equinox.internal.p2.ui.discovery.util.SelectionProviderAdapter;
@@ -93,7 +91,7 @@ public class CordovaPluginViewer extends FilteredViewer {
 	@Override
 	protected StructuredViewer doCreateViewer(Composite container) {
 		resources = new CordovaPluginWizardResources(container.getDisplay());
-		StructuredViewer viewer = new ControlListViewer(container, SWT.BORDER) {
+		StructuredViewer viewer = new PluginControlListViewer(container, SWT.BORDER) {
 
 			@Override
 			protected ControlListItem<CordovaRegistryPlugin> doCreateItem(

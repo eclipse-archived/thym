@@ -27,9 +27,10 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 
-@SuppressWarnings("restriction")
 public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistryPluginInfo>{
 
+	private static final String LABEL_TEXT_KEYWORDS = "keywords:";
+	private static final String LABEL_TEXT_LATEST = "Latest: ";
 	private static final int MAX_DESCRIPTION_CHARS = 162;
 	private final CordovaPluginCatalogViewer viewer;
 	private Button checkbox;
@@ -44,16 +45,17 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 		super(parent,element,resources);
 		this.viewer = viewer;
 		this.installed = installed;
-		createContent();
 	}
 
 	@Override
 	protected void refresh() {
+		createContent();
 		checkbox.setEnabled(!installed);
 		nameLabel.setText(getNameString());
 		description.setText(getDescriptionText()); 
-		initKeywords();	
+		initKeywords();
 	}
+	
 
 	private void initKeywords() {
 		List<String> keywords = getData().getKeywords();
@@ -68,7 +70,7 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 
 			final Label keywordLbl = new Label(keywordsContainer, SWT.NONE);
 			keywordLbl.setFont(resources.getSubTextFont());
-			keywordLbl.setText("keywords:");
+			keywordLbl.setText(LABEL_TEXT_KEYWORDS);
 			
 			for (String string : keywords) {
 				final Link hyperlink = new Link(keywordsContainer, SWT.NONE);
@@ -132,6 +134,9 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 	}
 	
 	private void createContent(){
+		if(nameLabel != null ){//already created
+			return;
+		}
 		GridLayout layout = new GridLayout(3, false);
 		layout.marginLeft = 7;
 		layout.marginTop = 2;
@@ -157,12 +162,12 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 		nameLabel.setFont(resources.getSmallHeaderFont());
 		
 		description = new Label(this, SWT.NULL | SWT.WRAP);
-		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).hint(100, SWT.DEFAULT).applyTo(description);
+		GridDataFactory.fillDefaults().grab(true, false).span(2, 2).hint(100, SWT.DEFAULT).applyTo(description);
 		
 		final Label versionLbl = new Label(this, SWT.NONE);
 		versionLbl.setFont(resources.getSubTextFont());
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(versionLbl);
-		versionLbl.setText("Latest: "+ getData().getLatestVersion());
+		versionLbl.setText(LABEL_TEXT_LATEST+ getData().getLatestVersion());
 		
 	}
 	
