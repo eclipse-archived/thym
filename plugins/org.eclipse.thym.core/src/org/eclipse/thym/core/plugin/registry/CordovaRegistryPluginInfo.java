@@ -68,4 +68,12 @@ public class CordovaRegistryPluginInfo {
 		this.latestVersion = latestVersion;
 	}
 	
+	@Override
+	public String toString() {
+		if(getName() != null ){
+			return getName();
+		}
+		return super.toString();
+	}
+	
 }

@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Button;
@@ -51,6 +52,20 @@ public class CordovaPluginCatalogViewer extends FilteredViewer {
 		@Override
 		public Object[] getElements(Object inputElement) {
 			return pluginInfos;
+		}
+	}
+	
+	private static class CordovaPluginViewerComparator extends ViewerComparator{
+		private static final String CORDOVA_NAMESPACE = "org.apache.cordova";
+		private static final int CATEGORY_CORDOVA = 0;
+		private static final int CATEGORY_OTHER = 1;
+		public int category(Object element) {
+			CordovaRegistryPluginInfo info = (CordovaRegistryPluginInfo)element;
+			//prioritize apache cordova plugins
+			if(info.getName().startsWith(CORDOVA_NAMESPACE)){
+				return CATEGORY_CORDOVA;
+			}
+			return CATEGORY_OTHER;
 		}
 	}
 	
@@ -132,6 +147,7 @@ public class CordovaPluginCatalogViewer extends FilteredViewer {
 		
 		CordovaPluginInfoContentProvider provider = new CordovaPluginInfoContentProvider();
 		viewer.setContentProvider(provider);
+		viewer.setComparator(new CordovaPluginViewerComparator());
 		return viewer;
 	}
 	
