@@ -52,10 +52,6 @@ public abstract class ControlListItem<T> extends Composite {
 
 	protected boolean isShowing = false;
 
-	private final MouseTrackAdapter mouseTrackListener;
-
-	private boolean hot;
-
 	static {
 		// Mac has different Gamma value
 		int shift = "carbon".equals(SWT.getPlatform()) ? -25 : -10;//$NON-NLS-1$ 
@@ -80,13 +76,11 @@ public abstract class ControlListItem<T> extends Composite {
 		super.setData(element);
 		setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
 		mouseListener = doCreateMouseListener();
-		mouseTrackListener = doCreateMouseTrackListener();
 		registerChild(this);
 		//		Control[] children = getChildren();
 		//		for (Control child : children) {
 		//			registerChild(child);
 		//		}
-		setHot(false);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -98,42 +92,6 @@ public abstract class ControlListItem<T> extends Composite {
 	@Override
 	public void setData(Object data) {
 		throw new IllegalArgumentException();
-	}
-
-	private MouseTrackAdapter doCreateMouseTrackListener() {
-		return new MouseTrackAdapter() {
-			private int enterCount;
-
-			@Override
-			public void mouseEnter(MouseEvent e) {
-				enterCount++;
-				updateHotState();
-			}
-
-			@Override
-			public void mouseExit(MouseEvent e) {
-				enterCount--;
-				getDisplay().asyncExec(new Runnable() {
-					public void run() {
-						if (!isDisposed()) {
-							updateHotState();
-						}
-					}
-				});
-			}
-
-			private void updateHotState() {
-				if (enterCount == 0) {
-					if (isHot()) {
-						setHot(false);
-					}
-				} else {
-					if (!isHot()) {
-						setHot(true);
-					}
-				}
-			}
-		};
 	}
 
 	private MouseAdapter doCreateMouseListener() {
@@ -151,17 +109,9 @@ public abstract class ControlListItem<T> extends Composite {
 		};
 	}
 
-	public boolean isHot() {
-		return hot;
-	}
-
-	public void setHot(boolean hot) {
-		this.hot = hot;
-	}
 
 	protected void registerChild(Control child) {
 		child.addMouseListener(mouseListener);
-		child.addMouseTrackListener(mouseTrackListener);
 
 	}
 
