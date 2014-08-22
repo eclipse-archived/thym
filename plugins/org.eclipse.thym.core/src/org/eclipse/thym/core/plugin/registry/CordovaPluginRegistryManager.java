@@ -61,8 +61,6 @@ public class CordovaPluginRegistryManager {
 	
 	private static final String REGISTRY_CLIENT_ID = "eclipseTHyM";
 	public static final String DEFAULT_REGISTRY_URL = "http://registry.cordova.io/";
-	private long updated;
-	private List<CordovaRegistryPluginInfo> plugins;
 	private String registry;
 	private final File cacheHome;
 	private HashMap<String, CordovaRegistryPlugin> detailedPluginInfoCache = new HashMap<String, CordovaRegistryPlugin>();
@@ -205,6 +203,7 @@ public class CordovaPluginRegistryManager {
 	
 	public List<CordovaRegistryPluginInfo> retrievePluginInfos(IProgressMonitor monitor) throws CoreException
 	{
+		
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		
@@ -229,7 +228,7 @@ public class CordovaPluginRegistryManager {
 			monitor.worked(7);
 			JsonReader reader = new JsonReader(new InputStreamReader(stream));
 			reader.beginObject();//start the Registry
-			plugins = new ArrayList<CordovaRegistryPluginInfo>();
+			final ArrayList<CordovaRegistryPluginInfo> plugins = new ArrayList<CordovaRegistryPluginInfo>();
 			while(reader.hasNext()){
 				JsonToken token = reader.peek();
 				switch (token) {
@@ -241,11 +240,7 @@ public class CordovaPluginRegistryManager {
 				case NAME:
 					String name = reader.nextName();
 					if(name.equals("_updated")){
-						long newUpdate = reader.nextLong();
-						if(newUpdate == this.updated){//No changes 
-							return plugins;
-						}
-						
+						 reader.nextLong();
 					}
 					break;
 				default:
