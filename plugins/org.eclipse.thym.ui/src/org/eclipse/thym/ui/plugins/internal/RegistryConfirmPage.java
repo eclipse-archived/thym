@@ -61,16 +61,19 @@ public class RegistryConfirmPage extends WizardPage {
 			} catch (CoreException e) {
 				return new Status(e.getStatus().getSeverity(), HybridUI.PLUGIN_ID, "Problem while getting Cordova plugin details", e);
 			}
-			pluginViewer.getControl().getDisplay().asyncExec(new Runnable() {
-				
-				@Override
-				public void run() {
-					Control c = pluginViewer.getViewer().getControl();
-					if(c != null && !c.isDisposed()){
-						pluginViewer.getViewer().setInput(plugins);
-					}
-				}
-			});
+			Control cntrl = pluginViewer.getControl();
+			if (!cntrl.isDisposed()) {
+				cntrl.getDisplay() .asyncExec(new Runnable() {
+							@Override
+							public void run() {
+								Control c = pluginViewer.getViewer()
+										.getControl();
+								if (c != null && !c.isDisposed()) {
+									pluginViewer.getViewer().setInput(plugins);
+								}
+							}
+						});
+			}
 			return Status.OK_STATUS; 
 		}
 		
