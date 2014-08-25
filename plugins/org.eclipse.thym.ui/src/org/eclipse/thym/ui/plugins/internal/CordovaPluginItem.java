@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 
-@SuppressWarnings("restriction")
 public class CordovaPluginItem extends BaseCordovaPluginItem<CordovaRegistryPlugin> {
 	
 	private final static int MAX_DESCRIPTION_LENGTH = 162;

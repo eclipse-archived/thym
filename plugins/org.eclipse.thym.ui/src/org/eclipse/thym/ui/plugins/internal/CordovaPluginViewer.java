@@ -42,6 +42,7 @@ public class CordovaPluginViewer extends FilteredViewer {
 			
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 			this.items = (List<CordovaRegistryPlugin>) newInput;
