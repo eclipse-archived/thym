@@ -33,7 +33,11 @@ Export-Package: com.github.zafarkhaja.semver;x-friends:="org.eclipse.thym.ui,org
  org.eclipse.thym.core.engine.internal.cordova;x-friends:="org.eclipse.thym.ui",
  org.eclipse.thym.core.extensions,
  org.eclipse.thym.core.internal.libraries;x-friends:="org.eclipse.thym.ui",
- org.eclipse.thym.core.internal.util;x-friends:="org.eclipse.thym.ios.core,org.eclipse.thym.ui,org.eclipse.thym.core",
+ org.eclipse.thym.core.internal.util;
+  x-friends:="org.eclipse.thym.ios.core,
+   org.eclipse.thym.ui,
+   org.eclipse.thym.core,
+   org.eclipse.thym.android.core",
  org.eclipse.thym.core.natures;x-friends:="org.eclipse.thym.ios.core,org.eclipse.thym.ui,org.eclipse.thym.android.core",
  org.eclipse.thym.core.platform;x-friends:="org.eclipse.thym.ios.core,org.eclipse.thym.ui,org.eclipse.thym.android.core",
  org.eclipse.thym.core.plugin,
