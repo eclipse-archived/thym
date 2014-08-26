@@ -18,6 +18,7 @@ import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
@@ -27,9 +28,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Author;
 import org.eclipse.thym.core.config.Content;
 import org.eclipse.thym.core.config.Widget;
+import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
@@ -43,7 +46,7 @@ import org.eclipse.ui.forms.widgets.Section;
  * @author Gorkem Ercan
  *
  */
-public class EssentialsPage extends FormPage {
+public class EssentialsPage extends AbstactConfigEditorPage{
 	private DataBindingContext m_bindingContext;
 	
 	private FormToolkit formToolkit;
@@ -136,8 +139,7 @@ public class EssentialsPage extends FormPage {
 	
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
-		
-		
+		super.createFormContent(managedForm);
 		final ScrolledForm form = managedForm.getForm();
 		formToolkit.decorateFormHeading( form.getForm());
 		managedForm.getForm().setText(getTitle());

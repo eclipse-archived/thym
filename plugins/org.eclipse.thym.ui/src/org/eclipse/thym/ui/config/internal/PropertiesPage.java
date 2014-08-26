@@ -69,7 +69,7 @@ import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.thym.ui.plugins.internal.PluginUninstallAction;
 
-public class PropertiesPage extends FormPage {
+public class PropertiesPage extends AbstactConfigEditorPage{
 	
 	private static final String BTN_LBL_REMOVE = "Remove";
 	private static final String BTN_LBL_ADD = "Add...";
@@ -102,8 +102,7 @@ public class PropertiesPage extends FormPage {
 	
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
-		
-		
+		super.createFormContent(managedForm);
 		final ScrolledForm form = managedForm.getForm();
 		
 		formToolkit.decorateFormHeading( form.getForm());

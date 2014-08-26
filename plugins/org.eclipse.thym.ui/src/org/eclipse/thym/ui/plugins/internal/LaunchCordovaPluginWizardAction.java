@@ -11,11 +11,13 @@
 package org.eclipse.thym.ui.plugins.internal;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.config.internal.ConfigEditor;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
@@ -25,11 +27,13 @@ import org.eclipse.ui.PlatformUI;
 
 public class LaunchCordovaPluginWizardAction extends Action {
 
-	
+	private final ImageDescriptor icon = HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, "/icons/obj16/plug16_obj.png");
+
 	private HybridProject project;
 	
 	public LaunchCordovaPluginWizardAction() {
 		super("Install Cordova Plug-in");
+		setImageDescriptor(icon);
 	}
 	
 	/**
