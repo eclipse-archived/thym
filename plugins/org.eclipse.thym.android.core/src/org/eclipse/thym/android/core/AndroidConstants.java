@@ -12,7 +12,7 @@ package org.eclipse.thym.android.core;
 
 public interface AndroidConstants {
 	
-	public static final int REQUIRED_MIN_API_LEVEL = 17;
+	public static final String REQUIRED_MIN_API_LEVEL = "17";
 
 	
 	public static final String DIR_ASSETS = "assets";

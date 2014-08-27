@@ -130,7 +130,7 @@ public class AndroidSDKManager {
 					if(idx > -1 && currentAVD != null){
 						int startIndex = idx + MARKER_LEVEL.length();
 						int endIndex = line.indexOf(')');
-						currentAVD.setApiLevel((Integer.parseInt(line.substring(startIndex, endIndex).trim())));
+						currentAVD.setApiLevel((line.substring(startIndex, endIndex).trim()));
 						list.add(currentAVD);
 						currentAVD = null;
 					}
@@ -191,7 +191,7 @@ public class AndroidSDKManager {
 						sdk.setType(pair[1].trim());
 					} else if ("API level".equalsIgnoreCase(pair[0])) {
 						Assert.isNotNull(sdk);
-						sdk.setApiLevel(Integer.parseInt(pair[1]));
+						sdk.setApiLevel(pair[1]);
 					}
 				}
 			} catch (IOException e) {

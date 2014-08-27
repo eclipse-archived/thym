@@ -14,7 +14,7 @@ public class AndroidSDK {
 	
 	private String id;
 	private String type;
-	private int apiLevel;
+	private String apiLevel = "0";
 
 	public String getId() {
 		return id;
@@ -32,11 +32,11 @@ public class AndroidSDK {
 		this.type = type;
 	}
 
-	public int getApiLevel() {
+	public String getApiLevel() {
 		return apiLevel;
 	}
 
-	public void setApiLevel(int apiLevel) {
+	public void setApiLevel(String apiLevel) {
 		this.apiLevel = apiLevel;
 	}
 	

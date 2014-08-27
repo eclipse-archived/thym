@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -48,15 +49,17 @@ public class AndroidProjectUtils {
 			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "No Android targets were found, Please create a target"));
 		}
 		AndroidSDK target = null;
+		AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
 		for (AndroidSDK androidSDK : targets) {
-			if(androidSDK.getApiLevel() >= AndroidConstants.REQUIRED_MIN_API_LEVEL &&
-					(target == null || androidSDK.getApiLevel() > target.getApiLevel())){
+			if(alc.compare(androidSDK.getApiLevel(),AndroidConstants.REQUIRED_MIN_API_LEVEL) >-1 &&
+					(target == null || alc.compare( androidSDK.getApiLevel(), target.getApiLevel())>0)){
 				target = androidSDK;
 			}
 		}
 		if( target == null ){
 			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
-					"Please install Android API " +AndroidConstants.REQUIRED_MIN_API_LEVEL +" or later. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."));
+					NLS.bind("Please install Android API {0} or later. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."
+							,AndroidConstants.REQUIRED_MIN_API_LEVEL)));
 		}
 		return target;
 	}

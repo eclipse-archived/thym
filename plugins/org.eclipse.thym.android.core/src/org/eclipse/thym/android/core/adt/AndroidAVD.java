@@ -14,7 +14,7 @@ package org.eclipse.thym.android.core.adt;
 public class AndroidAVD {
 	
 	private String name;
-	private int apiLevel;
+	private String apiLevel ="0";
 	
 	public String getName() {
 		return name;
@@ -22,10 +22,10 @@ public class AndroidAVD {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getApiLevel() {
+	public String getApiLevel() {
 		return apiLevel;
 	}
-	public void setApiLevel(int apiLevel) {
+	public void setApiLevel(String apiLevel) {
 		this.apiLevel = apiLevel;
 	}
 

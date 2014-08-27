@@ -155,18 +155,19 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 					"No Android AVDs are available",null));
 		}
 		String avdName = configuration.getAttribute(AndroidLaunchConstants.ATTR_AVD_NAME, (String)null);
+		AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
 		for (AndroidAVD androidAVD : avds) {
 			if(avdName == null ){
-				if(androidAVD.getApiLevel() >= AndroidConstants.REQUIRED_MIN_API_LEVEL){
+				if( alc.compare(androidAVD.getApiLevel(),AndroidConstants.REQUIRED_MIN_API_LEVEL) >-1){
 					avdName = androidAVD.getName();
 					break;
 				}
 			}
 			else if(androidAVD.getName().equals(avdName)){
-					if(androidAVD.getApiLevel() <  AndroidConstants.REQUIRED_MIN_API_LEVEL){
+					if(alc.compare(androidAVD.getApiLevel(),AndroidConstants.REQUIRED_MIN_API_LEVEL) <0){
 						throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE, 
 								NLS.bind("Selected Android AVD {0} does not satisfy the satisfy the minimum API level({1})",
-									new String[]{avdName, Integer.toString(AndroidConstants.REQUIRED_MIN_API_LEVEL)}),null));
+									new String[]{avdName, AndroidConstants.REQUIRED_MIN_API_LEVEL}),null));
 						
 					}
 				}

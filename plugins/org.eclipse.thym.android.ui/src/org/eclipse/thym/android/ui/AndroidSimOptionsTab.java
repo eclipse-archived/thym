@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.android.core.AndroidConstants;
+import org.eclipse.thym.android.core.adt.AndroidAPILevelComparator;
 import org.eclipse.thym.android.core.adt.AndroidAVD;
 import org.eclipse.thym.android.core.adt.AndroidSDKManager;
 import org.eclipse.thym.android.ui.internal.statushandler.MissingSDKStatusHandler;
@@ -205,9 +206,10 @@ public class AndroidSimOptionsTab extends AbstractLaunchConfigurationTab {
 		setErrorMessage(null);
 		String avd = AVDCombo.getText();
 		if(avd != null && !avd.isEmpty()){
+			AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
 			for (AndroidAVD androidAVD : avds) {
 				if(androidAVD.getName().equals(avd) 
-						&& androidAVD.getApiLevel() < AndroidConstants.REQUIRED_MIN_API_LEVEL){
+						&& alc.compare(androidAVD.getApiLevel(), AndroidConstants.REQUIRED_MIN_API_LEVEL) <0){
 					setErrorMessage("Selected AVD does not satisfy the minimum required API level. Please select a different one");
 					return false;
 				}

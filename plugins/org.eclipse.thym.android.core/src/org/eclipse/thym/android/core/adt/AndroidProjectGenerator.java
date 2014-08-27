@@ -137,7 +137,7 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 			values.put("__ID__", packageName);
 			values.put("__PACKAGE__", packageName);// yeap, cordova also uses two different names
 			values.put("__ACTIVITY__", name);
-			values.put("__APILEVEL__", Integer.toString(target.getApiLevel()));
+			values.put("__APILEVEL__", target.getApiLevel());
 			
 			// /AndroidManifest.xml
 			IPath andrManifestPath = destinationPath.append("AndroidManifest.xml");
