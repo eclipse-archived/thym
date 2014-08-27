@@ -13,15 +13,20 @@ package org.eclipse.thym.android.core.adt;
 import static org.eclipse.thym.android.core.AndroidConstants.DIR_ASSETS;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
+import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.platform.PlatformConstants;
 
 public class AndroidProjectUtils {
@@ -42,26 +47,45 @@ public class AndroidProjectUtils {
  	 * 		<li>If no target has a higher than or equal to minimum required API level.</li>
  	 * ,</ul>
 	 */
-	public static AndroidSDK selectBestValidTarget() throws CoreException {
-		AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
-		List<AndroidSDK> targets = sdkManager.listTargets();
-		if(targets == null || targets.isEmpty() ){
-			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "No Android targets were found, Please create a target"));
+	public static AndroidSDK selectBestValidTarget(HybridMobileLibraryResolver resolver) throws CoreException {
+		
+		String file = resolver.getTemplateFile(new Path("framework/project.properties")).getFile();
+		if(file == null){
+			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID,
+					"Active Cordova engine does not have a project.properties file"));
 		}
-		AndroidSDK target = null;
-		AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
-		for (AndroidSDK androidSDK : targets) {
-			if(alc.compare(androidSDK.getApiLevel(),AndroidConstants.REQUIRED_MIN_API_LEVEL) >-1 &&
-					(target == null || alc.compare( androidSDK.getApiLevel(), target.getApiLevel())>0)){
-				target = androidSDK;
+		File projProps = new File(file);
+
+		try {
+			FileReader reader = new FileReader(projProps);
+			Properties props = new Properties();
+			props.load(reader);
+			String targetValue = props.getProperty("target");
+			int splitIndex = targetValue.indexOf('-');
+			if(targetValue != null && splitIndex >-1){
+				AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
+				targetValue = targetValue.substring(splitIndex+1);
+				AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
+				List<AndroidSDK> targets = sdkManager.listTargets();
+				for (AndroidSDK androidSDK : targets) {
+					if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
+						return androidSDK;
+					}
+				}
+				// if we are here we failed to find a target.
+				throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
+						NLS.bind("Please install Android API level {0}. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."
+								,targetValue)));
+
 			}
+		} catch (FileNotFoundException e) {
+			AndroidCore.log(IStatus.WARNING, "Missing project.properties for library", e);
+		} catch (IOException e) {
+			AndroidCore.log(IStatus.WARNING, "Failed to read target API level from library", e);
 		}
-		if( target == null ){
-			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
-					NLS.bind("Please install Android API {0} or later. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."
-							,AndroidConstants.REQUIRED_MIN_API_LEVEL)));
-		}
-		return target;
+		// We could not determine a targetValue	
+		throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID,
+				"Could not determine required Android level for the Cordova engine, please use a different one"));
 	}
 
 }

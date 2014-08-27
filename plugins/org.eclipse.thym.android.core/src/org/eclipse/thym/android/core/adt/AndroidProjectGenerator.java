@@ -93,7 +93,7 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 		String name = hybridProject.getBuildArtifactAppName();
 
 		
-		AndroidSDK target = AndroidProjectUtils.selectBestValidTarget();
+		AndroidSDK target = AndroidProjectUtils.selectBestValidTarget(resolver);
 		File destinationDir = getDestination();
 		IPath destinationPath = new Path(destinationDir.toString());
 		if(destinationDir.exists()){

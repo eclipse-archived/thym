@@ -61,6 +61,7 @@ public class AndroidLibraryResolver extends
 		files.put(new Path(DIR_SRC).append(VAR_PACKAGE_NAME.replace('.', '/')).append(VAR_APP_NAME+".java"), 
 				getEngineFile(templatePrjRoot.append("Activity.java")));
 		files.put(PATH_CORDOVA_JS, getEngineFile(libraryRoot.append("framework/assets/www/cordova.js")));
+		files.put(new Path("framework/project.properties"), getEngineFile(libraryRoot.append("framework/project.properties")));
 		
 	}
 
@@ -100,7 +101,7 @@ public class AndroidLibraryResolver extends
 		if(!projectDir.isDirectory()){
 			throw new CoreException(HybridMobileStatus.newMissingEngineStatus(null, "Library for the Active Hybrid Mobile Engine for Android is incomplete. No framework directory is present."));
 		}
-		AndroidSDK sdk = getLibraryTarget();
+		AndroidSDK sdk = AndroidProjectUtils.selectBestValidTarget(this);
 		AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
 		sdkManager.updateProject(sdk, null, true, projectDir,monitor);
 		BuildDelegate buildDelegate = new BuildDelegate();
@@ -114,35 +115,6 @@ public class AndroidLibraryResolver extends
 		return !cordovaJar.toFile().exists();
 	}
 	
-	private AndroidSDK getLibraryTarget() throws CoreException{
-		File projProps = libraryRoot.append("framework").append("project.properties").toFile();
-
-		try {
-			FileReader reader = new FileReader(projProps);
-			Properties props = new Properties();
-			props.load(reader);
-			String targetValue = props.getProperty("target");
-			int splitIndex = targetValue.indexOf('-');
-			if(targetValue != null && splitIndex >-1){
-				AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
-				targetValue = targetValue.substring(splitIndex+1);
-				AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
-				List<AndroidSDK> targets = sdkManager.listTargets();
-				for (AndroidSDK androidSDK : targets) {
-					if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
-						return androidSDK;
-					}
-				}
-
-			}
-		} catch (FileNotFoundException e) {
-			AndroidCore.log(IStatus.WARNING, "Missing project.properties for library", e);
-		} catch (IOException e) {
-			AndroidCore.log(IStatus.WARNING, "Failed to read target API level from library", e);
-		}
-		return  AndroidProjectUtils.selectBestValidTarget();
-	}
-
 	private URL getEngineFile(IPath path){
 		File file = path.toFile();
 		if(!file.exists()){
