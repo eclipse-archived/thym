@@ -129,7 +129,7 @@ public class AndroidSDKManager {
 					idx = line.indexOf(MARKER_LEVEL) ;
 					if(idx > -1 && currentAVD != null){
 						int startIndex = idx + MARKER_LEVEL.length();
-						int endIndex = line.indexOf(')');
+						int endIndex = line.lastIndexOf(')');
 						currentAVD.setApiLevel((line.substring(startIndex, endIndex).trim()));
 						list.add(currentAVD);
 						currentAVD = null;

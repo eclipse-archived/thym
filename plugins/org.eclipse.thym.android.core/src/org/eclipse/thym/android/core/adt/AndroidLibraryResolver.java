@@ -12,11 +12,14 @@ package org.eclipse.thym.android.core.adt;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -93,12 +96,12 @@ public class AndroidLibraryResolver extends
 	}
 	
 	public void preCompile(IProgressMonitor monitor) throws CoreException{
-		AndroidSDK sdk = AndroidProjectUtils.selectBestValidTarget();
-		AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
 		File projectDir = libraryRoot.append("framework").toFile();
 		if(!projectDir.isDirectory()){
 			throw new CoreException(HybridMobileStatus.newMissingEngineStatus(null, "Library for the Active Hybrid Mobile Engine for Android is incomplete. No framework directory is present."));
 		}
+		AndroidSDK sdk = getLibraryTarget();
+		AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
 		sdkManager.updateProject(sdk, null, true, projectDir,monitor);
 		BuildDelegate buildDelegate = new BuildDelegate();
 		if(monitor.isCanceled())
@@ -109,6 +112,35 @@ public class AndroidLibraryResolver extends
 	public boolean needsPreCompilation(){
 		IPath cordovaJar = libraryRoot.append("framework").append(NLS.bind("cordova-{0}.jar",version));
 		return !cordovaJar.toFile().exists();
+	}
+	
+	private AndroidSDK getLibraryTarget() throws CoreException{
+		File projProps = libraryRoot.append("framework").append("project.properties").toFile();
+
+		try {
+			FileReader reader = new FileReader(projProps);
+			Properties props = new Properties();
+			props.load(reader);
+			String targetValue = props.getProperty("target");
+			int splitIndex = targetValue.indexOf('-');
+			if(targetValue != null && splitIndex >-1){
+				AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
+				targetValue = targetValue.substring(splitIndex+1);
+				AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
+				List<AndroidSDK> targets = sdkManager.listTargets();
+				for (AndroidSDK androidSDK : targets) {
+					if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
+						return androidSDK;
+					}
+				}
+
+			}
+		} catch (FileNotFoundException e) {
+			AndroidCore.log(IStatus.WARNING, "Missing project.properties for library", e);
+		} catch (IOException e) {
+			AndroidCore.log(IStatus.WARNING, "Failed to read target API level from library", e);
+		}
+		return  AndroidProjectUtils.selectBestValidTarget();
 	}
 
 	private URL getEngineFile(IPath path){
