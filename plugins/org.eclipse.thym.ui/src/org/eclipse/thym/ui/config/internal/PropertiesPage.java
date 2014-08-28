@@ -50,14 +50,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.forms.IManagedForm;
-import org.eclipse.ui.forms.editor.FormEditor;
-import org.eclipse.ui.forms.editor.FormPage;
-import org.eclipse.ui.forms.widgets.FormToolkit;
-import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
-import org.eclipse.ui.forms.widgets.TableWrapData;
-import org.eclipse.ui.forms.widgets.TableWrapLayout;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Access;
 import org.eclipse.thym.core.config.Feature;
@@ -68,6 +60,14 @@ import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.thym.ui.plugins.internal.PluginUninstallAction;
+import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.editor.FormEditor;
+import org.eclipse.ui.forms.widgets.FormToolkit;
+import org.eclipse.ui.forms.widgets.ScrolledForm;
+import org.eclipse.ui.forms.widgets.Section;
+import org.eclipse.ui.forms.widgets.TableWrapData;
+import org.eclipse.ui.forms.widgets.TableWrapLayout;
+import org.eclipse.wst.xml.core.internal.cleanup.CleanupProcessorXML;
 
 public class PropertiesPage extends AbstactConfigEditorPage{
 	
@@ -317,6 +317,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 				if (dialog.open() == Window.OK ){
 					Feature selectedFeature = (Feature) sel.getFirstElement();
 					selectedFeature.addParam(dialog.getName(), dialog.getValue());
+					reformatDocument();
 				}
 			}
 		});
@@ -385,6 +386,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 					pref.setName(dialog.getName());
 					pref.setValue(dialog.getValue());
 					getWidget().addPreference(pref);
+					reformatDocument();
 				}
 			}
 		});
@@ -451,6 +453,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 				NewAccessDialog dialog = new NewAccessDialog(getSite().getShell(), getWidgetModel());
 				if(dialog.open() == Window.OK && dialog.getAccess() != null){
 					getWidget().addAccess(dialog.getAccess());
+					reformatDocument();
 				}
 			}
 		});
@@ -510,6 +513,11 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 		featuresTableViewer.setInput(featuresGetWidgetObserveList);
 		//
 		return bindingContext;
+	}
+
+	private void reformatDocument() {
+		CleanupProcessorXML formatter = new CleanupProcessorXML();
+		formatter.cleanupModel(getWidgetModel().underLyingModel);
 	}
 
 	private final class ButtonStateUpdater implements ISelectionChangedListener{
