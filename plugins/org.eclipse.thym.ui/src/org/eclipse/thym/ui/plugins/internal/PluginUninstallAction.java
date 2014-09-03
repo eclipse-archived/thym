@@ -64,7 +64,7 @@ public class PluginUninstallAction extends Action{
 		sb.append(" plug-in?");
 		
 		if(!MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
-				"Uninstall Cordova Plugin",
+				"Uninstall Cordova Plug-in",
 				sb.toString())){
 			return;
 		}

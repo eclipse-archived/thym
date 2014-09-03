@@ -76,12 +76,12 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 
 	@Override
 	public IPluginInstallationAction getResourceFileAction(String src) {
-		throw new UnsupportedOperationException("Not relevant for Android");
+		throw new UnsupportedOperationException("Not implemented for Android");
 	}
 
 	@Override
 	public IPluginInstallationAction getHeaderFileAction(String src, String targetDir, String pluginId) {
-		throw new UnsupportedOperationException("Not relevant for Android");
+		throw new UnsupportedOperationException("Not implemented for Android");
 	}
 
 	@Override
@@ -116,7 +116,7 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 
 	@Override
 	public IPluginInstallationAction getFrameworkAction(String src, String weak) {
-		throw new UnsupportedOperationException("Not relevant for Android");
+		throw new UnsupportedOperationException("Not implemented for Android");
 	}
 
 	@Override

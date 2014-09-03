@@ -11,6 +11,9 @@
 package org.eclipse.thym.core.plugin;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -45,52 +48,53 @@ public class CordovaPluginXMLHelper {
 	
 	
 	public static Element getPlatformNode(Document document, String platform){
-		NodeList nodes = getNodes(document.getDocumentElement(), "platform");
-		for(int i = 0; i< nodes.getLength(); i++){
-			Node n = nodes.item(i);
+		List<Element> nodes = getImmediateNodes(document.getDocumentElement(), "platform");
+		for (Element n : nodes) {
 			String platformName = getAttributeValue(n, "name");
-			if(platformName != null && platformName.equals(platform)){
+			if(platformName != null && platformName.equalsIgnoreCase(platform)){
 				return (Element) n;
 			}
 		}
 		return null;
 	}
 
-	public static NodeList getSourceFileNodes(Element node){
-		return getNodes(node, "source-file");
+	public static List<Element> getSourceFileNodes(Element node){
+		return getImmediateNodes(node, "source-file");
 	}
 	
-	public static NodeList getResourceFileNodes(Element node){
-		return getNodes(node, "resource-file");
+	public static List<Element> getResourceFileNodes(Element node){
+		return getImmediateNodes(node, "resource-file");
 	}
 	
-	public static NodeList getHeaderFileNodes(Element node){
-		return getNodes(node, "header-file");
+	public static List<Element> getHeaderFileNodes(Element node){
+		return getImmediateNodes(node, "header-file");
 	}
 	
-	public static NodeList getAssets(Element node){
-		return getNodes(node, "asset");
+	public static List<Element> getAssetNodes(Element node){
+		return getImmediateNodes(node, "asset");
 	}
 	
-	public static NodeList getConfigFileNodes(Element node) {
-		return getNodes(node, "config-file");
+	public static List<Element> getConfigFileNodes(Element node) {
+		return getImmediateNodes(node, "config-file");
+	}	
+	 
+	public static List<Element> getPreferencesNodes(Element node) {
+		return getImmediateNodes(node, "preference");
 	}	
 	
-	public static NodeList getPreferencesNodes(Element node) {
-		return getNodes(node, "preference");
-	}	
-	
-	public static NodeList getLibFileNodes(Element node) {
-		return getNodes(node, "lib-file");
+	public static List<Element> getLibFileNodes(Element node) {
+		return getImmediateNodes(node, "lib-file");
 	}
 	
-	public static NodeList getFrameworks(Element node){
-		return getNodes(node, "framework");
+	public static List<Element> getFrameworkNodes(Element node){
+		return getImmediateNodes(node, "framework");
 	}
 	
-	public static NodeList getDependencies(Element node){
-		return getNodes(node, "dependency");
+	public static List<Element> getDependencyNodes(Element node){
+		return getImmediateNodes(node, "dependency");
 	}
+	
+
 	
 	/**
 	 * Returns the name node. May return null
@@ -107,6 +111,17 @@ public class CordovaPluginXMLHelper {
 		
 	private static NodeList getNodes(Element element, String nodeName ){
 		return element.getElementsByTagName(nodeName);
+	}
+	
+	private static List<Element> getImmediateNodes(Element element, String nodeName){
+		List<Element> nodeList = new ArrayList<Element>();
+	    for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+	      if (child.getNodeType() == Node.ELEMENT_NODE && 
+	    		  nodeName.equals(child.getNodeName())) {
+	        nodeList.add((Element) child);
+	      }
+	    }
+	    return nodeList;
 	}
 	
 	public static String getAttributeValue(Node node, String attribute){
@@ -172,7 +187,7 @@ public class CordovaPluginXMLHelper {
 			plugin.addModule(module);
 		}
 		// engines
-		NodeList engineNodes = getNodes(rootNode, "//:engine");
+		NodeList engineNodes = getNodes(rootNode, "engine");
 		for (int i = 0; i < engineNodes.getLength(); i++) {
 			Node engineNode = engineNodes.item(i);
 

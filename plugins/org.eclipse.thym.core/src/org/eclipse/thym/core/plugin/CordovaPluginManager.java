@@ -11,11 +11,11 @@
 package org.eclipse.thym.core.plugin;
 
 
-import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getAssets;
+import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getAssetNodes;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getAttributeValue;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getConfigFileNodes;
-import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getDependencies;
-import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getFrameworks;
+import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getDependencyNodes;
+import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getFrameworkNodes;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getLibFileNodes;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getPlatformNode;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getPreferencesNodes;
@@ -70,7 +70,6 @@ import org.eclipse.thym.core.plugin.actions.PluginInstallRecordAction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXParseException;
 
 import com.google.gson.Gson;
@@ -143,7 +142,7 @@ public class CordovaPluginManager {
 			plugins.create(true, true, monitor);
 		}
 		
-		
+		//collect first stage install actions
 		List<IPluginInstallationAction> actions = collectInstallActions(
 				directory, doc, id, plugins, overwrite);
 		actions.add(getPluginInstallRecordAction(doc));
@@ -390,47 +389,37 @@ public class CordovaPluginManager {
 	return restorable;
 	}
 	
-	/*
+	/**
 	 * Collects all the actions for first stage install/uninstall
+	 * First stage actions are.
+	 * <ul>
+	 * <li>dependency installations</li>
+	 * <li>config.xml changes</li>
+	 * <li>preferences with variables</li>
+	 * </ul>
 	 */
 	private List<IPluginInstallationAction> collectInstallActions(
 			File directory, Document doc, String id, IResource dir, FileOverwriteCallback overwrite) {
 		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
-		NodeList dependencyNodes = getDependencies(doc.getDocumentElement());
-		for (int i = 0; i < dependencyNodes.getLength(); i++) {
-			Node dependencyNode = dependencyNodes.item(i);
-			String dependencyId = getAttributeValue(dependencyNode, "id");
-			String url = getAttributeValue(dependencyNode, "url");
-			String commit = getAttributeValue(dependencyNode, "commit");
-			String subdir = getAttributeValue(dependencyNode, "subdir");
-			URI uri = null;
-			if(url != null && !url.isEmpty()){
-				if(!url.endsWith(".git")){
-					url= url+".git";
-				}
-				if(commit != null || subdir != null ){
-					url = url+"#";
-					if(commit!=null){
-						url = url+commit;
-					}
-					if(subdir != null ){
-						url=url+":"+subdir;
-					}
-				}
-				
-				
-				
-				uri = URI.create(url);
-			}
-			DependencyInstallAction action = new DependencyInstallAction(dependencyId, uri, this.project, overwrite);
-			actions.add(action);
-		}
 		File destination = new File(dir.getLocation().toFile(), id);
 		
 		CopyFileAction copy = new CopyFileAction(directory, destination);
 		actions.add(copy);
-		actions.addAll(collectAllConfigXMLActionsForSupportedPlatforms(doc));
-		actions.addAll(collectVariablePreferencesForSupportedPlatforms(doc));
+		//collect platform independent actions
+		actions.addAll(collectDependencyActions(doc.getDocumentElement(), overwrite));
+		actions.addAll(collectConfigXMLActions(doc.getDocumentElement()));
+		actions.addAll(collectVariablePreferences(doc.getDocumentElement()));
+		
+		//platform actions
+		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();	
+		for (PlatformSupport platformSupport : platforms) {
+			Element platformNode = getPlatformNode(doc, platformSupport.getPlatformId());
+			if(platformNode != null ){
+				actions.addAll(collectDependencyActions(platformNode, overwrite));
+				actions.addAll(collectConfigXMLActions(platformNode));
+				actions.addAll(collectVariablePreferences(platformNode));
+			}
+		}
 		return actions;
 	}
 	
@@ -491,11 +480,10 @@ public class CordovaPluginManager {
 		ResourcesPlugin.getWorkspace().run(op, monitor);
 	}
 	/*
-	 * 1. collect common asset tags 
-	 * 2. collect config tags except config.xml (which are handled during installation)
-	 * 3. collect all js-module actions (for copying source files)
-	 * 3. create cordova_plugin.js
-	 * 4. collect all platform specific tags
+	 * . collect common actions 
+	 * . collect all js-module actions (for copying source files)
+	 * . create cordova_plugin.js
+	 * . collect all platform specific tags
 	 * 	
 	 */
 	private void completePluginInstallationToPlatform(CordovaPlugin plugin, 
@@ -512,23 +500,37 @@ public class CordovaPluginManager {
 		AbstractPluginInstallationActionsFactory actionFactory = platform.getPluginInstallationActionsFactory(this.project.getProject(), 
 				pluginHome, platformProject);
 		
-		// Process jsmodules even if there is no platform node. 
-		// See JBIDE-16544 
-		allActions.addAll(getCommonAndPlatformJSModuleActions(plugin, platform.getPlatformId(), actionFactory)); // add all js-module actions
+		// Process jsmodules 
+		allActions.addAll(collectCommonAndPlatformJSModuleActions(plugin, platform.getPlatformId(), actionFactory)); // add all js-module actions
 		
+		//collect common actions
+		allActions.addAll(collectAssetActions(doc.getDocumentElement(), actionFactory));
+		allActions.addAll(collectConfigFileActions(doc.getDocumentElement(), actionFactory));
+		allActions.addAll(collectSourceFilesActions(doc.getDocumentElement(), actionFactory));
+		allActions.addAll(collectResourceFileActions(doc.getDocumentElement(), actionFactory));
+		allActions.addAll(collectHeaderFileActions(doc.getDocumentElement(), actionFactory));
+		allActions.addAll(collectLibFileActions(doc.getDocumentElement(), actionFactory)) ;
+		allActions.addAll(collectFrameworkActions(doc.getDocumentElement(), actionFactory ));
+		
+		//collect platform actions
 		Element node = getPlatformNode(doc, platform.getPlatformId());
 		if( node != null ){
-			allActions.addAll(getAssetActionsForPlatform(doc.getDocumentElement(),actionFactory ));// add common assets
-			allActions.addAll(getConfigFileActionsForPlatform(doc.getDocumentElement(), actionFactory)); // common config changes
+			allActions.addAll(collectAssetActions(node,actionFactory ));
+			allActions.addAll(collectConfigFileActions(node, actionFactory));
+			allActions.addAll(collectSourceFilesActions(node, actionFactory));
+			allActions.addAll(collectResourceFileActions(node, actionFactory));
+			allActions.addAll(collectHeaderFileActions(node, actionFactory));
+			allActions.addAll(collectLibFileActions(node, actionFactory)) ;
+			allActions.addAll(collectFrameworkActions(node, actionFactory ));
+			
 			//We do not need to create this file 
 			//with every plugin. TODO: find a better place
 			allActions.add(actionFactory.getCreatePluginJSAction(this.getCordovaPluginJSContent(platform.getPlatformId())));
-			allActions.addAll(collectActionsForPlatform(node, actionFactory));
 		}
 		runActions(allActions,false,overwrite,monitor);
 	}
 	
-	private List<IPluginInstallationAction> getCommonAndPlatformJSModuleActions(CordovaPlugin plugin,String platformId,AbstractPluginInstallationActionsFactory factory) {
+	private List<IPluginInstallationAction> collectCommonAndPlatformJSModuleActions(CordovaPlugin plugin,String platformId,AbstractPluginInstallationActionsFactory factory) {
 		List<PluginJavaScriptModule> modules =  plugin.getModules(); 
 		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
 		for (PluginJavaScriptModule scriptModule : modules) {
@@ -541,85 +543,101 @@ public class CordovaPluginManager {
 		return actions;
 	}
 
-	private List<IPluginInstallationAction> collectAllConfigXMLActionsForSupportedPlatforms(Document doc){
-		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
+	/**
+	 * Collect the actions that are targeted for the config.xml file on the node.
+	 * Collects actions from immediate children only.
+	 * @param node
+	 * @return
+	 */
+	private List<IPluginInstallationAction> collectConfigXMLActions(Element node ){
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		List<Element> nodes = new ArrayList<Element>();
-		nodes.add(doc.getDocumentElement());
-		for (PlatformSupport platform : platforms) {
-			Element platformNode = getPlatformNode(doc, platform.getPlatformId());
-			if(platformNode != null)
-				nodes.add(platformNode);
-		}
-		for(Element node: nodes){
-			NodeList configFiles = getConfigFileNodes(node);
-			for (int i = 0; i < configFiles.getLength(); i++) {
-				Node current = configFiles.item(i);
-				String target = getAttributeValue(current, "target");
-				if(!target.endsWith(PlatformConstants.FILE_XML_CONFIG)){
-					continue;
-				}
-				String parent = getAttributeValue(current, "parent");
-				String resolvedValue = stringifyNode(current);
-				try{
-					resolvedValue = ActionVariableHelper.replaceVariables(this.project, resolvedValue);
-				}
-				catch(CoreException ex){
-					HybridCore.log(IStatus.ERROR, "Error while resolving variables", ex);
-				}
-				IPluginInstallationAction action = new ConfigXMLUpdateAction(this.project, parent, resolvedValue);
-				list.add(action);
+		List<Element> configFiles = getConfigFileNodes(node);
+		for (Element current: configFiles) {
+			String target = getAttributeValue(current, "target");
+			if(!target.endsWith(PlatformConstants.FILE_XML_CONFIG)){
+				continue;
 			}
+			String parent = getAttributeValue(current, "parent");
+			String resolvedValue = stringifyNode(current);
+			try{
+				resolvedValue = ActionVariableHelper.replaceVariables(this.project, resolvedValue);
+			}
+			catch(CoreException ex){
+				HybridCore.log(IStatus.ERROR, "Error while resolving variables", ex);
+			}
+			IPluginInstallationAction action = new ConfigXMLUpdateAction(this.project, parent, resolvedValue);
+			list.add(action);
+		}
+		return list;
+	}
+	/**
+	 * Collects actions that require preference definitions on the config.xml 
+	 * This method actually creates {@link ConfigXMLUpdateAction}s that will inject a 
+	 * preference node to config.xml
+	 * 
+	 * Collects actions from immediate children only.
+	 * 
+	 * @param node
+	 * @return
+	 */
+	private List<IPluginInstallationAction> collectVariablePreferences(Element node){
+		List<Element> preferences = getPreferencesNodes(node);
+		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
+		for (Element current : preferences) {
+			String name = getAttributeValue(current, "name");
+			IPluginInstallationAction action = new ConfigXMLUpdateAction(
+					this.project, "/widget",
+					" <config-file target=\"res/xml/config.xml\" parent=\"/widget\">"
+							+ "<preference name=\"" + name
+							+ "\" value=\"PLEASE_DEFINE\"/>" + "</config-file>");
+			list.add(action);
 		}
 		return list;
 	}
 	
-	private List<IPluginInstallationAction> collectVariablePreferencesForSupportedPlatforms(Document doc){
-		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
+	/**
+	 * Collects dependency actions on the given node. 
+	 * Collects actions from immediate children only.
+	 * 
+	 * @param node
+	 * @return
+	 */
+	private List<IPluginInstallationAction> collectDependencyActions(Element node, FileOverwriteCallback overwrite){
+		List<Element> dependencyNodes = getDependencyNodes(node);
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		List<Element> nodes = new ArrayList<Element>();
-		nodes.add(doc.getDocumentElement());
-		for (PlatformSupport platform : platforms) {
-			Element platformNode = getPlatformNode(doc, platform.getPlatformId());
-			if(platformNode != null)
-				nodes.add(platformNode);
-		}
-		for(Element node: nodes){
-			NodeList preferences = getPreferencesNodes(node);
-			for( int i = 0; i < preferences.getLength(); i++){
-				Node current = preferences.item(i);
-				String name = getAttributeValue(current, "name");
-				IPluginInstallationAction action  = new ConfigXMLUpdateAction(this.project, "/widget", 
-						" <config-file target=\"res/xml/config.xml\" parent=\"/widget\">"
-						+ "<preference name=\""+name+"\" value=\"PLEASE_DEFINE\"/>"
-								+ "</config-file>");
-				list.add(action);
+		for (Element dependencyNode: dependencyNodes) {
+			String dependencyId = getAttributeValue(dependencyNode, "id");
+			String url = getAttributeValue(dependencyNode, "url");
+			String commit = getAttributeValue(dependencyNode, "commit");
+			String subdir = getAttributeValue(dependencyNode, "subdir");
+			URI uri = null;
+			if(url != null && !url.isEmpty()){
+				if(!url.endsWith(".git")){
+					url= url+".git";
+				}
+				if(commit != null || subdir != null ){
+					url = url+"#";
+					if(commit!=null){
+						url = url+commit;
+					}
+					if(subdir != null ){
+						url=url+":"+subdir;
+					}
+				}
+				uri = URI.create(url);
 			}
+			DependencyInstallAction action = new DependencyInstallAction(dependencyId, uri, this.project, overwrite);
+			list.add(action);
 		}
 		return list;
-
 	}
 	
 	
-	private List<IPluginInstallationAction> collectActionsForPlatform(Element node, AbstractPluginInstallationActionsFactory factory) throws CoreException{
-
-		ArrayList<IPluginInstallationAction> actionsList = new ArrayList<IPluginInstallationAction>(); 
-		actionsList.addAll(getSourceFilesActionsForPlatform(node, factory));
-		actionsList.addAll(getResourceFileActionsForPlatform(node, factory));
-		actionsList.addAll(getHeaderFileActionsForPlatform(node, factory));
-		actionsList.addAll(getAssetActionsForPlatform(node, factory));
-		actionsList.addAll(getConfigFileActionsForPlatform(node, factory));
-		actionsList.addAll(getLibFileActionsForPlatform(node, factory)) ;
-		actionsList.addAll(getFrameworkActionsForPlatfrom(node, factory ));
-		return actionsList;
-	}
-
-	private List<IPluginInstallationAction> getFrameworkActionsForPlatfrom(Element node,
+	private List<IPluginInstallationAction> collectFrameworkActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList frameworks = getFrameworks(node);
-		for( int i =0; i< frameworks.getLength(); i++){
-			Node current = frameworks.item(i);
+		List<Element> frameworks = getFrameworkNodes(node);
+		for (Element current : frameworks) {
 			String src = getAttributeValue(current, "src");
 			String weak = getAttributeValue(current, "weak");
 			IPluginInstallationAction action = factory.getFrameworkAction(src,weak);
@@ -628,12 +646,11 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getLibFileActionsForPlatform(Element node,
+	private List<IPluginInstallationAction> collectLibFileActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList libFiles = getLibFileNodes(node);
-		for(int i = 0; i<libFiles.getLength(); i++){
-			Node current = libFiles.item(i);
+		List<Element> libFiles = getLibFileNodes(node);
+		for (Element current : libFiles) {
 			String src = getAttributeValue(current, "src");
 			String arch = getAttributeValue(current, "arch");
 			IPluginInstallationAction action = factory.getLibFileAction(src,arch);
@@ -642,12 +659,11 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction>  getConfigFileActionsForPlatform(Element node,
+	private List<IPluginInstallationAction>  collectConfigFileActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList configFiles = getConfigFileNodes(node);
-		for (int i = 0; i < configFiles.getLength(); i++) {
-			Node current = configFiles.item(i);
+		List<Element> configFiles = getConfigFileNodes(node);
+		for (Element current: configFiles) {
 			String target = getAttributeValue(current, "target");
 			if(target.endsWith(PlatformConstants.FILE_XML_CONFIG)){//config.xmls are handled on #collectAllConfigXMLActions
 				continue;
@@ -665,12 +681,11 @@ public class CordovaPluginManager {
 		return list;
 	}
 	
-	private List<IPluginInstallationAction> getHeaderFileActionsForPlatform(Element node,
+	private List<IPluginInstallationAction> collectHeaderFileActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList headerFiles = CordovaPluginXMLHelper.getHeaderFileNodes(node);
-		for (int i = 0; i < headerFiles.getLength(); i++) {
-			Node current = headerFiles.item(i);
+		List<Element> headerFiles = CordovaPluginXMLHelper.getHeaderFileNodes(node);
+		for (Element current : headerFiles) {
 			String src = getAttributeValue(current, "src");
 			String targetDir = getAttributeValue(current,"target-dir" );
 			String id = CordovaPluginXMLHelper.getAttributeValue(node.getOwnerDocument().getDocumentElement(), "id");
@@ -680,24 +695,23 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getResourceFileActionsForPlatform(Element node,
+	private List<IPluginInstallationAction> collectResourceFileActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList resourceFiles = getResourceFileNodes(node);
-		for (int i = 0; i < resourceFiles.getLength(); i++) {
-			String src = getAttributeValue(resourceFiles.item(i), "src");
+		List<Element> resourceFiles = getResourceFileNodes(node);
+		for (Element current : resourceFiles) {
+			String src = getAttributeValue(current, "src");
 			IPluginInstallationAction action = factory.getResourceFileAction(src);
 			list.add(action);
 		}
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getSourceFilesActionsForPlatform(Element node,
+	private List<IPluginInstallationAction> collectSourceFilesActions(Element node,
 			AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList sourceFiles = getSourceFileNodes(node);
-		for (int i = 0; i < sourceFiles.getLength(); i++) {
-			Node current = sourceFiles.item(i);
+		List<Element> sourceFiles = getSourceFileNodes(node);
+		for (Element current : sourceFiles) {
 			String src = getAttributeValue(current, "src");
 			String targetDir = getAttributeValue(current,"target-dir" );
 			String framework = getAttributeValue(current,"framework" );
@@ -709,12 +723,10 @@ public class CordovaPluginManager {
 		return list;
 	}
 
-	private List<IPluginInstallationAction> getAssetActionsForPlatform(Element node,
-			AbstractPluginInstallationActionsFactory factory) {
+	private List<IPluginInstallationAction> collectAssetActions(Element node, AbstractPluginInstallationActionsFactory factory) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
-		NodeList assets = getAssets(node);
-		for (int i = 0; i < assets.getLength(); i++) {
-			Node current = assets.item(i);
+		List<Element> assets = getAssetNodes(node);
+		for (Element current : assets) {
 			String src = getAttributeValue(current, "src");
 			String target = getAttributeValue(current, "target");
 			IPluginInstallationAction action = factory.getAssetAction(src,target);

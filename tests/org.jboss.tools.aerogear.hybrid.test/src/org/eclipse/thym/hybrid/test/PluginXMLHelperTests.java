@@ -15,6 +15,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,34 +64,34 @@ public class PluginXMLHelperTests {
 	@Test 
 	public void testConfigFileForPlatform(){
 		Element platformNode = getIOSNode();
-		NodeList nodes = CordovaPluginXMLHelper.getConfigFileNodes(platformNode);
+		List<Element> nodes = CordovaPluginXMLHelper.getConfigFileNodes(platformNode);
 		assertNotNull(nodes);
-		assertEquals(1, nodes.getLength());
+		assertEquals(1, nodes.size());
 	}
 
 	
 	@Test
 	public void testConfigFileForAll(){
-		NodeList nodes = CordovaPluginXMLHelper.getConfigFileNodes(document.getDocumentElement());
+		List<Element> nodes = CordovaPluginXMLHelper.getConfigFileNodes(document.getDocumentElement());
 		assertNotNull(nodes);
-		assertEquals(4, nodes.getLength());
+		assertTrue(nodes.isEmpty());
 		
 	}
 	
 	@Test
 	public void testSourceFile(){
 		Element platform = getIOSNode();
-		NodeList nodes = CordovaPluginXMLHelper.getSourceFileNodes(platform);
+		List<Element> nodes = CordovaPluginXMLHelper.getSourceFileNodes(platform);
 		assertNotNull(nodes);
-		assertEquals(1, nodes.getLength());
+		assertEquals(1, nodes.size());
 	}
 	
 	@Test
 	public void testHeaderFile(){
 		Element platform = getIOSNode();
-		NodeList nodes = CordovaPluginXMLHelper.getHeaderFileNodes(platform);
+		List<Element> nodes = CordovaPluginXMLHelper.getHeaderFileNodes(platform);
 		assertNotNull(nodes);
-		assertEquals(1, nodes.getLength());
+		assertEquals(1, nodes.size());
 	}
 	
 	@Test
