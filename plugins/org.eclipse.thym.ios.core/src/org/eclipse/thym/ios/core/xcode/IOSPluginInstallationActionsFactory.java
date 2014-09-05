@@ -81,7 +81,7 @@ public class IOSPluginInstallationActionsFactory extends
 	}
 
 	@Override
-	public IPluginInstallationAction getFrameworkAction(String src, String weak) {
+	public IPluginInstallationAction getFrameworkAction(String src, String weak,String pluginId, String custom, String type, String parent){
 		File pbx = getPbxprojectFile();
 		boolean isWeak = Boolean.parseBoolean(weak);
 		return new IOSFrameworkAction(src, isWeak, pbx);

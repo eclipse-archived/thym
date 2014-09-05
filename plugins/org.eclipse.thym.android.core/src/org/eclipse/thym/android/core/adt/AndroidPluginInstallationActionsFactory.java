@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.android.core.AndroidCore;
+import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory;
 import org.eclipse.thym.core.platform.IPluginInstallationAction;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -115,8 +117,19 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 	}
 
 	@Override
-	public IPluginInstallationAction getFrameworkAction(String src, String weak) {
-		throw new UnsupportedOperationException("Not implemented for Android");
+	public IPluginInstallationAction getFrameworkAction(String src, String weak,String pluginId, String custom, String type, String parent) {
+		if(src == null ){
+			throw new IllegalArgumentException("src not specified in framework element");
+		}
+		HybridProject hybridProject = HybridProject.getHybridProject(getProject());
+		HybridMobileLibraryResolver resolver = hybridProject.getActiveEngine().getPlatformLib("android").getPlatformLibraryResolver();
+		AndroidSDK sdk=null;
+		try {
+			sdk = AndroidProjectUtils.selectBestValidTarget(resolver);
+		} catch (CoreException e) {
+			AndroidCore.log(IStatus.ERROR, "Framework action fails to select a target", e);
+		}
+		return new AndroidFrameworkAction(src, custom, parent, pluginId,getProjectDirectory(),getPluginDirectory(),sdk);
 	}
 
 	@Override
@@ -136,6 +149,4 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 		CreateFileAction action = new CreateFileAction(content, pluginJs);
 		return action;
 	}
-
-
 }

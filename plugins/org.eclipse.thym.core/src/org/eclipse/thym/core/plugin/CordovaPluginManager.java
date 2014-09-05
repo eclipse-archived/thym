@@ -510,7 +510,7 @@ public class CordovaPluginManager {
 		allActions.addAll(collectResourceFileActions(doc.getDocumentElement(), actionFactory));
 		allActions.addAll(collectHeaderFileActions(doc.getDocumentElement(), actionFactory));
 		allActions.addAll(collectLibFileActions(doc.getDocumentElement(), actionFactory)) ;
-		allActions.addAll(collectFrameworkActions(doc.getDocumentElement(), actionFactory ));
+		allActions.addAll(collectFrameworkActions(doc.getDocumentElement(), actionFactory ,plugin ));
 		
 		//collect platform actions
 		Element node = getPlatformNode(doc, platform.getPlatformId());
@@ -521,7 +521,7 @@ public class CordovaPluginManager {
 			allActions.addAll(collectResourceFileActions(node, actionFactory));
 			allActions.addAll(collectHeaderFileActions(node, actionFactory));
 			allActions.addAll(collectLibFileActions(node, actionFactory)) ;
-			allActions.addAll(collectFrameworkActions(node, actionFactory ));
+			allActions.addAll(collectFrameworkActions(node, actionFactory,plugin ));
 			
 			//We do not need to create this file 
 			//with every plugin. TODO: find a better place
@@ -634,13 +634,16 @@ public class CordovaPluginManager {
 	
 	
 	private List<IPluginInstallationAction> collectFrameworkActions(Element node,
-			AbstractPluginInstallationActionsFactory factory) {
+			AbstractPluginInstallationActionsFactory factory, CordovaPlugin plugin) {
 		ArrayList<IPluginInstallationAction> list = new ArrayList<IPluginInstallationAction>();
 		List<Element> frameworks = getFrameworkNodes(node);
 		for (Element current : frameworks) {
 			String src = getAttributeValue(current, "src");
 			String weak = getAttributeValue(current, "weak");
-			IPluginInstallationAction action = factory.getFrameworkAction(src,weak);
+			String custom = getAttributeValue(current, "custom");
+			String type = getAttributeValue(current, "type");
+			String parent = getAttributeValue(current, "parent");
+			IPluginInstallationAction action = factory.getFrameworkAction(src,weak,plugin.getId(), custom,type,parent);
 			list.add(action);
 		}
 		return list;

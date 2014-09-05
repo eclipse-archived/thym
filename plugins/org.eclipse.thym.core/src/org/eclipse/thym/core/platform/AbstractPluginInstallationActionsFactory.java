@@ -39,7 +39,7 @@ public abstract class AbstractPluginInstallationActionsFactory {
 
 	public abstract IPluginInstallationAction getLibFileAction(String src, String arch);
 
-	public abstract IPluginInstallationAction getFrameworkAction(String src, String weak); 
+	public abstract IPluginInstallationAction getFrameworkAction(String src, String weak, String pluginId, String custom, String type, String parent); 
 	
 	public abstract IPluginInstallationAction getJSModuleAction(String src, String pluginId, String jsModuleName);
 	
