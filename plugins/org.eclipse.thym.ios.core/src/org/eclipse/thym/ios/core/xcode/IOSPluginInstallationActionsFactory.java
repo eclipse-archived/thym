@@ -40,7 +40,7 @@ public class IOSPluginInstallationActionsFactory extends
 
 
 	@Override
-	public IPluginInstallationAction getResourceFileAction(String src) {
+	public IPluginInstallationAction getResourceFileAction(String src, String taregt) {
 		File source = new File(getPluginDirectory(), src);
 		String targetPath = calculateTargetPath("Resources", null, null, source).toString();
 		File target = new File(getProjectDirectory(), targetPath);

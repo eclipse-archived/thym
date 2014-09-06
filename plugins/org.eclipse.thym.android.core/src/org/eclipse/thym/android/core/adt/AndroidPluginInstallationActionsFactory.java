@@ -77,8 +77,10 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 	}
 
 	@Override
-	public IPluginInstallationAction getResourceFileAction(String src) {
-		throw new UnsupportedOperationException("Not implemented for Android");
+	public IPluginInstallationAction getResourceFileAction(String src, String target) {
+		File source = new File(getPluginDirectory(),src);
+		File targetDir = new File(getProjectDirectory(),target);
+		return new CopyFileAction(source, targetDir);
 	}
 
 	@Override

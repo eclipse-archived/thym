@@ -704,7 +704,8 @@ public class CordovaPluginManager {
 		List<Element> resourceFiles = getResourceFileNodes(node);
 		for (Element current : resourceFiles) {
 			String src = getAttributeValue(current, "src");
-			IPluginInstallationAction action = factory.getResourceFileAction(src);
+			String target = getAttributeValue(current, "target");
+			IPluginInstallationAction action = factory.getResourceFileAction(src, target);
 			list.add(action);
 		}
 		return list;
