@@ -228,7 +228,7 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 			comboSDKVer.select(0);
 			if(contentProvider.simulators != null){
 				for (XCodeSDK sim : contentProvider.simulators) {
-					if(sim.getIdentifierString().equals(sdkVer)){
+					if(sim.getVersion().equals(sdkVer)){
 						comboViewer.setSelection(new StructuredSelection(sim));
 					}
 				}
@@ -278,7 +278,7 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		IStructuredSelection selection = (IStructuredSelection) comboViewer.getSelection();
 		if(!selection.isEmpty()){
 			XCodeSDK selectedSDK = (XCodeSDK) selection.getFirstElement();
-			configuration.setAttribute(ATTR_SIMULATOR_SDK_VERSION, selectedSDK.getIdentifierString());
+			configuration.setAttribute(ATTR_SIMULATOR_SDK_VERSION, selectedSDK.getVersion());
 		}
 	}
 
