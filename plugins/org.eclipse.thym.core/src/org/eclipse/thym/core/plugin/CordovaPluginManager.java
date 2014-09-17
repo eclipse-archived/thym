@@ -23,7 +23,9 @@ import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getResourceFil
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.getSourceFileNodes;
 import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.stringifyNode;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,11 +35,9 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -67,6 +67,8 @@ import org.eclipse.thym.core.plugin.actions.ConfigXMLUpdateAction;
 import org.eclipse.thym.core.plugin.actions.CopyFileAction;
 import org.eclipse.thym.core.plugin.actions.DependencyInstallAction;
 import org.eclipse.thym.core.plugin.actions.PluginInstallRecordAction;
+import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -111,48 +113,55 @@ public class CordovaPluginManager {
 	public void installPlugin(File directory, FileOverwriteCallback overwrite, IProgressMonitor monitor) throws CoreException{
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
-		File pluginFile = new File(directory, PlatformConstants.FILE_XML_PLUGIN);
-		Assert.isTrue(pluginFile.exists());
 		if(monitor.isCanceled())
 			return;
-		Document doc = null;
-		try{
-			doc = XMLUtil.loadXML(pluginFile, false); 
-		}catch(CoreException e ){
-			//Convert the SAXParseException exceptions to HybridMobileStatus because
-			//it may indicate a broken plugin.xml or an platform not supported 
-			// see https://issues.jboss.org/browse/JBIDE-15768
-			if(e.getCause() != null && e.getCause() instanceof SAXParseException){
-				HybridMobileStatus hms = new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID, HybridMobileStatus.STATUS_CODE_CONFIG_PARSE_ERROR,
-						e.getStatus().getMessage(), e.getCause());
-				e = new CoreException(hms);
-			}
-			throw e;
-		}
 		
-		String id = CordovaPluginXMLHelper.getAttributeValue(doc.getDocumentElement(), "id");
-		if(isPluginInstalled(id)){
-			HybridCore.log(IStatus.WARNING, "Cordova Plugin ("+id+") is already installed, skipping.",null);
-		}
-		if( !pluginFile.exists() ){
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin directory, no plugin.xml exists"));
-		}
-		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
-		if( !plugins.exists() ){
-			plugins.create(true, true, monitor);
-		}
-		
-		//collect first stage install actions
-		List<IPluginInstallationAction> actions = collectInstallActions(
-				directory, doc, id, plugins, overwrite);
-		actions.add(getPluginInstallRecordAction(doc));
-		runActions(actions,false,overwrite,monitor); 
-		resetInstalledPlugins();
+		Document doc = readPluginXML(directory);
+		doInstallPlugin(directory,doc, overwrite, monitor);
+		String id = CordovaPluginXMLHelper.getAttributeValue(doc.getDocumentElement(), "id");	
+		JsonObject source = new JsonObject();
+		source.addProperty("type", "local");
+		source.addProperty("path", directory.toString());
+		this.saveFetchMetadata(source,id,monitor );
 	}
+	
+	/**
+	 * Installs a Cordova plug-in from registry. This method 
+	 * delegates to {@link #doInstallPlugin()} after downloading the plugin from registry. 
+	 * 
+	 * @param plugin
+	 * @param overwrite
+	 * @param monitor
+	 * @throws CoreException
+	 *<ul>
+	 *<li>if plugin.xml is missing</li>
+	 *<li>if plug-ins directory is missing on the project</li>
+	 *<li>if an error occurs during installation</li>
+	 *</ul>
+	 */
+	public void installPlugin(CordovaRegistryPluginVersion plugin, FileOverwriteCallback overwrite, IProgressMonitor monitor ) throws CoreException{
+		if(monitor == null )
+			monitor = new NullProgressMonitor();
+		if(monitor.isCanceled())
+					return;
+		
+		CordovaPluginRegistryManager regMgr = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+		File directory = regMgr.getInstallationDirectory(plugin,monitor);
+		Document doc = readPluginXML(directory);
+		doInstallPlugin(directory,doc,overwrite,monitor);
+		
+		String id = CordovaPluginXMLHelper.getAttributeValue(doc.getDocumentElement(), "id");	
+		JsonObject source = new JsonObject();
+		source.addProperty("type", "registry");
+		source.addProperty("id", id);
+		this.saveFetchMetadata(source,id,monitor );
+	}
+
+
 
 	/**
 	 * Installs a Cordova plug-in from a git repository. 
-	 * This method delegates to {@link #installPlugin(File)} after cloning the
+	 * This method delegates to {@link #doInstallPlugin(File)} after cloning the
 	 * repository to a temporary location to complete the installation of the 
 	 * plug-in. 
 	 * <br/>
@@ -176,17 +185,20 @@ public class CordovaPluginManager {
 			if(monitor.isCanceled())
 				return;
 			monitor.subTask("Clone plugin repository");
-			Git git = Git.cloneRepository().setDirectory(tempRepoDirectory).setURI(uri.getScheme()+":" + uri.getSchemeSpecificPart()).call();
+			String gitUrl = uri.getScheme()+":" + uri.getSchemeSpecificPart();
+			Git git = Git.cloneRepository().setDirectory(tempRepoDirectory).setURI(gitUrl).call();
 			File pluginDirectory = tempRepoDirectory;
 			String fragment = uri.getFragment();
-		
+			String commit = null;
+			String subdir = null;
+
 			if(fragment != null ){
 				int idx = fragment.indexOf(':');
 				if(idx <0 ){
 					idx = fragment.length();
 				}
-				String commit = fragment.substring(0, idx);
-				String subdir = fragment.substring(Math.min(idx+1, fragment.length()));
+				commit = fragment.substring(0, idx);
+				subdir = fragment.substring(Math.min(idx+1, fragment.length()));
 				if(monitor.isCanceled()){
 					throw new CanceledException("Plug-in installation cancelled");
 				}
@@ -204,13 +216,85 @@ public class CordovaPluginManager {
 				}
 			}
 			SubProgressMonitor sm = new SubProgressMonitor(monitor, 1);
-			this.installPlugin(pluginDirectory,overwrite,sm);
+			
+			Document doc = readPluginXML(pluginDirectory);
+			this.doInstallPlugin(pluginDirectory,doc,overwrite,sm);
+			String id = CordovaPluginXMLHelper.getAttributeValue(doc.getDocumentElement(), "id");	
+			JsonObject source = new JsonObject();
+			source.addProperty("type", "git");
+			source.addProperty("url", gitUrl);
+			if(subdir != null && !subdir.isEmpty()){
+				source.addProperty("subdir", subdir);
+			}
+			if(commit != null && !commit.isEmpty()){
+				source.addProperty("ref", commit);
+			}
+			this.saveFetchMetadata(source,id,monitor );
+			
 		} catch (GitAPIException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Error cloning the plugin repository", e));
 		} finally{
 			monitor.done();
 		}
 	}
+	
+	private void doInstallPlugin(File directory,Document doc,
+			FileOverwriteCallback overwrite, IProgressMonitor monitor)
+			throws CoreException {
+		
+		String id = CordovaPluginXMLHelper.getAttributeValue(doc.getDocumentElement(), "id");
+		if(isPluginInstalled(id)){
+			HybridCore.log(IStatus.WARNING, "Cordova Plugin ("+id+") is already installed, skipping.",null);
+		}
+		
+		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
+		if( !plugins.exists() ){
+			plugins.create(true, true, monitor);
+		}
+		
+		//collect first stage install actions
+		List<IPluginInstallationAction> actions = collectInstallActions(
+				directory, doc, id, plugins, overwrite);
+		actions.add(getPluginInstallRecordAction(doc));
+		runActions(actions,false,overwrite,monitor); 
+		resetInstalledPlugins();
+	}
+
+	private Document readPluginXML(File directory) throws CoreException {
+		File pluginFile = new File(directory, PlatformConstants.FILE_XML_PLUGIN);
+		if(!pluginFile.exists()){
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, NLS.bind("plugin.xml can not be located at {0}", pluginFile.toString())));
+		}
+		Document doc = null;
+		try{
+			doc = XMLUtil.loadXML(pluginFile, false); 
+		}catch(CoreException e ){
+			//Convert the SAXParseException exceptions to HybridMobileStatus because
+			//it may indicate a broken plugin.xml or an platform not supported 
+			// see https://issues.jboss.org/browse/JBIDE-15768
+			if(e.getCause() != null && e.getCause() instanceof SAXParseException){
+				HybridMobileStatus hms = new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID, HybridMobileStatus.STATUS_CODE_CONFIG_PARSE_ERROR,
+						e.getStatus().getMessage(), e.getCause());
+				e = new CoreException(hms);
+			}
+			throw e;
+		}
+		return doc;
+	}
+	
+	private void saveFetchMetadata(JsonObject source, String id, IProgressMonitor monitor )throws CoreException{
+		IFolder plugins = getPluginsFolder();
+		IFolder pluginHome = plugins.getFolder(id);
+		IFile file = pluginHome.getFile(".fetch.json");
+
+		JsonObject object = new JsonObject();
+		object.add("source", source);
+		Gson gson = new Gson();
+		String jsonString = gson.toJson(object);
+		InputStream stream = new ByteArrayInputStream(jsonString.getBytes());
+		file.create(stream, true, monitor);
+	}
+	
 	/**
 	 * Removes the plug-in with given id
 	 * @param id
@@ -298,7 +382,7 @@ public class CordovaPluginManager {
 	 */
 	public boolean isPluginInstalled(String pluginId){
 		if(pluginId == null ) return false;
-		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
+		IFolder plugins = getPluginsFolder();
 		IPath pluginIDPath = new Path(pluginId);
 		pluginIDPath.append(PlatformConstants.FILE_XML_PLUGIN);
 		boolean result = plugins.exists(pluginIDPath);
@@ -462,8 +546,7 @@ public class CordovaPluginManager {
 	}
 
 	private File getPluginHomeDirectory(CordovaPlugin plugin) throws CoreException{
-		IProject prj = this.project.getProject();
-		IFolder plugins = prj.getFolder(PlatformConstants.DIR_PLUGINS);
+		IFolder plugins = getPluginsFolder();
 		if(plugins.exists()){
 			IFolder pluginHome = plugins.getFolder(plugin.getId());
 			if(pluginHome.exists() && pluginHome.getLocation() != null ){
@@ -473,6 +556,11 @@ public class CordovaPluginManager {
 			}
 		}
 		throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Plugin folder does not exist"));
+	}
+
+	private IFolder getPluginsFolder() {
+		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
+		return plugins;
 	}
 	
 	private void runActions(final List<IPluginInstallationAction> actions, boolean runUnInstall, FileOverwriteCallback overwrite, IProgressMonitor monitor ) throws CoreException{

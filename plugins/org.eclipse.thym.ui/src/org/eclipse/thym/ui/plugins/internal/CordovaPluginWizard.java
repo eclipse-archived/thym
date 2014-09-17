@@ -35,16 +35,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.plugin.CordovaPluginManager;
+import org.eclipse.thym.core.plugin.FileOverwriteCallback;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
-import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.FileOverwriteCallback;
-import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 
 public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, FileOverwriteCallback, ICordovaPluginWizard{
 	static final String IMAGE_WIZBAN = "/icons/wizban/cordova_plugin_wiz.png";
@@ -120,9 +119,8 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 				pm.installPlugin(this.gitRepo,fileOverwriteCallback,monitor );
 				break;
 			case PLUGIN_SOURCE_REGISTRY:
-				CordovaPluginRegistryManager regMgr = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
 				for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
-					pm.installPlugin(regMgr.getInstallationDirectory(cordovaRegistryPluginVersion,monitor),fileOverwriteCallback,monitor);
+					pm.installPlugin(cordovaRegistryPluginVersion,fileOverwriteCallback,monitor);
 				}
 				break;
 			default:

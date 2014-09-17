@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.thym.core.plugin.actions;
 
-import java.io.File;
 import java.net.URI;
 import java.util.List;
 
@@ -52,8 +51,7 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 				List<CordovaRegistryPluginVersion> versions = plugin.getVersions();
 				for (CordovaRegistryPluginVersion version : versions) {
 					if(plugin.getLatestVersion().equals(version.getVersionNumber())){
-						File f =manager.getInstallationDirectory(version, new NullProgressMonitor());
-						pluginManager.installPlugin(f, this.overwriteCallback, new NullProgressMonitor());
+						pluginManager.installPlugin(version, this.overwriteCallback, new NullProgressMonitor());
 					}
 				}
 			}

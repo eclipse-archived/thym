@@ -37,7 +37,6 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
-import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
@@ -137,9 +136,8 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
 			List<CordovaRegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
-			CordovaPluginRegistryManager regMgr = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
 			for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
-				pm.installPlugin(regMgr.getInstallationDirectory(cordovaRegistryPluginVersion,monitor),cb,monitor);
+				pm.installPlugin(cordovaRegistryPluginVersion,cb,monitor);
 			}
 			break;
 		default:
