@@ -116,11 +116,11 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 				pm.installPlugin(this.dir,fileOverwriteCallback, monitor);
 				break;
 			case PLUGIN_SOURCE_GIT:
-				pm.installPlugin(this.gitRepo,fileOverwriteCallback,monitor );
+				pm.installPlugin(this.gitRepo,fileOverwriteCallback,false, monitor );
 				break;
 			case PLUGIN_SOURCE_REGISTRY:
 				for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
-					pm.installPlugin(cordovaRegistryPluginVersion,fileOverwriteCallback,monitor);
+					pm.installPlugin(cordovaRegistryPluginVersion,fileOverwriteCallback,false, monitor);
 				}
 				break;
 			default:

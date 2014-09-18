@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -196,7 +198,10 @@ public class InstallActionsTest {
 	public void testPluginInstallRecordAction() throws CoreException{
 		String id = "org.eclipse.cordova.test.plugin";
 		String version = "1.2.3";
-		PluginInstallRecordAction action = new PluginInstallRecordAction(project.hybridProject(), "ATest", id, version);
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("id",id );
+		params.put("version", version);
+		PluginInstallRecordAction action = new PluginInstallRecordAction(project.hybridProject(), "ATest", params);
 		action.install();
 		List<RestorableCordovaPlugin> restorables = project.hybridProject().getPluginManager().getRestorablePlugins(new NullProgressMonitor());
 		assertNotNull(restorables);
@@ -211,7 +216,10 @@ public class InstallActionsTest {
 		String id = "org.eclipse.cordova.test.plugin";
 		String version = "1.2.3";
 		String pluginName = "ATest";
-		PluginInstallRecordAction action = new PluginInstallRecordAction(project.hybridProject(), pluginName, id, version);
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("id",id );
+		params.put("version", version);
+		PluginInstallRecordAction action = new PluginInstallRecordAction(project.hybridProject(), pluginName, params);
 		action.install();
 		List<RestorableCordovaPlugin> restorables = project.hybridProject().getPluginManager().getRestorablePlugins(new NullProgressMonitor());
 		assertNotNull(restorables);
@@ -219,7 +227,9 @@ public class InstallActionsTest {
 		RestorableCordovaPlugin plugin = restorables.get(0);
 		assertEquals(id, plugin.getId());
 		assertEquals(version, plugin.getVersion());
-		action = new PluginInstallRecordAction(project.hybridProject(), pluginName, id, null);
+		params.clear();
+		params.put("id", id);
+		action = new PluginInstallRecordAction(project.hybridProject(), pluginName, params);
 		action.install();
 		assertNotNull(restorables);
 		restorables = project.hybridProject().getPluginManager().getRestorablePlugins(new NullProgressMonitor());

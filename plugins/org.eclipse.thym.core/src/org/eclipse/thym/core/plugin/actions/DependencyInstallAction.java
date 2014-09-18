@@ -44,14 +44,14 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 		CordovaPluginManager pluginManager = project.getPluginManager();
 		if(!pluginManager.isPluginInstalled(dependencyPluginId)){
 			if( uri != null){
-				pluginManager.installPlugin(uri,overwriteCallback, new NullProgressMonitor());
+				pluginManager.installPlugin(uri,overwriteCallback, true, new NullProgressMonitor());
 			}else{//install from registry
 				CordovaPluginRegistryManager manager = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
 				CordovaRegistryPlugin plugin = manager.getCordovaPluginInfo(dependencyPluginId);
 				List<CordovaRegistryPluginVersion> versions = plugin.getVersions();
 				for (CordovaRegistryPluginVersion version : versions) {
 					if(plugin.getLatestVersion().equals(version.getVersionNumber())){
-						pluginManager.installPlugin(version, this.overwriteCallback, new NullProgressMonitor());
+						pluginManager.installPlugin(version, this.overwriteCallback, true, new NullProgressMonitor());
 					}
 				}
 			}

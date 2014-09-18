@@ -10,18 +10,21 @@
  *******************************************************************************/
 package org.eclipse.thym.core.plugin.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -42,6 +45,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 @SuppressWarnings("restriction")
 public class PluginInstallationTests {
@@ -90,6 +97,27 @@ public class PluginInstallationTests {
 		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
 		assertNotNull(plgFolder);
 		assertTrue(plgFolder.exists());
+	}
+	
+	@Test
+	public void checkFetchJson() throws CoreException{
+		installPlugin(PLUGIN_DIR_TESTPLUGIN);
+		IProject prj = project.getProject();
+		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
+		assertNotNull(plgFolder);
+		IFile fetchJson = plgFolder.getFile(".fetch.json");
+		assertNotNull(fetchJson);
+		assertTrue(fetchJson.exists());
+		JsonParser parser = new JsonParser();
+		InputStreamReader reader = new InputStreamReader(fetchJson.getContents());
+		JsonElement element = parser.parse(reader);
+		JsonObject object = element.getAsJsonObject();
+		assertTrue(object.has("source"));
+		JsonObject source = object.getAsJsonObject("source");
+		assertTrue(source.has("type"));
+		assertTrue(source.has("path"));
+		String type = source.get("type").getAsString();
+		assertEquals("local",type);
 	}
 	
 	@Test
@@ -150,14 +178,20 @@ public class PluginInstallationTests {
 
 	@Test
 	public void restorablePluginListTest() throws CoreException{
-		CordovaPluginManager pm = installPlugin(PLUGIN_DIR_TESTPLUGIN);
+		CordovaPluginManager pm = getCordovaPluginManager();
 		List<RestorableCordovaPlugin> restorables = pm.getRestorablePlugins(new NullProgressMonitor());
+		assertTrue("config.xml already contains restorables",restorables.isEmpty());
+		pm = installPlugin(PLUGIN_DIR_TESTPLUGIN);
+ 		restorables = pm.getRestorablePlugins(new NullProgressMonitor());
 		assertNotNull( restorables);
-		assertTrue(restorables.size() == 0);// installed plugins do not appear on the restorable list
+		for (RestorableCordovaPlugin plugin : restorables) {
+			assertNotEquals(plugin.getId(),PLUGIN_ID_TESTPLUGIN);
+		}
 	}
 	
 	@Test
 	public void installPluginToProjectWithoutPluginsFolder() throws CoreException{
+		System.out.println("running installPluginToProjectWithoutPluginsFolder");
 		IProject prj = project.getProject();
 		IFolder pluginsFolder  = prj.getFolder(PlatformConstants.DIR_PLUGINS);
 		assertNotNull(pluginsFolder);
@@ -180,7 +214,7 @@ public class PluginInstallationTests {
 			public boolean isOverwiteAllowed(String[] files) {
 				return true;
 			}
-		}, new NullProgressMonitor());
+		}, false, new NullProgressMonitor());
 		List<CordovaPlugin> plugins = pm.getInstalledPlugins();
 		boolean found = false;
 		for (CordovaPlugin cordovaPlugin : plugins) {

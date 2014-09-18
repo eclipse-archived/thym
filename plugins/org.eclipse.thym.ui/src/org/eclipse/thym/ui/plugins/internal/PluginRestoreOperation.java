@@ -45,10 +45,9 @@ public class PluginRestoreOperation extends WorkspaceModifyOperation {
 			pman.installPlugin(feature, new FileOverwriteCallback() {
 				@Override
 				public boolean isOverwiteAllowed(String[] files) {
-					// TODO Auto-generated method stub
 					return true;
 				}
-			}, monitor);
+			}, false, monitor);
 		}
 	}
 

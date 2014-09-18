@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -123,6 +124,11 @@ public class CordovaPluginManager {
 		source.addProperty("type", "local");
 		source.addProperty("path", directory.toString());
 		this.saveFetchMetadata(source,id,monitor );
+		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>(1);
+		Map<String,String> params = new HashMap<String, String>();
+		params.put("installPath", directory.toString());
+		actions.add(getPluginInstallRecordAction(doc,params));
+		runActions(actions,false,overwrite,monitor); 
 	}
 	
 	/**
@@ -131,6 +137,7 @@ public class CordovaPluginManager {
 	 * 
 	 * @param plugin
 	 * @param overwrite
+	 * @param isDependency 
 	 * @param monitor
 	 * @throws CoreException
 	 *<ul>
@@ -139,7 +146,7 @@ public class CordovaPluginManager {
 	 *<li>if an error occurs during installation</li>
 	 *</ul>
 	 */
-	public void installPlugin(CordovaRegistryPluginVersion plugin, FileOverwriteCallback overwrite, IProgressMonitor monitor ) throws CoreException{
+	public void installPlugin(CordovaRegistryPluginVersion plugin, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor ) throws CoreException{
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled())
@@ -155,6 +162,11 @@ public class CordovaPluginManager {
 		source.addProperty("type", "registry");
 		source.addProperty("id", id);
 		this.saveFetchMetadata(source,id,monitor );
+		if(!isDependency){//update config.xml 
+			List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>(1);
+			actions.add(getPluginInstallRecordAction(doc, null));
+			runActions(actions,false,overwrite,monitor); 
+		}
 	}
 
 
@@ -172,13 +184,14 @@ public class CordovaPluginManager {
 	 * will be done from that location. 
 	 * 
 	 * @param uri
+	 * @param overwrite
+	 * @param isDependency 
+	 * @param monitor 
 	 * @param commit 
 	 * @param subdir
-	 * @param overwrite
-	 * @param monitor 
 	 * @throws CoreException
 	 */
-	public void installPlugin(URI uri, FileOverwriteCallback overwrite,IProgressMonitor monitor) throws CoreException{
+	public void installPlugin(URI uri, FileOverwriteCallback overwrite,boolean isDependency, IProgressMonitor monitor) throws CoreException{
 		File tempRepoDirectory = new File(FileUtils.getTempDirectory(), "cordova_plugin_tmp_"+Long.toString(System.currentTimeMillis()));
 		tempRepoDirectory.deleteOnExit();
 		try {
@@ -230,7 +243,13 @@ public class CordovaPluginManager {
 				source.addProperty("ref", commit);
 			}
 			this.saveFetchMetadata(source,id,monitor );
-			
+			if(!isDependency){//update config.xml 
+				List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>(1);
+				Map<String,String> params = new HashMap<String, String>();
+				params.put("url", uri.toString());
+				actions.add(getPluginInstallRecordAction(doc,params));
+				runActions(actions,false,overwrite,monitor); 
+			}	
 		} catch (GitAPIException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Error cloning the plugin repository", e));
 		} finally{
@@ -255,7 +274,6 @@ public class CordovaPluginManager {
 		//collect first stage install actions
 		List<IPluginInstallationAction> actions = collectInstallActions(
 				directory, doc, id, plugins, overwrite);
-		actions.add(getPluginInstallRecordAction(doc));
 		runActions(actions,false,overwrite,monitor); 
 		resetInstalledPlugins();
 	}
@@ -324,8 +342,9 @@ public class CordovaPluginManager {
 		};
 		IResource pluginsDir = this.project.getProject().findMember("/"+PlatformConstants.DIR_PLUGINS);
 		List<IPluginInstallationAction> actions = collectInstallActions(
-				dir.getLocation().toFile(),             // TODO: replace with values from .fetch.json
+				dir.getLocation().toFile(), //TODO: use .fetch.json 
 				doc, id, pluginsDir,cb);                           
+		actions.add(getPluginInstallRecordAction(doc, null));
 		runActions(actions,true,cb, monitor);
 		resetInstalledPlugins();
 	}
@@ -827,19 +846,26 @@ public class CordovaPluginManager {
 		return list;
 	}
 	
-	private PluginInstallRecordAction getPluginInstallRecordAction(Document pluginXml) throws CoreException{
+	private PluginInstallRecordAction getPluginInstallRecordAction(Document pluginXml, Map<String,String> additionalParams) throws CoreException{
+		Map<String,String> params = new HashMap<String, String>();
+		if(additionalParams != null ){
+			params.putAll(additionalParams);
+		}
 		String id = CordovaPluginXMLHelper.getAttributeValue(pluginXml.getDocumentElement(),"id");
+		params.put("id", id);
+		
 		boolean saveVersion = Platform.getPreferencesService().getBoolean(PlatformConstants.HYBRID_UI_PLUGIN_ID, 
 				PlatformConstants.PREF_SHRINKWRAP_PLUGIN_VERSIONS,false,null);
 		String version = null;
 		if(saveVersion){
 			version = CordovaPluginXMLHelper.getAttributeValue(pluginXml.getDocumentElement(),"version");
+			params.put("version", version);
 		}
 		Node n = CordovaPluginXMLHelper.getNameNode(pluginXml.getDocumentElement());
 		if(n == null){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"plugin.xml is missing name"));
 		}
-		return new PluginInstallRecordAction(project, n.getTextContent().trim(), id, version);
+		return new PluginInstallRecordAction(project, n.getTextContent().trim(), params);
 	}
 		
 }

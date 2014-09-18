@@ -11,6 +11,8 @@
 package org.eclipse.thym.core.plugin.actions;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.thym.core.HybridProject;
@@ -22,15 +24,14 @@ import org.eclipse.thym.core.platform.IPluginInstallationAction;
 public class PluginInstallRecordAction implements IPluginInstallationAction{
 	
 	private final HybridProject project;
-	private final String id;
-	private final String version;
 	private final String pluginName;
+	private final Map<String, String> parameters;
+	private final static String[] INSTALL_RECORD_PARAMS = { "id","version","url","installPath"}; 
 	
-	public PluginInstallRecordAction(HybridProject project, String pluginName, String id, String version) {
+	public PluginInstallRecordAction(HybridProject project, String pluginName, Map<String, String> parameters ) {
 		this.project = project;
-		this.id = id;
-		this.version = version;
 		this.pluginName = pluginName;
+		this.parameters = parameters;
 	}
 	
 	@Override
@@ -44,14 +45,22 @@ public class PluginInstallRecordAction implements IPluginInstallationAction{
 			feature.setName(pluginName);
 			widget.addFeature(feature);
 		}
-		String existingId= feature.getParams().get("id");
-		if(existingId == null){
-			feature.addParam("id",id);
+		
+		// Remove all the parameters that are related to install record 
+		// to avoid dangling parameters if a plugin is installed with a 
+		// new set of params.
+		for (String key : INSTALL_RECORD_PARAMS) {
+			if(feature.getParams().containsKey(key)){
+				feature.removeParam(key);
+			}
 		}
-		//replace the new version number
-		feature.removeParam("version");
-		if(version != null && !version.isEmpty()){
-			feature.addParam("version", version);
+		
+		Set<String> keys = parameters.keySet();
+		for (String paramName : keys) {
+			if(feature.getParams().containsKey(paramName)){
+				feature.removeParam(paramName);
+			}
+			feature.addParam(paramName, parameters.get(paramName));
 		}
 		widgetModel.save();
 	}
@@ -74,6 +83,13 @@ public class PluginInstallRecordAction implements IPluginInstallationAction{
 
 	@Override
 	public void unInstall() throws CoreException {
-		//leave uninstall to the feature tag? 
+		WidgetModel widgetModel = WidgetModel.getModel(project);
+		Widget widget = widgetModel.getWidgetForEdit();
+		
+		Feature feature = getExistingFeature(widget);
+		if(feature != null ){
+			widget.removeFeature(feature);
+		}
+		widgetModel.save();
 	}
 }
