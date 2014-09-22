@@ -1,4 +1,14 @@
 {
+  '3.6.3' = {
+              'ios'= {
+                      download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.6.3;sf=tgz',
+                      version: '3.6.3'
+              },
+              'android' = {
+                            download_url:'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.6.3;sf=tgz',
+                            version: '3.6.3'
+              }
+   },
   '3.5.0' = {
               'ios'= {
                       download_url: 'https://git-wip-us.apache.org/repos/asf?p=cordova-ios.git;a=snapshot;h=3.5.0;sf=tgz',
