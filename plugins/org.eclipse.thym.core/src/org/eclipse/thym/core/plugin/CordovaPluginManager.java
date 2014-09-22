@@ -63,6 +63,7 @@ import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory;
 import org.eclipse.thym.core.platform.IPluginInstallationAction;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.core.plugin.RestorableCordovaPlugin.Type;
 import org.eclipse.thym.core.plugin.actions.ActionVariableHelper;
 import org.eclipse.thym.core.plugin.actions.ConfigXMLUpdateAction;
 import org.eclipse.thym.core.plugin.actions.CopyFileAction;
@@ -481,10 +482,22 @@ public class CordovaPluginManager {
 				if (id != null && !isPluginInstalled(id)) {
 					RestorableCordovaPlugin rp = new RestorableCordovaPlugin();
 					rp.setId(id);
+					rp.setType(Type.REGISTRY);
 					String version = params.get("version");
 					if (version != null){
 						rp.setVersion(version);
 					}
+					String url = params.get("url");
+					if(url != null ){
+						rp.setUrl(url);
+						rp.setType(Type.GIT);
+					}
+					String path = params.get("installPath");
+					if(path != null ){
+						rp.setPath(path);
+						rp.setType(Type.LOCAL);
+					}
+					
 					restorable.add(rp);
 				}
 			}

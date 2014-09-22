@@ -17,8 +17,15 @@ package org.eclipse.thym.core.plugin;
  *
  */
 public class RestorableCordovaPlugin {
+	
+	public enum Type{
+		LOCAL,REGISTRY,GIT
+	}
 	private String id;
 	private String version;
+	private String url;
+	private String path;
+	private Type type;
 	
 	public String getId() {
 		return id;
@@ -31,5 +38,23 @@ public class RestorableCordovaPlugin {
 	}
 	public void setVersion(String version) {
 		this.version = version;
+	}
+	public Type getType() {
+		return type;
+	}
+	public void setType(Type type) {
+		this.type = type;
+	}
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	public String getPath() {
+		return path;
+	}
+	public void setPath(String path) {
+		this.path = path;
 	}
 }

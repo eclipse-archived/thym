@@ -10,25 +10,34 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.plugins.internal;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
+import org.eclipse.thym.core.plugin.RestorableCordovaPlugin;
+import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 public class PluginRestoreOperation extends WorkspaceModifyOperation {
 	
-	private final CordovaRegistryPluginVersion[] restorables;
+	private final RestorableCordovaPlugin[] restorables;
 	private final HybridProject project;
 	
 	
-	public PluginRestoreOperation(HybridProject project, CordovaRegistryPluginVersion[] restorables) {
+	public PluginRestoreOperation(HybridProject project, RestorableCordovaPlugin[] restorables) {
 		this.restorables = restorables;
 		this.project = project;
 	}
@@ -41,14 +50,50 @@ public class PluginRestoreOperation extends WorkspaceModifyOperation {
 			return;
 		}
 		CordovaPluginManager pman = project.getPluginManager();
-		for (CordovaRegistryPluginVersion feature : restorables) {
-			pman.installPlugin(feature, new FileOverwriteCallback() {
-				@Override
-				public boolean isOverwiteAllowed(String[] files) {
-					return true;
+		FileOverwriteCallback cb = new FileOverwriteCallback() {
+			@Override
+			public boolean isOverwiteAllowed(String[] files) {
+				return true ;
+			}
+		};
+		for (RestorableCordovaPlugin feature : restorables) {
+			switch (feature.getType()) {
+			case REGISTRY:
+				CordovaRegistryPluginVersion version = getVersion(feature);
+				if(version == null ){
+					throw new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, 
+							NLS.bind("Version {0} for Cordova plugin {1} does not exist on registry", new String[]{feature.getVersion(), })));
 				}
-			}, false, monitor);
+				pman.installPlugin(version, cb, false, monitor);
+				break;
+			case GIT:
+				try {
+					pman.installPlugin(new URI(feature.getUrl()), cb, false, monitor);
+				} catch (URISyntaxException e) {
+					throw new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, 
+							NLS.bind("{0} is not a valid URI to restore Cordova plug-ins from Git",feature.getUrl()),e));
+				}
+				break;
+			case LOCAL:
+				pman.installPlugin(new File(feature.getPath()), cb, monitor);
+				break;
+			default:
+				Assert.isTrue(false, "Unknown plugin restore type");
+			}
+			
 		}
 	}
+	
+	
+	private CordovaRegistryPluginVersion getVersion(RestorableCordovaPlugin restorable) throws CoreException{
+		CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+			CordovaRegistryPlugin plugin = regMng.getCordovaPluginInfo(restorable.getId());
+			String version = restorable.getVersion();
+			if(version == null){
+				version = plugin.getLatestVersion();
+			}
+			return plugin.getVersion(version);
+	}
+	
 
 }

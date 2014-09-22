@@ -11,7 +11,6 @@
 package org.eclipse.thym.ui.plugins.internal;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITableLabelProvider;
@@ -32,24 +32,23 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.RestorableCordovaPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 
 public class PluginRestorePage extends WizardPage {
 	
 	private class RestorablePluginsContentProvider implements IStructuredContentProvider{
-		private CordovaRegistryPluginVersion[] vers;
+		private RestorableCordovaPlugin[] restorables;
 		@Override
 		public void dispose() {
 		}
@@ -57,17 +56,17 @@ public class PluginRestorePage extends WizardPage {
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 			if(newInput == null ){
-				vers = null;
+				restorables = null;
 			}else{
 				@SuppressWarnings("unchecked")
-				List<CordovaRegistryPluginVersion> versionList = (List<CordovaRegistryPluginVersion>) newInput;
-				vers = versionList.toArray(new CordovaRegistryPluginVersion[versionList.size()]);
+				List<RestorableCordovaPlugin> restorableList = (List<RestorableCordovaPlugin>)newInput;
+				restorables = restorableList.toArray(new RestorableCordovaPlugin[restorableList.size()]);
 			}
 		}
 
 		@Override
 		public Object[] getElements(Object inputElement) {
-			return vers;
+			return restorables;
 		}
 	}
 	
@@ -80,16 +79,37 @@ public class PluginRestorePage extends WizardPage {
 
 		@Override
 		public String getColumnText(Object element, int columnIndex) {
+			RestorableCordovaPlugin rp = (RestorableCordovaPlugin) element;
+			String typeLbl = null;
+			String infoLbl = "-";
 			
-			CordovaRegistryPluginVersion pv = (CordovaRegistryPluginVersion) element;
+			switch (rp.getType()) {
+			case LOCAL:
+				typeLbl = "local";
+				infoLbl = rp.getPath();
+				break;
+			case REGISTRY:
+				typeLbl = "registry";
+				break;
+			case GIT:
+				typeLbl = "git";
+				infoLbl = rp.getUrl();
+				break;
+			}
+			
 			switch (columnIndex) {
 			case 0:
-				return pv.getName();
+				return rp.getId();
 			case 1: 
-				String ver = pv.getVersionNumber();
+				String ver = rp.getVersion();
+				if(ver == null || ver.isEmpty()){
+					return "-";
+				}
 				return ver;
 			case 2:
-				return "registry";
+				return typeLbl;
+			case 3:
+				return infoLbl;
 			}
 			return "";
 		}
@@ -131,17 +151,30 @@ public class PluginRestorePage extends WizardPage {
 		
 		col = new TableColumn(table, SWT.NULL);
 		col.setText("Version");
-		col.setWidth(TABLE_WIDTH/4);
+		col.setWidth(getMinColumnWidth(table, "Version"));
 		
 		col = new TableColumn(table, SWT.NULL);
 		col.setText("Source");
-		col.setWidth(TABLE_WIDTH/4);
+		col.setWidth(getMinColumnWidth(table, "registry"));
+		
+		
+
+		col = new TableColumn(table, SWT.NULL);
+		col.setText("Info");
+		col.setWidth(TABLE_WIDTH/2);
+		
 
 		restorableList = new CheckboxTableViewer(table);			
 		restorableList.setContentProvider(new RestorablePluginsContentProvider());
 		restorableList.setLabelProvider(new RestorablePluginLabelProvider());
 		
 		setControl(composite);
+	}
+	
+	private int getMinColumnWidth(Control control, String label){
+		GC gc= new GC(control);
+			gc.setFont(JFaceResources.getDialogFont());
+			return gc.stringExtent(label).x + 10;
 	}
 	
 	@Override
@@ -152,7 +185,6 @@ public class PluginRestorePage extends WizardPage {
 			@Override
 			public void run() {
 				populateRestorables();
-				
 			}
 		});
 		
@@ -167,21 +199,21 @@ public class PluginRestorePage extends WizardPage {
 				public void run(IProgressMonitor monitor) throws InvocationTargetException,
 						InterruptedException {
 					try{
-						List<RestorableCordovaPlugin> restorables = project.getPluginManager().getRestorablePlugins(monitor);
-						final List<CordovaRegistryPluginVersion> restoreVersion = new ArrayList<CordovaRegistryPluginVersion>();
-						CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
-						for (RestorableCordovaPlugin restorable : restorables) {
-							if(monitor.isCanceled()){
-								throw new OperationCanceledException();
-							}
-							CordovaRegistryPlugin plugin = regMng.getCordovaPluginInfo(restorable.getId());
-							
-							String version = restorable.getVersion();
-							if(version == null){
-								version = plugin.getLatestVersion();
-							}
-							restoreVersion.add(plugin.getVersion(version));
-						}
+						final List<RestorableCordovaPlugin> restorables = project.getPluginManager().getRestorablePlugins(monitor);
+//						final List<CordovaRegistryPluginVersion> restoreVersion = new ArrayList<CordovaRegistryPluginVersion>();
+//						CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+//						for (RestorableCordovaPlugin restorable : restorables) {
+//							if(monitor.isCanceled()){
+//								throw new OperationCanceledException();
+//							}
+//							CordovaRegistryPlugin plugin = regMng.getCordovaPluginInfo(restorable.getId());
+//							
+//							String version = restorable.getVersion();
+//							if(version == null){
+//								version = plugin.getLatestVersion();
+//							}
+//							restoreVersion.add(plugin.getVersion(version));
+//						}
 						
 						getControl().getDisplay().syncExec(new Runnable() {
 							@Override
@@ -189,7 +221,7 @@ public class PluginRestorePage extends WizardPage {
 								BusyIndicator.showWhile(getControl().getDisplay(), new Runnable() {
 									@Override
 									public void run() {
-										restorableList.setInput(restoreVersion);
+										restorableList.setInput(restorables);
 										restorableList.setAllChecked(true);
 									}
 								});
@@ -217,9 +249,9 @@ public class PluginRestorePage extends WizardPage {
 		}
 	}
 	
-	public CordovaRegistryPluginVersion[] getSelectedRestorables(){
+	public RestorableCordovaPlugin[] getSelectedRestorables(){
 		Object[] checked = restorableList.getCheckedElements();
-		return Arrays.copyOf(checked, checked.length, CordovaRegistryPluginVersion[].class);
+		return Arrays.copyOf(checked, checked.length, RestorableCordovaPlugin[].class);
  	}
 	
 

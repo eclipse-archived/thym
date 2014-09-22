@@ -30,7 +30,7 @@ public class CordovaRegistryPlugin extends CordovaRegistryPluginInfo {
 	
 	/**
 	 * Returns the {@link CordovaRegistryPluginVersion} object for the given 
-	 * version. If the give version is not available it returns null
+	 * version. If the given version is not available it returns null
 	 * @param version
 	 * @return version or null
 	 */

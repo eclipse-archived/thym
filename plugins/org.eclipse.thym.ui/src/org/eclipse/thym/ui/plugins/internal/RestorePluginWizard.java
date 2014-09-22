@@ -19,7 +19,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.RestorableCordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 
@@ -41,9 +41,9 @@ public class RestorePluginWizard extends Wizard {
 	}
 	@Override
 	public boolean performFinish() {
-		CordovaRegistryPluginVersion[] versions = page.getSelectedRestorables();
+		RestorableCordovaPlugin[] restorables = page.getSelectedRestorables();
 		try {
-			getContainer().run(true, true, new PluginRestoreOperation(project, versions));
+			getContainer().run(true, true, new PluginRestoreOperation(project, restorables));
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() != null) {
 				if(e.getTargetException() instanceof CoreException ){

@@ -32,9 +32,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
@@ -199,7 +201,7 @@ public class WidgetModel implements IModelLifecycleListener{
 
 	/**
 	 * Syncs the changes done to the config.xml directly to the model by reloading it. 
-	 * This method needs to be called anytime config.xml is modified without using the 
+	 * This method needs to be called any time config.xml is modified without using the 
 	 * {@link Widget} instance.
 	 * 
 	 * @throws CoreException
@@ -208,6 +210,7 @@ public class WidgetModel implements IModelLifecycleListener{
 		if (this.underLyingModel != null) {
 			try {
 				IFile configXml = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(Path.fromOSString(configFile.toString()));
+				configXml.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
 				underLyingModel.getModelHandler().getModelLoader().load(configXml, underLyingModel);
 			} catch (IOException e) {
 				HybridCore.log(IStatus.ERROR,
