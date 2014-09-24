@@ -98,13 +98,8 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 	@Override
 	public IPluginInstallationAction getConfigFileAction(String target,
 			String parent, String value) {
-		
-		File configFile = new File(getProjectDirectory(),target);
-		if(target.endsWith(PlatformConstants.FILE_XML_CONFIG)){
-			//TODO: return the global config.xml action
-			return null; 
-		}
-		return new XMLConfigFileAction(configFile, parent, value);
+		File[] files = org.eclipse.thym.core.internal.util.FileUtils.resolveFile(getProjectDirectory(), target);
+		return new XMLConfigFileAction(files[0], parent, value);
 	}
 
 	@Override

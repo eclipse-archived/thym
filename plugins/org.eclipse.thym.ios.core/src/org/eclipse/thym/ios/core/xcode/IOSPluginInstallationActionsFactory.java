@@ -12,8 +12,10 @@ package org.eclipse.thym.ios.core.xcode;
 
 import java.io.File;
 
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory;
 import org.eclipse.thym.core.platform.IPluginInstallationAction;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -70,9 +72,12 @@ public class IOSPluginInstallationActionsFactory extends
 	@Override
 	public IPluginInstallationAction getConfigFileAction(String target,
 			String parent, String value) {
-		File configFile = new File(getProjectDirectory(),target);
-		return new XMLConfigFileAction(configFile, parent, value);
-
+		File[] configFile = FileUtils.resolveFile(getProjectDirectory(), target);
+		File file = configFile[0];
+		if(FilenameUtils.isExtension(file.toString(), "plist")){
+			return new PlistConfigFileAction(file, parent, value);
+		}
+		return new XMLConfigFileAction(file, parent, value);
 	}
 
 	@Override

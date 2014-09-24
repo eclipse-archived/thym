@@ -27,12 +27,16 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.eclipse.core.runtime.FileLocator;
 /**
  * Utilities for working with files on the file system and inside bundles.
@@ -238,6 +242,27 @@ public final class FileUtils {
 		} catch (MalformedURLException e) {
 			return null;
 		}
+	}
+	/**
+	 * Resolves a filename including wildcard characters to files in the 
+	 * given directory tree. This method recurses in the the subdirectories.
+	 * @param parent a directory
+	 * @param filename name for file 
+	 * @return array of files found matching filename or an empty array 
+	 */
+	public static File[] resolveFile(File parent, String filename){
+		if(parent == null){
+			return new File[0];
+		}
+		if( !parent.isDirectory() || filename == null || filename.isEmpty() || filename.equals(".")){
+			return new File[]{parent};
+		}
+		File f = new File(parent,filename);
+		if(f.exists()){
+			return new File[]{f};
+		}
+		Collection<File> theFiles= org.apache.commons.io.FileUtils.listFiles(parent, new WildcardFileFilter(filename), TrueFileFilter.INSTANCE);
+		return theFiles.toArray(new File[theFiles.size()]);
 	}
 
 	private static void checkCanCopy(URL source, URL destination ){

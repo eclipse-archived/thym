@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -75,6 +76,11 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			
 			// /${project_name}
 			directoryCopy(resolver.getTemplateFile(new Path(VAR_APP_NAME)),toURL(prjdir));		
+			//Delete these two files. Because we use them directly from the template location 
+			// Cordova CLI renames them after copying, we end up with dangling template files 
+			// which in some cases confuses the config file actions for plugin installation.
+			FileUtils.deleteQuietly(new File(prjdir,"__PROJECT_NAME__-Info.plist"));
+			FileUtils.deleteQuietly(new File(prjdir,"__PROJECT_NAME__-Prefix.pch"));
 			
 			// cordova
 			IPath cordovaScriptPath = destinationPath.append("cordova");

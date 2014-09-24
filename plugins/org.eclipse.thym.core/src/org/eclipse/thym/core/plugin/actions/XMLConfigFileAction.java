@@ -22,10 +22,12 @@ import javax.xml.xpath.XPathFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.IPluginInstallationAction;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -88,7 +90,8 @@ public class XMLConfigFileAction implements IPluginInstallationAction {
 		//It is common that a parent node can not be found because 
 		//plugins specify them on a platform specific way.
 		HybridCore.log(IStatus.ERROR, 
-				"Parent node could not be retrieved on "+target.getName()+ " with expression " + parent,null);
+				NLS.bind("Parent node could not be retrieved on {0} with expression {1}" ,
+				new String[]{target.getName(),parent}),null);
 	}
 
 	private XPathExpression getXPathExpression() throws XPathExpressionException {
@@ -99,14 +102,14 @@ public class XMLConfigFileAction implements IPluginInstallationAction {
 		return xpathExpression;
 	}
 	
-	private Node getParentNode(Node root) throws CoreException {
+	protected Node getParentNode(Element root) throws CoreException {
 		try {
 			return (Node) getXPathExpression().evaluate(root,
 					XPathConstants.NODE);
 		} catch (XPathExpressionException e) {
 			throw new CoreException(new Status(IStatus.ERROR,
-					HybridCore.PLUGIN_ID, "Error getting the parent node for " + target.getName()
-							+ " with xpath expression "+ parent, e));
+					HybridCore.PLUGIN_ID, NLS.bind("Parent node could not be retrieved on {0} with expression {1}" ,
+							new String[]{target.getName(),parent}), e));
 		}
 	}
 

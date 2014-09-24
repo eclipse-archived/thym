@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 
+import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.hybrid.test.TestUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -179,5 +180,11 @@ public class FileUtilsTest {
 		assertNull(toURL(null));	
 	}
 	
+	@Test
+	public void testResolveFile(){
+		File[] files = FileUtils.resolveFile(TestUtils.getTempDirectory(), "*.file");
+		assertTrue(files.length == 1);
+		assertEquals(plainFile, files[0]);
+	}
 	
 }
