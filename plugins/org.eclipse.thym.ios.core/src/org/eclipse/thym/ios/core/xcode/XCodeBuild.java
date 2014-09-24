@@ -36,7 +36,7 @@ import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
  *
  */
 public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
-	public static final String MIN_REQUIRED_VERSION = "4.6.0";
+	public static final String MIN_REQUIRED_VERSION = "6.0.0";
 	
 	private ILaunchConfiguration launchConfiguration;
 	
