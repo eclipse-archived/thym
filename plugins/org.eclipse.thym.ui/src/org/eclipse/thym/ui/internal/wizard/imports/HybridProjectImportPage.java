@@ -58,10 +58,14 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.core.plugin.CordovaPlugin;
+import org.eclipse.thym.core.plugin.CordovaPluginManager;
+import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
@@ -505,6 +509,14 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 	boolean createProjects(){
 		saveInHistroy();
 		
+		final FileOverwriteCallback cb = new FileOverwriteCallback() {
+			
+			@Override
+			public boolean isOverwiteAllowed(String[] files) {
+				return true;
+			}
+		};
+		
 		final Object[] selectedCandidates = projectList.getCheckedElements();
 		WorkspaceModifyOperation wop = new WorkspaceModifyOperation() {
 			
@@ -517,7 +529,16 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 				try {
 					for (int i = 0; i < selectedCandidates.length; i++) {
 						ProjectCandidate pc = (ProjectCandidate) selectedCandidates[i];
-						doCreateProject(pc, new SubProgressMonitor(monitor, 1));
+						IProject prj = doCreateProject(pc, new SubProgressMonitor(monitor, 1));
+						HybridProject project = HybridProject.getHybridProject(prj);
+						CordovaPluginManager pman = project.getPluginManager();
+						
+						//Create a copy of the installed plugins since the original list will change 
+						//as we iterate
+						List<CordovaPlugin> plugins = new ArrayList<CordovaPlugin>(pman.getInstalledPlugins());
+						for (CordovaPlugin cordovaPlugin : plugins) {
+							pman.fixInstalledPlugin(cordovaPlugin, cb,monitor);
+						}
 					}
 				}
 				catch(CoreException e){
@@ -547,7 +568,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 	}
 	
 
-	private void doCreateProject(ProjectCandidate pc, IProgressMonitor monitor) throws CoreException, InterruptedException {
+	private IProject doCreateProject(ProjectCandidate pc, IProgressMonitor monitor) throws CoreException, InterruptedException {
 		HybridProjectCreator projectCreator = new HybridProjectCreator();
 		Widget w = pc.getWidget();
 		String projectName = pc.getProjectName();
@@ -576,6 +597,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			if (!status.isOK())
 				throw new CoreException(status);
 		}
+		return project;
 
 	}
 	

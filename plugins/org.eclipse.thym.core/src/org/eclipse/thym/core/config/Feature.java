@@ -82,13 +82,17 @@ public class Feature extends AbstractConfigObject {
 		if(params.getValue() != null ){ //replace to trigger property change
 			props.putAll(params.getValue());
 		}
+		if(!props.containsKey(name)){
+			Document doc = itemNode.getOwnerDocument();
+			Element el = doc.createElement( FEATURE_PARAM_TAG);
+			el.setAttribute(PARAM_ATTR_NAME, name);
+			el.setAttribute(PARAM_ATTR_VALUE, value);
+			itemNode.appendChild(el);
+		}else{
+			Element paramElement = findParamElement(name);
+			paramElement.setAttribute(PARAM_ATTR_VALUE, value);
+		}
 		props.put(name, value);
-		Document doc = itemNode.getOwnerDocument();
-		Element el = doc.createElement( FEATURE_PARAM_TAG);
-		el.setAttribute(PARAM_ATTR_NAME, name);
-		el.setAttribute(PARAM_ATTR_VALUE, value);
-		itemNode.appendChild(el);
-		
 		params.setValue(props);
 	}
 	
@@ -99,19 +103,28 @@ public class Feature extends AbstractConfigObject {
 		if(params.getValue() != null ){ //replace to trigger property change
 			props.putAll(params.getValue());
 		}
+		Element paramElement = findParamElement(name);
+		if(paramElement != null ){
+			itemNode.removeChild(paramElement);
+		}
+		props.remove(name);
+		params.setValue(props);
+	}
+	
+	private Element findParamElement(String name){
 		Node child = itemNode.getFirstChild();
 		while(child != null ){
 			if(child.getNodeType() == Node.ELEMENT_NODE ){
 				Element e = (Element)child;
 				if(name.equals(e.getAttribute(PARAM_ATTR_NAME))){
-					itemNode.removeChild(child);
+					return e;
 				}
 			}
 			child = child.getNextSibling();
 		}
-		props.remove(name);
-		params.setValue(props);
+		return null;
 	}
+	
 	/**
 	 * Returns an unmodifiable copy of parameter map. 
 	 * @return

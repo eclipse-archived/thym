@@ -192,7 +192,7 @@ public class CordovaPluginManager {
 	 * @param subdir
 	 * @throws CoreException
 	 */
-	public void installPlugin(URI uri, FileOverwriteCallback overwrite,boolean isDependency, IProgressMonitor monitor) throws CoreException{
+	public void installPlugin(URI uri, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor) throws CoreException{
 		File tempRepoDirectory = new File(FileUtils.getTempDirectory(), "cordova_plugin_tmp_"+Long.toString(System.currentTimeMillis()));
 		tempRepoDirectory.deleteOnExit();
 		try {
@@ -258,6 +258,34 @@ public class CordovaPluginManager {
 		}
 	}
 	
+	/**
+	 * Fixes the installation of a plugin by running the first stage actions. 
+	 * 
+	 * @see {@link #collectInstallActions(Document, String, FileOverwriteCallback)}
+	 * @param plugin
+	 * @param overwrite
+	 * @param monitor
+	 * @throws CoreException
+	 */
+	public void fixInstalledPlugin(final CordovaPlugin plugin, final FileOverwriteCallback overwrite, IProgressMonitor monitor ) throws CoreException{
+		File directory = getPluginHomeDirectory(plugin);
+		Document doc = readPluginXML(directory);
+		List<IPluginInstallationAction> actions = collectInstallActions(doc, plugin.getId(), overwrite);
+		actions.add(getPluginInstallRecordAction(doc, null));
+		runActions(actions,false,overwrite,monitor); 
+		resetInstalledPlugins();
+	}
+	
+	/**
+	 * Does the actual copying of the plugin to plugins directory and runs the first stage 
+	 * install actions.
+	 * 
+	 * @param directory
+	 * @param doc
+	 * @param overwrite
+	 * @param monitor
+	 * @throws CoreException
+	 */
 	private void doInstallPlugin(File directory,Document doc,
 			FileOverwriteCallback overwrite, IProgressMonitor monitor)
 			throws CoreException {
@@ -273,8 +301,11 @@ public class CordovaPluginManager {
 		}
 		
 		//collect first stage install actions
-		List<IPluginInstallationAction> actions = collectInstallActions(
-				directory, doc, id, plugins, overwrite);
+		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
+		File destination = new File(plugins.getLocation().toFile(), id);
+		CopyFileAction copy = new CopyFileAction(directory, destination);
+		actions.add(copy);
+		actions.addAll(collectInstallActions( doc, id, overwrite));
 		runActions(actions,false,overwrite,monitor); 
 		resetInstalledPlugins();
 	}
@@ -311,7 +342,11 @@ public class CordovaPluginManager {
 		Gson gson = new Gson();
 		String jsonString = gson.toJson(object);
 		InputStream stream = new ByteArrayInputStream(jsonString.getBytes());
-		file.create(stream, true, monitor);
+		if(file.exists()){
+			file.setContents(stream, IFile.FORCE, monitor);
+		}else{
+			file.create(stream, true, monitor);
+		}
 	}
 	
 	/**
@@ -341,10 +376,12 @@ public class CordovaPluginManager {
 				return true;
 			}
 		};
-		IResource pluginsDir = this.project.getProject().findMember("/"+PlatformConstants.DIR_PLUGINS);
-		List<IPluginInstallationAction> actions = collectInstallActions(
-				dir.getLocation().toFile(), //TODO: use .fetch.json 
-				doc, id, pluginsDir,cb);                           
+		IResource pluginsDir = getPluginsFolder();
+		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
+		File destination = new File(pluginsDir.getLocation().toFile(), id);
+		CopyFileAction copy = new CopyFileAction(dir.getLocation().toFile(), destination);
+		actions.add(copy);
+		actions.addAll(collectInstallActions( doc, id, cb));
 		actions.add(getPluginInstallRecordAction(doc, null));
 		runActions(actions,true,cb, monitor);
 		resetInstalledPlugins();
@@ -514,13 +551,8 @@ public class CordovaPluginManager {
 	 * <li>preferences with variables</li>
 	 * </ul>
 	 */
-	private List<IPluginInstallationAction> collectInstallActions(
-			File directory, Document doc, String id, IResource dir, FileOverwriteCallback overwrite) {
+	private List<IPluginInstallationAction> collectInstallActions( Document doc, String id,  FileOverwriteCallback overwrite) {
 		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
-		File destination = new File(dir.getLocation().toFile(), id);
-		
-		CopyFileAction copy = new CopyFileAction(directory, destination);
-		actions.add(copy);
 		//collect platform independent actions
 		actions.addAll(collectDependencyActions(doc.getDocumentElement(), overwrite));
 		actions.addAll(collectConfigXMLActions(doc.getDocumentElement()));
