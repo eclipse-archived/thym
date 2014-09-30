@@ -74,8 +74,18 @@ public class IOSPluginInstallationActionsFactory extends
 			String parent, String value) {
 		File[] configFile = FileUtils.resolveFile(getProjectDirectory(), target);
 		File file = configFile[0];
-		if(FilenameUtils.isExtension(file.toString(), "plist")){
+		 
+		if(configFile.length == 1 && FilenameUtils.isExtension(file.toString(), "plist")){
 			return new PlistConfigFileAction(file, parent, value);
+		}
+		if(configFile.length >1 ){
+			HybridProject hybridProject = HybridProject.getHybridProject(getProject());
+			String projectPfile = hybridProject.getBuildArtifactAppName() + "-Info.plist";
+			for (File cfile : configFile) {	
+				if(FilenameUtils.getBaseName(cfile.toString()).equals(projectPfile)){
+					return new PlistConfigFileAction(cfile, parent, value);
+				}
+			}
 		}
 		return new XMLConfigFileAction(file, parent, value);
 	}
