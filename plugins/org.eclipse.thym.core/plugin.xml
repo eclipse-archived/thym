@@ -15,16 +15,22 @@
       <requires-nature
             id="org.eclipse.wst.jsdt.core.jsNature">
       </requires-nature>
+      <content-type
+            id="org.eclipse.thym.core.configType">
+      </content-type>
    </extension>
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
             base-type="org.eclipse.core.runtime.xml"
-            describer="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2:widget"
             file-names="config.xml"
             id="org.eclipse.thym.core.configType"
-            name="Aerogear Hybrid App Config File"
-            priority="high">
+            name="Hybrid Application Configuration File"
+            priority="normal">
+         <describer
+               class=" org.eclipse.thym.core.internal.config.ConfigFileContentDescriber"
+               plugin="org.eclipse.thym.core">
+         </describer>
       </content-type>
    </extension>
    <extension
