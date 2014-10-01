@@ -89,6 +89,9 @@ public class WidgetModel implements IModelLifecycleListener{
 	
 	
 	public static final WidgetModel getModel(HybridProject project){
+		if( project == null ){
+			throw new NullPointerException("Widget model can not be created because hybrid project is null");
+		}
 		if( !widgetModels.containsKey(project) ){
 			synchronized (WidgetModel.class) {
 				WidgetModel wm = new WidgetModel(project);
