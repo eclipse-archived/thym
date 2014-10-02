@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.config.internal;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
@@ -27,13 +25,13 @@ public abstract class AbstactConfigEditorPage extends FormPage {
 	@Override
 	protected void createFormContent(IManagedForm managedForm) {
 		final ScrolledForm form = managedForm.getForm();
-		IResource res = (IResource) this.getEditorInput().getAdapter(IResource.class);
-		if(res != null ){
-			HybridProject project = HybridProject.getHybridProject(res.getProject());
-			LaunchCordovaPluginWizardAction action = new LaunchCordovaPluginWizardAction(project);
-			form.getToolBarManager().add(action);
-			form.updateToolBar();
-		}
+		LaunchCordovaPluginWizardAction action = new LaunchCordovaPluginWizardAction(getConfigEditor());
+		form.getToolBarManager().add(action);
+		form.updateToolBar();
+	}
+
+	protected ConfigEditor getConfigEditor(){
+		return (ConfigEditor)getEditor();
 	}
 
 }

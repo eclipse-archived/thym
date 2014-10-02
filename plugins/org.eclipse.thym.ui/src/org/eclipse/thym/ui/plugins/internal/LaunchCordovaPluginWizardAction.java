@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.plugins.internal;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
@@ -28,8 +29,8 @@ import org.eclipse.ui.PlatformUI;
 public class LaunchCordovaPluginWizardAction extends Action {
 
 	private final ImageDescriptor icon = HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, "/icons/obj16/plug16_obj.png");
-
-	private HybridProject project;
+	private ConfigEditor configEditor;
+	private int initialTab = CordovaPluginSelectionPage.PLUGIN_SOURCE_REGISTRY;
 	
 	public LaunchCordovaPluginWizardAction() {
 		super("Install Cordova Plug-in");
@@ -38,13 +39,25 @@ public class LaunchCordovaPluginWizardAction extends Action {
 	
 	/**
 	 * Causes the launched Wizard to be initialized and fixed with the 
-	 * project. 
-	 * @param project
+	 * project that the resource for the editor is located in 
+	 * @param editor
 	 */
-	public LaunchCordovaPluginWizardAction(HybridProject project) {
+	public LaunchCordovaPluginWizardAction(ConfigEditor editor) {
 		this();
-		this.project = project;
+		this.configEditor = editor;
 	}
+	
+	/**
+	 * Causes the launched Wizard to be initialized and fixed with the 
+	 * project that the resource for the editor is located in 
+	 * @param editor
+	 */
+	public LaunchCordovaPluginWizardAction(ConfigEditor editor, int initialTab) {
+		this(editor);
+		this.initialTab = initialTab;
+	}
+	
+	
 	
 	
 	/*
@@ -72,10 +85,18 @@ public class LaunchCordovaPluginWizardAction extends Action {
 			selectionToPass = StructuredSelection.EMPTY;
 	
 		CordovaPluginWizard wizard = new CordovaPluginWizard();
-		if(this.project == null ){
+		if(this.configEditor == null ){
 			wizard.init(workbench, selectionToPass);
 		}else{
-			wizard.init(project);
+			IResource resource = (IResource)configEditor.getEditorInput().getAdapter(IResource.class);
+			if(resource != null ){
+				HybridProject project = HybridProject.getHybridProject(resource.getProject());
+				if(project != null){
+					wizard.init(project,initialTab);
+				}else{
+					wizard.init(workbench, selectionToPass);
+				}
+			}
 		}
 		WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
 		dialog.setMinimumPageSize(550, 450);//TODO: needs a more clever way to set this values

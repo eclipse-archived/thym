@@ -158,14 +158,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 			@Override
 			public void widgetSelected(SelectionEvent e) {	
 
-				LaunchCordovaPluginWizardAction action =null;
-				IResource resource = (IResource) getEditorInput().getAdapter(IResource.class);
-				if(resource != null && HybridProject.getHybridProject(resource.getProject()) != null){
-					action = new LaunchCordovaPluginWizardAction(HybridProject.getHybridProject(resource.getProject()));
-				}
-				else{
-					action = new LaunchCordovaPluginWizardAction();
-				}
+				LaunchCordovaPluginWizardAction action = new LaunchCordovaPluginWizardAction(getConfigEditor());
 				action.run();
 				selectFirstFeature();
 			}
