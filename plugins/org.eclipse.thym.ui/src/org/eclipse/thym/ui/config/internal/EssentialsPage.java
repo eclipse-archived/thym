@@ -23,6 +23,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.PixelConverter;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,10 +36,12 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.core.config.Author;
 import org.eclipse.thym.core.config.Content;
 import org.eclipse.thym.core.config.Widget;
+import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.thym.ui.wizard.export.NativeArtifactExportAction;
 import org.eclipse.thym.ui.wizard.export.NativeArtifactExportAction.ExportType;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -53,14 +59,14 @@ import org.eclipse.ui.forms.widgets.TableWrapData;
  */
 public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlinkListener{
 	private static final String PLUGINS_SECTION_CONTENT = "<form><p>Add Cordova plug-ins to extend your applications functionality</p>"
-			+ "<li style=\"bullet\"  bindent=\"5\">Search and install from a <a href=\"plugin.registry\">registry</a></li>"
-			+ "<li style=\"bullet\"  bindent=\"5\">Use a <a href=\"plugin.git\">git</a> URL to pull and install from a repo</li>"
-			+ "<li style=\"bullet\"  bindent=\"5\">Install from a <a href=\"plugin.folder\">directory</a></li>"
+			+ "<li style=\"image\"  value=\"plugin\" bindent=\"5\">Search and install from a <a href=\"plugin.registry\">registry</a></li>"
+			+ "<li style=\"image\"  value=\"plugin\" bindent=\"5\">Use a <a href=\"plugin.git\">git</a> URL to pull and install from a repo</li>"
+			+ "<li style=\"image\"  value=\"plugin\" bindent=\"5\">Install from a <a href=\"plugin.folder\">directory</a></li>"
 			+ "</form>";
 
 	private static final String EXPORT_SECTION_CONTENT = "<form><p>Options available to export this application to supported platforms:</p>"
-			+ "<li style=\"bullet\"  bindent=\"5\">Export <a href=\"export.project\">Native Platform Project(s)</a> and continue with native tools</li>"
-			+ "<li style=\"bullet\"  bindent=\"5\">Export <a href=\"export.app\">Mobile application(s)</a> to distribute</li>"
+			+ "<li style=\"image\" value=\"export\" bindent=\"5\">Export <a href=\"export.project\">Native Platform Project(s)</a> and continue with native tools</li>"
+			+ "<li style=\"image\" value=\"export\" bindent=\"5\">Export <a href=\"export.app\">Mobile application(s)</a> to distribute</li>"
 			+ "</form>";
 
 	private DataBindingContext m_bindingContext;
@@ -189,6 +195,9 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		sctnPlugins.setLayoutData(data);
 		
 		FormText text = formToolkit.createFormText(sctnPlugins, true);
+		ImageDescriptor idesc = HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID,"/icons/etool16/cordovaplug_wiz.png");
+		text.setImage("plugin", idesc.createImage());
+
 		text.setText(PLUGINS_SECTION_CONTENT, true, false);
 		
 		sctnPlugins.setClient(text);
@@ -201,8 +210,9 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		sctnExport.setLayout(FormUtils.createClearTableWrapLayout(false, 1));
 		TableWrapData data = new TableWrapData(TableWrapData.FILL_GRAB);
 		sctnExport.setLayoutData(data);
-		
 		FormText text = formToolkit.createFormText(sctnExport, true);
+		ImageDescriptor idesc = HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, "/icons/etool16/export_wiz.png");
+		text.setImage("export", idesc.createImage());
 		text.setText(EXPORT_SECTION_CONTENT, true, false);
 		
 		sctnExport.setClient(text);
@@ -211,80 +221,73 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 
 	private void createAuthorSection(Composite parent) {
 		Section sctnAuthor = createSection(parent, "Author");
+		sctnAuthor.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
 		
 		Composite composite = formToolkit.createComposite(sctnAuthor, SWT.WRAP);
 		formToolkit.paintBordersFor(composite);
 		sctnAuthor.setClient(composite);
-		composite.setLayout(new GridLayout(2, false));
+		composite.setLayout(FormUtils.createSectionClientGridLayout(false, 2));
 		
-		Label lblName_1 = formToolkit.createLabel(composite, "Name:", SWT.NONE);
-		lblName_1.setBounds(0, 0, 59, 14);
-		
-		txtAuthorname = formToolkit.createText(composite, "New Text", SWT.WRAP);
-		txtAuthorname.setText("");
+		createFormFieldLabel(composite, "Name:");
+	
+		txtAuthorname = formToolkit.createText(composite, "", SWT.WRAP);
 		txtAuthorname.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		@SuppressWarnings("unused")
-		Label lblEmail = formToolkit.createLabel(composite, "Email:", SWT.NONE);
+		createFormFieldLabel(composite, "Email:");
 		
-		txtEmail = formToolkit.createText(composite, "New Text", SWT.NONE);
-		txtEmail.setText("");
+		txtEmail = formToolkit.createText(composite, "", SWT.NONE);
 		txtEmail.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		
-		@SuppressWarnings("unused")
-		Label lblUrl = formToolkit.createLabel(composite, "URL:", SWT.NONE);
+		createFormFieldLabel(composite, "URL:");
 		
-		txtUrl = formToolkit.createText(composite, "New Text", SWT.NONE);
-		txtUrl.setText("");
+		txtUrl = formToolkit.createText(composite, "", SWT.NONE);
 		txtUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+	}
+
+	private Label createFormFieldLabel(final Composite composite, final String labelText) {
+		Label label = formToolkit.createLabel(composite, labelText, SWT.NONE);
+		PixelConverter converter = new PixelConverter(label);
+		int widthHint = converter.convertHorizontalDLUsToPixels(IDialogConstants.BUTTON_WIDTH);
+		widthHint = Math.max(widthHint, label.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
+		GridDataFactory.swtDefaults().hint(widthHint, SWT.DEFAULT).applyTo(label);
+		return label;
 	}
 
 	private void createNameDescriptionSection(Composite parent) {
 		Section sctnNameAndDescription = createSection(parent, "Name and Description");
+		sctnNameAndDescription.setLayoutData(new TableWrapData(TableWrapData.FILL_GRAB));
 		
-		Composite composite_1 = formToolkit.createComposite(sctnNameAndDescription, SWT.WRAP);
-		formToolkit.paintBordersFor(composite_1);
-		sctnNameAndDescription.setClient(composite_1);
-		composite_1.setLayout(new GridLayout(2, false));
+		Composite container = formToolkit.createComposite(sctnNameAndDescription, SWT.WRAP);
+		formToolkit.paintBordersFor(container);
+		sctnNameAndDescription.setClient(container);
+		container.setLayout(FormUtils.createSectionClientGridLayout(false, 2));
 		
-		@SuppressWarnings("unused")
-		Label lblId = formToolkit.createLabel(composite_1, "ID:", SWT.NONE);
+		GridData textGridData = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		
-		txtIdtxt = formToolkit.createText(composite_1, "New Text", SWT.NONE);
-		txtIdtxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		txtIdtxt.setText("");
+		createFormFieldLabel(container, "ID:");
 		
-		Label lblName = formToolkit.createLabel(composite_1, "Name:", SWT.NONE);
-		lblName.setSize(39, 14);
+		txtIdtxt = formToolkit.createText(container, "", SWT.NONE);
+		txtIdtxt.setLayoutData(textGridData);
 		
-		txtName = formToolkit.createText(composite_1, "New Text", SWT.NONE);
-		txtName.setText("");
-		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		createFormFieldLabel(container, "Name:");
 		
-		@SuppressWarnings("unused")
-		Label lblVersion = formToolkit.createLabel(composite_1, "Version:", SWT.NONE);
+		txtName = formToolkit.createText(container, "", SWT.NONE);
+		GridDataFactory.createFrom(textGridData).applyTo(txtName);
 		
-		txtVersion = formToolkit.createText(composite_1, "New Text", SWT.NONE);
-		txtVersion.setText("");
-		txtVersion.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		createFormFieldLabel(container, "Version:");
 		
-		@SuppressWarnings("unused")
-		Label lblDescription = formToolkit.createLabel(composite_1, "Description:", SWT.NONE);
+		txtVersion = formToolkit.createText(container, "", SWT.NONE);
+		GridDataFactory.createFrom(textGridData).applyTo(txtVersion);
 		
-		txtDescription = formToolkit.createText(composite_1, "New Text", SWT.MULTI);
-		txtDescription.setText("");
-		GridData gd_txtDescription = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_txtDescription.heightHint = 100;
-		txtDescription.setLayoutData(gd_txtDescription);
+		createFormFieldLabel(container, "Description:");
 		
-		Label lblContentSource = new Label(composite_1, SWT.NONE);
-		lblContentSource.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		formToolkit.adapt(lblContentSource, true, true);
-		lblContentSource.setText("Content Source:");
+		txtDescription = formToolkit.createText(container, "", SWT.MULTI);
+		GridDataFactory.createFrom(textGridData).hint(SWT.DEFAULT, 100).applyTo(txtDescription);
 		
-		txtContentsource = formToolkit.createText(composite_1, "New Text", SWT.NONE);
-		txtContentsource.setText("");
-		txtContentsource.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		createFormFieldLabel(container, "Content Source:");
+		
+		txtContentsource = formToolkit.createText(container, "", SWT.NONE);
+		GridDataFactory.createFrom(textGridData).applyTo(txtContentsource);
 	}
 	
 	private Section createSection(Composite parent, String text){
