@@ -46,6 +46,7 @@ import org.eclipse.ui.IWorkbenchWizard;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, FileOverwriteCallback, ICordovaPluginWizard{
+	
 	static final String IMAGE_WIZBAN = "/icons/wizban/cordova_plugin_wiz.png";
 	private static final String DIALOG_SETTINGS_KEY = "CordovaPluginWizard";
 	
@@ -74,6 +75,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 	private RegistryConfirmPage pageTwo;
 	private IStructuredSelection initialSelection;
 	private HybridProject fixedProject;
+	private int initialSource;
 	
 	private class PluginInstallOperation extends WorkspaceModifyOperation{
 		
@@ -147,8 +149,9 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 	 * users to select a different project to operate on.
 	 * @param project
 	 */
-	public void init(HybridProject project){
+	public void init(HybridProject project,  int initialSourceTab){
 		this.fixedProject = project;
+		this.initialSource = initialSourceTab;
 	}
 	
 	@Override
@@ -200,7 +203,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 		if(fixedProject == null ){
 			pageOne = new CordovaPluginSelectionPage(this.initialSelection);
 		}else{
-			pageOne = new CordovaPluginSelectionPage(fixedProject);
+			pageOne = new CordovaPluginSelectionPage(fixedProject,initialSource);
 		}
 		addPage(pageOne);
 		pageTwo = new RegistryConfirmPage();

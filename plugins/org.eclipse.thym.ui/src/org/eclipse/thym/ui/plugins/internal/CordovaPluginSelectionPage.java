@@ -97,7 +97,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	private Group grpRepositoryUrl;
 	private Text gitUrlTxt;
 	private final CordovaPluginRegistryManager client = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
-	
+	private int initialTab;
 
 	public CordovaPluginSelectionPage(){
 		super(PAGE_NAME,PAGE_TITLE, HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, CordovaPluginWizard.IMAGE_WIZBAN));
@@ -115,9 +115,10 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	 * @param pageName
 	 * @param project
 	 */
-	protected CordovaPluginSelectionPage(HybridProject project){
+	protected CordovaPluginSelectionPage(HybridProject project, int intialTab){
 		this();
 		this.fixedProject= project;
+		this.initialTab = intialTab;
 	}
 	/**
 	 * noProject constructor to signal that wizards is running for 
@@ -205,6 +206,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		setupFromInitialSelection();
 		restoreWidgetValues();
 		updateProjectOnViewer();
+		updateInitialTab();
 		catalogViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			
 			@Override
@@ -533,6 +535,20 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	
 	private ICordovaPluginWizard getPluginWizard(){
 		return (ICordovaPluginWizard) getWizard();
+	}
+	
+	private void updateInitialTab(){
+		switch (initialTab) {
+		case PLUGIN_SOURCE_GIT:
+			tabFolder.setSelection(gitTab);
+			break;
+		case PLUGIN_SOURCE_DIRECTORY:
+			tabFolder.setSelection(directoryTab);
+			break;
+		default:
+			tabFolder.setSelection(registryTab);
+			break;
+		}
 	}
 	
 }
