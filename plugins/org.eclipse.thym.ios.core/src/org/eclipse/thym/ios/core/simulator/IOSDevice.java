@@ -10,21 +10,34 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.core.simulator;
 
-import org.eclipse.thym.ios.core.IOSCore;
-/**
- * Constants used by the iOS Simulator launch configuration type
- * @author Gorkem Ercan
- *
- */
-public interface IOSSimulatorLaunchConstants {
-
-	/**
-	 * Type id for the IOSSimulator Launch 
-	 */
-	public static final String ID_LAUNCH_CONFIG_TYPE = "org.eclipse.thym.ios.core.IOSSimulatorLaunchConfigType";
+public class IOSDevice {
 	
-	/**
-	 * Attribute to pass the device identifier to be launched
-	 */
-	public static final String ATTR_DEVICE_IDENTIFIER = IOSCore.PLUGIN_ID + ".ATTR_DEVICE_IDENTIFIER";
+	private String deviceId;
+	private String deviceName;
+	private String iOSName;
+	
+	public String getDeviceName() {
+		return deviceName;
+	}
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}
+	public String getDeviceId() {
+		return deviceId;
+	}
+	public void setDeviceId(String deviceId) {
+		this.deviceId = deviceId;
+	}
+	public String getiOSName() {
+		return iOSName;
+	}
+	public void setiOSName(String iOSName) {
+		this.iOSName = iOSName;
+	}
+	
+	@Override
+	public String toString() {
+		return deviceName +" ("+deviceId+") ["+iOSName+"]";
+	}
+
 }

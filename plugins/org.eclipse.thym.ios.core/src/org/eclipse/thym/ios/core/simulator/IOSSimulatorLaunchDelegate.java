@@ -10,14 +10,11 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.core.simulator;
 
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_DEVICE_FAMILY;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_64BIT;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_RETINA;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_TALL;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_SIMULATOR_SDK_VERSION;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.VAL_DEVICE_FAMILY_IPHONE;
+
+import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_DEVICE_IDENTIFIER;
 
 import java.io.File;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,10 +29,12 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchDelegate;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
+import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.ios.core.IOSCore;
 import org.eclipse.thym.ios.core.xcode.XCodeBuild;
-import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 
 import com.github.zafarkhaja.semver.Version;
 import com.github.zafarkhaja.semver.util.UnexpectedElementException;
@@ -56,19 +55,29 @@ public class IOSSimulatorLaunchDelegate implements
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
 		monitor.beginTask("Launch iOS Simulator", 10);
-		IOSSimulator simulator = new IOSSimulator();
-		IProject project = getProject(configuration);
-		Assert.isNotNull(project, "Can not launch with a null project");
-		simulator.setPathToBinary(buildArtifact.getPath());
-		simulator.setFamily(configuration.getAttribute(ATTR_DEVICE_FAMILY, VAL_DEVICE_FAMILY_IPHONE));
-		simulator.setRetina(configuration.getAttribute(ATTR_USE_RETINA, false));
-		simulator.setTall(configuration.getAttribute(ATTR_USE_TALL, false));
-		simulator.set64bit(configuration.getAttribute(ATTR_USE_64BIT, false));
-		simulator.setSdkVersion(configuration.getAttribute(ATTR_SIMULATOR_SDK_VERSION, (String)null));
-	
-		String[] envp = DebugPlugin.getDefault().getLaunchManager()
-				.getEnvironment(configuration);
-		simulator.setProcessEnvironmentVariables(envp);
+		IProject kernelProject = getProject(configuration);
+		Assert.isNotNull(kernelProject, "Can not launch with a null project");
+		String deviceId = configuration.getAttribute(ATTR_DEVICE_IDENTIFIER, new String());
+		List<IOSDevice> devices = IOSSimulator.listDevices(monitor);
+		if(devices == null || devices.isEmpty()){
+			throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Failed to find an iOS simulator"));
+		}
+		IOSDevice device = devices.get(0); 
+		for (IOSDevice iosDevice : devices) {
+			if(deviceId.equals(iosDevice.getDeviceId())){
+				device = iosDevice;
+				break;
+			}
+		}
+		IOSSimulator simulator = new IOSSimulator(device);
+		HybridProject project = HybridProject.getHybridProject(kernelProject);
+		if(project == null ){
+			throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, NLS.bind("{0} is not a hybrid mobile project", kernelProject.getName())));
+		}
+		String bundleId = WidgetModel.getModel(project).getWidgetForRead().getId();
+		
+		String[] envp = DebugPlugin.getDefault().getLaunchManager().getEnvironment(configuration);
+		simulator.setProcessEnvironmentVariables(envp).launch().installApp(buildArtifact.getPath()).startApp(bundleId);
 		monitor.worked(2);
 		simulator.launch();
 		monitor.done();

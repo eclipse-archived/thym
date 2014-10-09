@@ -10,19 +10,21 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.core.simulator;
 
-import static org.eclipse.thym.core.internal.util.FileUtils.directoryCopy;
-import static org.eclipse.thym.core.internal.util.FileUtils.toURL;
-
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URL;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.thym.ios.core.IOSCore;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.debug.core.IStreamListener;
+import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
-import org.osgi.framework.Bundle;
+import org.eclipse.thym.ios.core.IOSCore;
 /**
  * Wrapper around the native binary for controlling the iOS Simulator.
  * 
@@ -30,97 +32,145 @@ import org.osgi.framework.Bundle;
  *
  */
 public class IOSSimulator {
+	
 
-	private static boolean iosSimCopied =false;
-	private File iosSim;
-	private boolean tall;
-	private boolean retina;
-	private boolean is64bit;
-	private String family;
 	private String[] environment;
-	private String pathToBinary;
-	private String sdkVersion;
+	private IOSDevice deviceId;
+	private IProgressMonitor monitor;
 
-	public IOSSimulator(){
-		try {
-			Bundle bundle = IOSCore.getContext().getBundle();
-			File bundleDataDirectory = bundle.getDataFile("/");			
-			iosSim = new File(bundleDataDirectory, "ios-sim");
-			URL iosSimBinary = bundle.getEntry("/ios-sim");
-			if(!iosSimCopied){
-				directoryCopy(iosSimBinary,toURL( bundleDataDirectory));
-				iosSimCopied = true;
-			}
-			if (iosSim.exists() && !iosSim.canExecute()){
-				iosSim.setExecutable(true, false);
-			}
-		} catch (IOException e) {
-			IOSCore.log(IStatus.ERROR, "IO error when copying the ios-sim", e);
+	private static class DeviceListParser implements IStreamListener{
+		private StringBuffer buffer = new StringBuffer();
+
+		@Override
+		public void streamAppended(String text, IStreamMonitor monitor) {
+			buffer.append(text);
 		}
-	}
-	
-	public void launch() throws CoreException{
-		if(iosSim == null || !iosSim.exists() ){
-			throw newException(IStatus.ERROR,"ios-sim binary is not extracted correctly");
-		}
-		StringBuilder cmdLine = new StringBuilder();
-		cmdLine.append("\"").append(iosSim.getPath()).append("\" launch ");
 		
-		assert pathToBinary != null: "Path to the app binary to launch on the simulator is missing"; 
-		cmdLine.append("\"").append(pathToBinary).append("\"");
-		if( family != null && !family.isEmpty() ){
-			cmdLine.append(" --family ").append(family);
+		public List<IOSDevice> getDeviceList(){
+			if (buffer == null || buffer.length() < 1)
+				return null;
+			
+			try {
+				StringReader reader = new StringReader(buffer.toString());
+				BufferedReader read = new BufferedReader(reader);
+				String line = null;
+				String iosVersion = null;
+				boolean parsingDevices = false;
+				List<IOSDevice> devices = new ArrayList<IOSDevice>();
+				while ((line = read.readLine()) != null) {
+					if (line.isEmpty())
+						continue;
+					if (line.equals("== Devices ==")) {
+						parsingDevices = true;
+						continue;
+					}
+					if (parsingDevices) {
+						if (line.startsWith("--")) {
+							line = line.replace("--", "");
+							iosVersion = line.trim();
+						} else {
+							String[] parts = line.split("[\\(\\)]");
+							IOSDevice device = new IOSDevice();
+							device.setDeviceName(parts[0].trim());
+							device.setDeviceId(parts[1].trim());
+							device.setiOSName(iosVersion);
+							devices.add(device);
+						}
+					}
+				}
+				return devices;
+			}catch(IOException e){
+				IOSCore.log(IStatus.ERROR, "error parsing device list", e);
+				return Collections.emptyList();
+			}
 		}
-		if( sdkVersion != null ){
-			cmdLine.append(" --sdk ").append(sdkVersion);
-		}
-		if(retina){
-			cmdLine.append(" --retina");
-		}
-		if(tall){
-			cmdLine.append(" --tall");
-		}
-		if(is64bit){
-			cmdLine.append(" --64bit");
-		}
+	}
+	
+	public IOSSimulator(IOSDevice deviceId){
+		this.setDeviceId(deviceId);
+	}
+	
+	public IOSSimulator launch() throws CoreException{
+		StringBuilder cmdLine = new StringBuilder();
+		cmdLine.append("xcrun");
+		cmdLine.append(" instruments -w ");
+		cmdLine.append(getDeviceId().getDeviceId());
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
-		processUtility.execAsync(cmdLine.toString(), iosSim.getParentFile(), null, null,environment);
+		processUtility.execSync(cmdLine.toString(),null, null, null, getProgressMonitor(),environment,null);
+		return this;
+	}
+	
+	public IOSSimulator installApp( String path ) throws CoreException{
+		StringBuilder cmdLine = new StringBuilder();
+		cmdLine.append("xcrun");
+		cmdLine.append(" simctl install ");
+		cmdLine.append(getDeviceId().getDeviceId()).append(" ");
+		cmdLine.append("\"").append( path ).append("\"");
+		ExternalProcessUtility processUtility = new ExternalProcessUtility();
+		processUtility.execSync(cmdLine.toString(),null, null, null, getProgressMonitor(),environment,null);
+		return this;
 	}
 
-	public void setTall(boolean tall) {
-		this.tall = tall;
+	public IOSSimulator startApp(String id) throws CoreException{
+		StringBuilder cmdLine = new StringBuilder();
+		cmdLine.append("xcrun");
+		cmdLine.append(" simctl launch ");
+		cmdLine.append(getDeviceId().getDeviceId()).append(" ");
+		cmdLine.append( id );
+		ExternalProcessUtility processUtility = new ExternalProcessUtility();
+		processUtility.execSync(cmdLine.toString(),null, null, null, getProgressMonitor(),environment,null);
+		return this;
+	}
+	
+	public static List<IOSDevice> listDevices(IProgressMonitor monitor) throws CoreException{
+		StringBuilder cmdLine = new StringBuilder();
+		cmdLine.append("xcrun");
+		cmdLine.append(" simctl list ");
+		ExternalProcessUtility processUtility = new ExternalProcessUtility();
+		DeviceListParser parser = new DeviceListParser();
+		processUtility.execSync(cmdLine.toString(),null, parser, parser, monitor,null ,null);
+		return parser.getDeviceList();
+	}
+	
+	public static IOSDevice findDevice(String deviceId, IProgressMonitor monitor) throws CoreException{
+		if(deviceId == null ) return null;
+		List<IOSDevice> devices = listDevices(monitor);
+		if(devices == null ) return null;
+		for (IOSDevice iosDevice : devices) {
+			if(iosDevice.getDeviceId().equals(deviceId)){
+				return iosDevice;
+			}
+		}
+		return null;
 	}
 
-	public void setRetina(boolean retina) {
-		this.retina = retina;
-	}
-	
-	public void set64bit(boolean setbit){
-		this.is64bit = setbit;
-	}
-
-	public void setFamily(String family) {
-		this.family = family;
-	}
-	
-	public void setSdkVersion(String version){
-		this.sdkVersion = version;
-	}
-	
-	private CoreException newException(int severity, String message ){
-		return new CoreException(new Status(severity,IOSCore.PLUGIN_ID,message));
-	}
-	
 	/**
 	 * The environment variables set in the process
 	 * @param envp
 	 */
-	public void setProcessEnvironmentVariables(String[] envp) {
+	public IOSSimulator setProcessEnvironmentVariables(String[] envp) {
 		this.environment = envp;
-		
+		return this;
 	}
 
-	public void setPathToBinary(String pathToBinary) {
-		this.pathToBinary = pathToBinary;
+	public IOSDevice getDeviceId() {
+		return deviceId;
 	}
+
+	public void setDeviceId(IOSDevice deviceId) {
+		this.deviceId = deviceId;
+	}
+	
+	private IProgressMonitor getProgressMonitor(){
+		if(monitor == null){
+			monitor = new NullProgressMonitor();
+		}
+		return monitor;
+	}
+	
+	public IOSSimulator setProgressMonitor(IProgressMonitor progressMonitor){
+		this.monitor = progressMonitor;
+		return this;
+	}
+
 }

@@ -11,25 +11,16 @@
 package org.eclipse.thym.ios.ui;
 
 import static org.eclipse.thym.core.HybridProjectLaunchConfigConstants.ATTR_BUILD_SCOPE;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_DEVICE_FAMILY;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_SIMULATOR_SDK_VERSION;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_64BIT;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_RETINA;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_USE_TALL;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.VAL_DEVICE_FAMILY_IPAD;
-import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.VAL_DEVICE_FAMILY_IPHONE;
+import static org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants.ATTR_DEVICE_IDENTIFIER;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.IDebugUIConstants;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.ComboViewer;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -37,6 +28,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -52,28 +44,24 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.ios.core.xcode.XCodeBuild;
-import org.eclipse.thym.ios.core.xcode.XCodeSDK;
+import org.eclipse.thym.ios.core.simulator.IOSDevice;
+import org.eclipse.thym.ios.core.simulator.IOSSimulator;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 	private Text textProject;
-	private Combo comboDeviceFamily;
 	private Listener dirtyFlagListener;
-	private Button btnCheckRetina;
-	private Button btnTall;
 	private Combo comboSDKVer;
 	private ComboViewer comboViewer;
-	private Button btn64Bit;
 	
 	private final class SDKContentProvider implements
 			IStructuredContentProvider {
-		private XCodeSDK[] simulators;
+		private IOSDevice[] simulators;
 		
 		@Override
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			this.simulators = (XCodeSDK[]) newInput;
+			this.simulators = (IOSDevice[]) newInput;
 		}
 
 		@Override
@@ -88,8 +76,6 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 			}
 			return simulators;
 		}
-
-
 	}
 
 	private class DirtyListener implements Listener{
@@ -150,7 +136,7 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		
 		Label lblSdkVersion = new Label(grpSimulator, SWT.NONE);
 		lblSdkVersion.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblSdkVersion.setText("SDK Version:");
+		lblSdkVersion.setText("Device:");
 		
 		comboSDKVer = new Combo(grpSimulator, SWT.READ_ONLY);
 		
@@ -162,44 +148,15 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		comboViewer.setLabelProvider( new LabelProvider() {
 			@Override
 			public String getText(Object element) {
-				XCodeSDK sdk = (XCodeSDK) element;
-				return sdk.getDescription();
+				IOSDevice device = (IOSDevice) element;
+				return NLS.bind("{0} ({1})", new String[]{device.getDeviceName(), device.getiOSName()});
 			}
 		});
-		comboViewer.setInput(getSimulatorSDKS());
-		
-		Label lblDeviceFamily = new Label(grpSimulator, SWT.NONE);
-		lblDeviceFamily.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblDeviceFamily.setText("Device Family:");
-		
-		comboDeviceFamily = new Combo(grpSimulator, SWT.READ_ONLY);
-		comboDeviceFamily.setItems(new String[] {VAL_DEVICE_FAMILY_IPHONE, VAL_DEVICE_FAMILY_IPAD});
-		comboDeviceFamily.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		comboDeviceFamily.select(0);
-		comboDeviceFamily.addListener(SWT.Selection, dirtyFlagListener);
-		
-		Composite optionsComposite = new Composite(grpSimulator, SWT.NULL);
-		GridDataFactory.fillDefaults().span(2, 1).align(SWT.FILL, SWT.FILL).applyTo(optionsComposite);
-		GridLayoutFactory.fillDefaults().numColumns(3).applyTo(optionsComposite);
-		
-		
-		btnCheckRetina = new Button(optionsComposite, SWT.CHECK);
-		btnCheckRetina.setText("Retina");
-		btnCheckRetina.addListener(SWT.Selection, dirtyFlagListener);
-		
-		btnTall = new Button(optionsComposite, SWT.CHECK);
-		btnTall.setText("Tall");
-		btnTall.addListener(SWT.Selection, dirtyFlagListener);
-		
-		btn64Bit = new Button(optionsComposite, SWT.CHECK);
-		btn64Bit.setText("64 bit");
-		btn64Bit.addListener(SWT.Selection, dirtyFlagListener);
-		
+		comboViewer.setInput(getSimulatorDevices());
 	}
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(ATTR_DEVICE_FAMILY, VAL_DEVICE_FAMILY_IPHONE);
 		configuration.setAttribute(IDebugUIConstants.ATTR_CAPTURE_IN_CONSOLE, true);
 	}
 
@@ -221,64 +178,33 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		
 		
 		try{ 
-			String sdkVer = configuration.getAttribute(ATTR_SIMULATOR_SDK_VERSION,new String());
+			String deviceId = configuration.getAttribute(ATTR_DEVICE_IDENTIFIER,new String());
 			SDKContentProvider contentProvider = (SDKContentProvider) comboViewer.getContentProvider();
 			//it is possible that the selected SDK version is no longer available
 			// it can be either uninstalled or the launch config is shared. fall back to default
 			comboSDKVer.select(0);
 			if(contentProvider.simulators != null){
-				for (XCodeSDK sim : contentProvider.simulators) {
-					if(sim.getVersion().equals(sdkVer)){
+				for (IOSDevice sim : contentProvider.simulators) {
+					if(sim.getDeviceId().equals(deviceId)){
 						comboViewer.setSelection(new StructuredSelection(sim));
 					}
 				}
 			}
 		}catch(CoreException ce){
-			
+			//ignored
 		}
 		
-		try {
-			String devFamily = configuration.getAttribute(ATTR_DEVICE_FAMILY, VAL_DEVICE_FAMILY_IPHONE);
-			int index= comboDeviceFamily.indexOf(devFamily);
-			Assert.isTrue(index >-1 , "LaunchConfiguration should never return a device family that is not on the combo");
-			comboDeviceFamily.select(index);
-			
-		} catch (CoreException e) {
-			
-		}
-		
-		try{
-			btnTall.setSelection( configuration.getAttribute(ATTR_USE_TALL, false));
-		}catch(CoreException e){
-			
-		}
-		
-		try{
-			btnCheckRetina.setSelection(configuration.getAttribute(ATTR_USE_RETINA, false));
-		}catch(CoreException e){
-			
-		}
 
-		try{
-			btn64Bit.setSelection(configuration.getAttribute(ATTR_USE_64BIT, false));
-		}catch(CoreException e){
-			
-		}
 				
 		setDirty(false);
 	}
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(ATTR_BUILD_SCOPE, textProject.getText());
-		configuration.setAttribute(ATTR_DEVICE_FAMILY, comboDeviceFamily.getText());
-		configuration.setAttribute(ATTR_USE_RETINA, btnCheckRetina.getSelection() );
-		configuration.setAttribute(ATTR_USE_TALL, btnTall.getSelection());
-		configuration.setAttribute(ATTR_USE_64BIT, btn64Bit.getSelection());
 		IStructuredSelection selection = (IStructuredSelection) comboViewer.getSelection();
 		if(!selection.isEmpty()){
-			XCodeSDK selectedSDK = (XCodeSDK) selection.getFirstElement();
-			configuration.setAttribute(ATTR_SIMULATOR_SDK_VERSION, selectedSDK.getVersion());
+			IOSDevice selectedDevice = (IOSDevice) selection.getFirstElement();
+			configuration.setAttribute(ATTR_DEVICE_IDENTIFIER, selectedDevice.getDeviceId());
 		}
 	}
 
@@ -287,20 +213,13 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		return "Simulator";
 	}
 	
-	private XCodeSDK[] getSimulatorSDKS() {
+	private IOSDevice[] getSimulatorDevices() {
 		try{
-			XCodeBuild build = new XCodeBuild();
-			List<XCodeSDK> list = build.showSdks();
-			ArrayList<XCodeSDK> simulators = new ArrayList<XCodeSDK>(list.size());
-			for (XCodeSDK sdk : list) {
-				if(sdk.isSimulator()){
-					simulators.add(sdk);
-				}
-			}
-			return simulators.toArray(new XCodeSDK[simulators.size()]);
+			List<IOSDevice> devices = IOSSimulator.listDevices(new NullProgressMonitor());
+			return devices.toArray(new IOSDevice[devices.size()]);
 		}
 		catch (CoreException e) {
-				return new XCodeSDK[0];
+				return new IOSDevice[0];
 		}
 	}
 	

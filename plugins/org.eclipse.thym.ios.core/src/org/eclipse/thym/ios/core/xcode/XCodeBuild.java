@@ -24,6 +24,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.ios.core.IOSCore;
+import org.eclipse.thym.ios.core.simulator.IOSDevice;
+import org.eclipse.thym.ios.core.simulator.IOSSimulator;
 import org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
@@ -175,43 +177,61 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 
 	private Object selectSDK() {
 		if(isRelease()){
-			return "iphoneos7.0";
+			XCodeSDK releaseSDK = findLatestSDK(false);
+			if(releaseSDK != null){
+				return releaseSDK.getIdentifierString();
+			}
+			return "iphoneos8.0";
 		}
-		XCodeSDK fallbackSDK = null;
-		String launchConfigSDK=null;
+		String launchConfigDeviceId=null;
 		try {
 			if (getLaunchConfiguration() != null) {
-				launchConfigSDK = getLaunchConfiguration().getAttribute(
-						IOSSimulatorLaunchConstants.ATTR_SIMULATOR_SDK_VERSION,
+				launchConfigDeviceId = getLaunchConfiguration().getAttribute(
+						IOSSimulatorLaunchConstants.ATTR_DEVICE_IDENTIFIER,
 						(String) null);
 			}
+			IOSDevice device = IOSSimulator.findDevice(launchConfigDeviceId, new NullProgressMonitor());
+			
 			List<XCodeSDK> sdks = this.showSdks();
 			for (XCodeSDK sdk : sdks) {
-				if (launchConfigSDK != null
-						&& launchConfigSDK.equals(sdk.getIdentifierString())) {
-					return launchConfigSDK;
-				}
-				if (sdk.isIOS() && sdk.isSimulator()) {
-					if (fallbackSDK != null) {
-						double sdkver = Double.parseDouble(sdk.getVersion());
-						double fallbackVer = Double.parseDouble(fallbackSDK
-								.getVersion());
-						if (fallbackVer < sdkver) {
-							fallbackSDK = sdk;
-						}
-					} else {
-						fallbackSDK = sdk;
-					}
+				if (device != null && device.getiOSName().equals(sdk.getDescription()) && sdk.isSimulator()) {
+					return sdk.getIdentifierString();
 				}
 			}
-
+			XCodeSDK fallbackSDK = findLatestSDK(true);
 			if (fallbackSDK != null) {
 				return fallbackSDK.getIdentifierString();
 			}
 		} catch (CoreException e) {
 			//ignored
 		}
-		return "iphonesimulator7.0";
+		return "iphonesimulator8.0";
+	}
+	
+	private XCodeSDK findLatestSDK(boolean isSimulator) {
+		try {
+			List<XCodeSDK> sdks = this.showSdks();
+			if (sdks == null || sdks.isEmpty())
+				return null;
+			XCodeSDK latestSDK = null;
+			for (XCodeSDK sdk : sdks) {
+				if (sdk.isIOS() && sdk.isSimulator() == isSimulator ) {
+					if(latestSDK == null ){
+						latestSDK = sdk;
+					}
+					double sdkver = Double.parseDouble(sdk.getVersion());
+					double latestVer = Double.parseDouble(latestSDK
+							.getVersion());
+					if (latestVer < sdkver) {
+						latestSDK = sdk;
+					}
+				}
+			}
+			return latestSDK;
+		} catch (CoreException e) {
+			return null;
+		}
+
 	}
 
 	public ILaunchConfiguration getLaunchConfiguration() {
