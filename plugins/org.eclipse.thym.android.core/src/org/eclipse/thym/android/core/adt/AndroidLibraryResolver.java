@@ -115,7 +115,7 @@ public class AndroidLibraryResolver extends
 	private URL getEngineFile(IPath path){
 		File file = path.toFile();
 		if(!file.exists()){
-			HybridCore.log(IStatus.ERROR, "missing Android engine file " + file.toString(), null );
+			AndroidCore.log(IStatus.WARNING, NLS.bind( "Missing Android engine file {0}", file.toString()), null );
 		}
 		return FileUtils.toURL(file);
 	}
@@ -136,10 +136,10 @@ public class AndroidLibraryResolver extends
 					if(reader != null ) reader.close();
 				}
 			}catch (IOException e) {
-				AndroidCore.log(IStatus.ERROR, "Can not detect version on library", e);
+				AndroidCore.log(IStatus.WARNING, "Can not detect version on library", e);
 			}
 		}else{
-			AndroidCore.log(IStatus.ERROR, NLS.bind("Can not detect version. VERSION file {0} is missing",versionFile.toString()), null);
+			AndroidCore.log(IStatus.WARNING, NLS.bind("Can not detect version. VERSION file {0} is missing",versionFile.toString()), null);
 		}
 		return null;
 	}

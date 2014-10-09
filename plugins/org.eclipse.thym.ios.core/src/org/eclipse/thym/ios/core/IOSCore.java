@@ -69,7 +69,7 @@ public class IOSCore implements BundleActivator, DebugOptionsListener {
 	}
 	
 	public static void log(int status, String message, Throwable throwable ){
-		logger.log(new Status(status, message, PLUGIN_ID,throwable));
+		logger.log(new Status(status,PLUGIN_ID, message, throwable));
 	}
 
 }
