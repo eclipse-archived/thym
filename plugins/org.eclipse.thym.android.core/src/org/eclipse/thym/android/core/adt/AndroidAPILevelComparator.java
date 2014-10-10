@@ -16,7 +16,7 @@ public class AndroidAPILevelComparator implements Comparator<String>{
 
 	@Override
 	public int compare(String sdk1, String sdk2) {
-		if(sdk1 == null && sdk2 == null ){
+		if(sdk1 == null || sdk2 == null ){
 			throw new NullPointerException("comparator arguments can not be null");
 		}
 		char[] l1 = sdk1.toCharArray();
