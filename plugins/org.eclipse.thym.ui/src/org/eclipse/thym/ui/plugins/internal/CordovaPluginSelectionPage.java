@@ -143,7 +143,20 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		
 		tabFolder = new TabFolder(container, SWT.NONE);
 		GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(tabFolder);
-		
+		tabFolder.addListener(SWT.Selection, new Listener() {
+			
+			@Override
+			public void handleEvent(Event event) {
+				if( cordovaPluginInfos == null &&  getSelectedTabItem() == registryTab ){
+					event.widget.getDisplay().asyncExec(new Runnable() {
+						@Override
+						public void run() {
+							populatePluginInfos();
+						}
+					});
+				}
+			}
+		});
 		registryTab = new TabItem(tabFolder, SWT.NONE);
 		registryTab.setText("Registry");
 		catalogViewer = new CordovaPluginCatalogViewer((noProject?SWT.NULL: CordovaPluginCatalogViewer.FILTER_INSTALLED));
@@ -219,7 +232,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(visible && cordovaPluginInfos == null){
+		if(visible && getSelectedTabItem() == registryTab && cordovaPluginInfos == null){
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
