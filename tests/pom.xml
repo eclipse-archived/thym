@@ -12,6 +12,6 @@
 	<packaging>pom</packaging>
 	
 	<modules>
-		<module>org.jboss.tools.aerogear.hybrid.test</module>
+		<module>org.eclipse.thym.test</module>
 	</modules>
 </project>
