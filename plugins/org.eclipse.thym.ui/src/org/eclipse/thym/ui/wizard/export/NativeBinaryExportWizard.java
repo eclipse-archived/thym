@@ -33,13 +33,14 @@ import org.eclipse.ui.IWorkbench;
 
 public class NativeBinaryExportWizard extends Wizard implements IExportWizard {
 
+	private static final String WIZARD_TITLE = "Export Mobile Application";
 	private static final String DIALOG_SETTINGS_KEY = "NativeBinaryExportWizard";
 	private NativeBinaryDestinationPage pageOne;
 	private IStructuredSelection initialSelection;
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		setWindowTitle("Export Mobile Application");
+		setWindowTitle(WIZARD_TITLE);
 		setNeedsProgressMonitor(true);
 		this.initialSelection=selection;
 		IDialogSettings workbenchSettings= HybridUI.getDefault().getDialogSettings();
@@ -89,9 +90,7 @@ public class NativeBinaryExportWizard extends Wizard implements IExportWizard {
 	@Override
 	public void addPages() {
 		super.addPages();
-		pageOne = new NativeBinaryDestinationPage("Export Mobile Application",initialSelection);
-		pageOne.setTitle("Export Mobile Application");
-		pageOne.setDescription("Builds a mobile application that can be installed and run on a mobile device");
+		pageOne = new NativeBinaryDestinationPage(WIZARD_TITLE,initialSelection);
 		addPage(pageOne);
 	}
 	private void savePageSettings() {

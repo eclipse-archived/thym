@@ -50,6 +50,7 @@ public abstract class BaseExportWizardDestinationPage extends WizardPage{
 	@Override
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NULL);
+		container.setFont(parent.getFont());
 		setControl(container);
 		container.setLayout(new GridLayout(1, false));
 		

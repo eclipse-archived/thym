@@ -13,12 +13,18 @@ package org.eclipse.thym.ui.wizard.export;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.extensions.NativeProjectBuilder;
 import org.eclipse.thym.ui.HybridUI;
@@ -32,6 +38,8 @@ public class NativeBinaryDestinationPage extends BaseExportWizardDestinationPage
 	protected NativeBinaryDestinationPage(String pageName,
 			IStructuredSelection selection) {
 		super(pageName, selection);
+		setTitle(pageName);
+		setDescription("Builds a mobile application that can be installed and run on a mobile device");
 		setImageDescriptor(HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, IMAGE_WIZBAN));
 	}
 	
@@ -39,6 +47,17 @@ public class NativeBinaryDestinationPage extends BaseExportWizardDestinationPage
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 		getPlatformsGroup().getTableViewer().setInput(HybridCore.getNativeProjectBuilders());
+		Composite container = (Composite)getControl();
+		
+		Group optionsGroup = new Group(container, SWT.NONE);
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.CENTER).grab(true, false).applyTo(optionsGroup);
+		optionsGroup.setText("Options");
+		GridLayoutFactory.fillDefaults().applyTo(optionsGroup);
+		Button signCheckbox= new Button(optionsGroup, SWT.CHECK | SWT.LEFT);
+		signCheckbox.setText("Generate signed application package");
+		GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).applyTo(signCheckbox);
+		
+		Dialog.applyDialogFont(getControl());
 	}
 	
 
