@@ -221,7 +221,7 @@
            class="org.eclipse.thym.ui.internal.wizard.imports.HybridMobileProjectImportWizard"
            icon="icons/etool16/newcordovaprj_wiz.png"
            id="org.eclipse.thym.ui.HybridMobileProjectImportWizard"
-           name="Import Cordova  Project">
+           name="Import Cordova Project">
         <keywordReference
               id="org.eclipse.thym.ui.keyword">
         </keywordReference>
