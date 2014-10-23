@@ -26,43 +26,35 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
-
-public class NativeProjectBuilder extends ExtensionPointProxy{
+/**
+ * Proxy object for accessing the information for 
+ * <i>org.eclipse.thym.core.projectBuilder</i> extensions. 
+ * Use {@link HybridCore#getNativeProjectBuilders()} to retrieve the
+ * list of native builders defined. 
+ * 
+ * @author Gorkem Ercan
+ *
+ */
+public final class NativeProjectBuilder extends ExtensionPointProxy{
 	
 	public static final String EXTENSION_POINT_ID = "org.eclipse.thym.core.projectBuilder";
 	public static final String ATTR_PLATFORM = "platform";
 	public static final String ATTR_DELEGATE = "delegate";
 	public static final String ATTR_ID="id";
+	public static final String ATTR_PLATFORM_ID = "platformID";
 
-	private String id;
-	private String platform;
+	private final String id;
+	private final String platform;
+	private final String platformID;
 	private Expression expression;
 
 	NativeProjectBuilder(IConfigurationElement element) {
 		super(element);
 		this.id = element.getAttribute(ATTR_ID);
-		this.platform = element.getAttribute(PlatformSupport.ATTR_PLATFORM);
+		this.platform = element.getAttribute(ATTR_PLATFORM);
+		this.platformID = element.getAttribute(ATTR_PLATFORM_ID);
 		configureEnablement(element.getChildren(ExpressionTagNames.ENABLEMENT));
 
-	}
-	
-	private void configureEnablement(IConfigurationElement[] enablementNodes) {
-		if(enablementNodes == null || enablementNodes.length < 1 ) return;
-		IConfigurationElement node = enablementNodes[0];
-		try {
-			 expression = ExpressionConverter.getDefault().perform(node);
-			
-		} catch (CoreException e) {
-			HybridCore.log(IStatus.ERROR, "Error while reading the enablement", e);
-		}
-	}
-	
-	public String getPlatform() {
-		return platform;
-	}
-	
-	public String getID(){
-		return id;
 	}
 	
 	public boolean isEnabled(IEvaluationContext context) throws CoreException{
@@ -90,5 +82,27 @@ public class NativeProjectBuilder extends ExtensionPointProxy{
 			}
 		}
 		throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"Contributing platform has changed"));
+	}
+	
+	public String getPlatform() {
+		return platform;
+	}
+	
+	public String getID(){
+		return id;
+	}
+
+	public String getPlatformID() {
+		return platformID;
+	}
+
+	private void configureEnablement(IConfigurationElement[] enablementNodes) {
+		if(enablementNodes == null || enablementNodes.length < 1 ) return;
+		IConfigurationElement node = enablementNodes[0];
+		try {
+			expression = ExpressionConverter.getDefault().perform(node);
+		} catch (CoreException e) {
+			HybridCore.log(IStatus.ERROR, "Error while reading the enablement", e);
+		}
 	}
 }

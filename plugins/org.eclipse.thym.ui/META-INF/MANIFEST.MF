@@ -38,6 +38,7 @@ Export-Package: org.eclipse.thym.ui,
  org.eclipse.thym.ui.launch,
  org.eclipse.thym.ui.status,
  org.eclipse.thym.ui.util,
+ org.eclipse.thym.ui.wizard,
  org.eclipse.thym.ui.wizard.project;x-internal:=true
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Localization: plugin

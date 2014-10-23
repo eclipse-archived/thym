@@ -1,16 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.eclipse.thym.core" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.eclipse.thym.ui" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="org.eclipse.thym.core" id="org.eclipse.thym.core.projectBuilder" name="Native Binary Builder"/>
+         <meta.schema plugin="org.eclipse.thym.ui" id="platformWizardsPage" name="Platform Wizard Page"/>
       </appinfo>
       <documentation>
          [Enter description of this extension point.]
       </documentation>
    </annotation>
-
-   <include schemaLocation="schema://org.eclipse.core.expressions/schema/expressionLanguage.exsd"/>
 
    <element name="extension">
       <annotation>
@@ -20,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence minOccurs="1" maxOccurs="unbounded">
-            <element ref="builder"/>
+            <element ref="platformWizardPage" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -49,39 +47,32 @@
       </complexType>
    </element>
 
-   <element name="builder">
+   <element name="platformWizardPage">
       <complexType>
-         <sequence minOccurs="0" maxOccurs="1">
-            <element ref="enablement"/>
-         </sequence>
-         <attribute name="delegate" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate:"/>
+                  <meta.attribute kind="java" basedOn=":org.eclipse.thym.ui.wizard.IHybridPlatformWizardPage"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="id" type="string" use="required">
+         <attribute name="wizard" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
+               <appinfo>
+                  <meta.attribute kind="identifier"/>
+               </appinfo>
             </annotation>
          </attribute>
          <attribute name="platform" type="string" use="required">
             <annotation>
                <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="platformID" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
+                  patform ID
                </documentation>
             </annotation>
          </attribute>

@@ -32,7 +32,8 @@
       <builder
             delegate="org.eclipse.thym.ios.core.xcode.XCodeBuild"
             id="org.eclipse.thym.ios.core.nativeBuilder"
-            platform="iOS (XCode)">
+            platform="iOS (XCode)"
+            platformID="ios">
             <enablement>
             <systemTest
                   property="os.name"

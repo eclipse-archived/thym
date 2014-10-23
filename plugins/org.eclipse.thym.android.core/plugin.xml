@@ -27,7 +27,8 @@
       <builder
             delegate="org.eclipse.thym.android.core.adt.BuildDelegate"
             id="org.eclipse.thym.android.core.projectBuilder"
-            platform="Android">
+            platform="Android"
+            platformID="android">
       </builder>
    </extension>
 

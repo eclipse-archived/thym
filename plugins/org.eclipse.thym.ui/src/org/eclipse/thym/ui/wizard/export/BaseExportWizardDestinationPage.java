@@ -75,7 +75,7 @@ public abstract class BaseExportWizardDestinationPage extends WizardPage{
 			
 			@Override
 			public void handleEvent(Event event) {
-				setPageComplete(validatePage());
+				platformSelectionChanged();
 			}
 		});
 		platformsGroup.getTableViewer().setContentProvider(getPlatformContentProvider());
@@ -177,6 +177,10 @@ public abstract class BaseExportWizardDestinationPage extends WizardPage{
 			list.add((HybridProject)checked[i]);
 		}
 		return list;
+	}
+	
+	protected void platformSelectionChanged(){
+		setPageComplete(validatePage());
 	}
 	
 }
