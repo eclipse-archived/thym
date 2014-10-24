@@ -33,7 +33,7 @@ import org.eclipse.ui.IWorkbench;
 
 public class NativeBinaryExportWizard extends PlatformPageWizard implements IExportWizard {
 
-	private static final String IMAGE_WIZBAN = "/icons/wizban/exportnativeprj_wiz.png";
+    private static final String IMAGE_WIZBAN = "/icons/wizban/exportnativeprj_wiz.png";
     private static final String WIZARD_ID = "org.eclipse.thym.ui.exportNativeBinaryWizard";
     private static final String WIZARD_TITLE = "Export Mobile Application";
     private static final String DIALOG_SETTINGS_KEY = "NativeBinaryExportWizard";
@@ -60,6 +60,10 @@ public class NativeBinaryExportWizard extends PlatformPageWizard implements IExp
             for (NativeProjectBuilder nativeProjectBuilder : builders) {
                 try {
                     AbstractNativeBinaryBuildDelegate dlg =nativeProjectBuilder.createDelegate(hybridProject.getProject(), null);
+                    dlg.setSigned(pageOne.isSigned());
+                    if(pageOne.isSigned()){
+                        dlg.setSigningProperties(getPlatformValues(nativeProjectBuilder.getPlatformID()));
+                    }
                     delegates.add(dlg);
                 } catch (CoreException e) {
                     HybridCore.log(IStatus.ERROR, "Error creating native binary builder delegate for " +nativeProjectBuilder.getPlatform(), e);
@@ -68,7 +72,6 @@ public class NativeBinaryExportWizard extends PlatformPageWizard implements IExp
         }
 
         NativeBinaryExportOperation op = new NativeBinaryExportOperation(delegates,new File(pageOne.getDestinationDirectory()), pageOne);
-
 
         try {
             getContainer().run(true, true, op);

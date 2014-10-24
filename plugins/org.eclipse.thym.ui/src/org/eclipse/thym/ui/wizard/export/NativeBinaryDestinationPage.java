@@ -105,6 +105,11 @@ public class NativeBinaryDestinationPage extends BaseExportWizardDestinationPage
         return builders;
     }
 
+    public boolean isSigned()
+    {
+    	return signCheckbox.getSelection();
+    }
+
     @Override
     protected void platformSelectionChanged() {
         super.platformSelectionChanged();

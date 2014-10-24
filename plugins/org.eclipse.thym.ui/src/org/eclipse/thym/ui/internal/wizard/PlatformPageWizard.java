@@ -5,11 +5,12 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
- * 	Contributors:
- * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ *  Contributors:
+ *       Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
 package org.eclipse.thym.ui.internal.wizard;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,6 +85,18 @@ public abstract class PlatformPageWizard extends Wizard{
         updateNextButton();
     }
 
+    public Map<String, Object> getPlatformValues(String platformId){
+        Map<String, Object > values = Collections.emptyMap();
+        if(platformPages != null ){
+            IHybridPlatformWizardPage page = platformPages.get(platformId);
+            if(page != null ){
+                values= page.getValues();
+                Assert.isNotNull(values, "Platform pages can not return null");
+            }
+        }
+        return values;
+    }
+
     /**
      * Returns the ID of this wizard. Platform pages are selected by
      * comparing this value.
@@ -144,5 +157,20 @@ public abstract class PlatformPageWizard extends Wizard{
         }
         return -1;
     }
-
+    
+    @Override
+    public boolean canFinish() {
+        boolean canFinish = super.canFinish();
+        if(canFinish){
+            if (selectedPlatforms != null && platformPages != null) {
+                for (int i = 0; i < selectedPlatforms.length; i++) {
+                    IHybridPlatformWizardPage page = platformPages.get(selectedPlatforms[i]);
+                    if (page != null && !page.isPageComplete()) {
+                        canFinish = false;
+                    }
+                }
+            }
+        }
+        return canFinish;
+    }
 }
