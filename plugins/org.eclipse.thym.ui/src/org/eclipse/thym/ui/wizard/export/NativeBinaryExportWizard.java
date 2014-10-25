@@ -53,6 +53,9 @@ public class NativeBinaryExportWizard extends PlatformPageWizard implements IExp
 
     @Override
     public boolean performFinish() {
+    	if(!super.performPlatformFinish()){
+    		return false;
+    	}
         List<HybridProject> projects =  pageOne.getSelectedProjects();
         List<NativeProjectBuilder> builders = pageOne.getSelectedPlatforms();
         ArrayList<AbstractNativeBinaryBuildDelegate> delegates = new ArrayList<AbstractNativeBinaryBuildDelegate>();

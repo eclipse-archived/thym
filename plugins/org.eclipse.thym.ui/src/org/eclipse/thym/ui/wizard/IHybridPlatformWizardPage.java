@@ -35,5 +35,12 @@ public interface IHybridPlatformWizardPage extends IWizardPage{
 	 * @return key value map
 	 */
 	public Map<String, Object> getValues();
+	
+	/**
+	 * Called by the {@link PlatformPageWizard} 
+	 * during <code>performFinish</code>
+	 * @return whether the page can finish
+	 */
+	public boolean finish();
 
 }

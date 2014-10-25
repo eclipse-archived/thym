@@ -104,6 +104,19 @@ public abstract class PlatformPageWizard extends Wizard{
      * @return the wizard ID as defined on extension point
      */
     protected abstract String getWizardID();
+    
+    
+    protected boolean performPlatformFinish(){
+        if (selectedPlatforms != null && platformPages != null) {
+            for (int i = 0; i < selectedPlatforms.length; i++) {
+                IHybridPlatformWizardPage page = platformPages.get(selectedPlatforms[i]);
+                if (page != null && !page.finish()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     private void updateNextButton() {
         setForcePreviousAndNextButtons(prePlatformPage != null &&
@@ -156,6 +169,11 @@ public abstract class PlatformPageWizard extends Wizard{
             }
         }
         return -1;
+    }
+    
+    @Override
+    public boolean performFinish() {
+    	return performPlatformFinish();
     }
     
     @Override

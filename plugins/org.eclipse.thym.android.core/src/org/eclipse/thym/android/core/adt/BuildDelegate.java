@@ -11,6 +11,9 @@
 package org.eclipse.thym.android.core.adt;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.ant.launching.IAntLaunchConstants;
 import org.eclipse.core.externaltools.internal.IExternalToolConstants;
@@ -89,6 +92,15 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 
 		wc.setAttribute(IExternalToolConstants.ATTR_LAUNCH_IN_BACKGROUND, false);
 		wc.setAttribute(DebugPlugin.ATTR_CAPTURE_OUTPUT, true);
+		if (this.isSigned()) {
+			HashMap<String, String> props = new HashMap<String, String>();
+			Map<String, Object> signingProps = getSigningProperties();
+			Set<String> keys = signingProps.keySet();
+			for (String key : keys) {
+				props.put(key, (String) signingProps.get(key));
+			}
+			wc.setAttribute(IAntLaunchConstants.ATTR_ANT_PROPERTIES, props);
+		}
 		ILaunchConfiguration launchConfig = wc.doSave();
         if (monitor.isCanceled()){
         	return;
@@ -101,11 +113,19 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
         	//no checks for libs
         }else{
         	HybridProject hybridProject = HybridProject.getHybridProject(getProject());
+        	StringBuilder apkName = new StringBuilder(hybridProject.getBuildArtifactAppName());
+        	apkName.append("-");
         	if(isRelease()){
-        		setBuildArtifact(new File(binaryDirectory,hybridProject.getBuildArtifactAppName()+"-release-unsigned.apk" ));
+        		apkName.append("release");
+        		if(!isSigned()){
+        			apkName.append("-unsigned");
+        		}
         	}else{
-        		setBuildArtifact(new File(binaryDirectory,hybridProject.getBuildArtifactAppName()+"-debug.apk" ));
+        		apkName.append("debug");
         	}
+        	apkName.append(".apk");
+        	
+        	setBuildArtifact(new File(binaryDirectory,apkName.toString()));
         	if(!getBuildArtifact().exists()){
         		throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Build failed... Build artifact does not exist"));
         	}
