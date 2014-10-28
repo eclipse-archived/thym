@@ -63,6 +63,11 @@ public class PlistConfigFileAction implements IPluginInstallationAction {
 					NSArray valueArray = (NSArray) valueObject;
 					valueObject = concatArrays(existingArray, valueArray);
 				}
+				if(existingObj instanceof NSDictionary && valueObject instanceof NSDictionary){//Merge dictionaries
+					NSDictionary existingDict = (NSDictionary) existingObj;
+					NSDictionary valueDict = (NSDictionary) valueObject;
+					valueDict.putAll(existingDict);
+				}
 			}
 			
 			dict.put(key, valueObject);
@@ -94,9 +99,19 @@ public class PlistConfigFileAction implements IPluginInstallationAction {
 					if(existingArray.count() == 0){
 						dict.remove(key);
 					}
-				}else{
-					dict.remove(key);
-				}
+				}else
+					if(existingObj instanceof NSDictionary && valueObject instanceof NSDictionary)
+					{
+						NSDictionary existingDict = (NSDictionary) existingObj;
+						NSDictionary valueDict = (NSDictionary) valueObject;
+						String[] keysToRemove = valueDict.allKeys();
+						for (String key : keysToRemove) {
+							existingDict.remove(key);
+						}
+					}
+					else{
+						dict.remove(key);
+					}
 				
 				PropertyListParser.saveAsXML(dict, target);
 			}
