@@ -191,7 +191,6 @@ public class PluginInstallationTests {
 	
 	@Test
 	public void installPluginToProjectWithoutPluginsFolder() throws CoreException{
-		System.out.println("running installPluginToProjectWithoutPluginsFolder");
 		IProject prj = project.getProject();
 		IFolder pluginsFolder  = prj.getFolder(PlatformConstants.DIR_PLUGINS);
 		assertNotNull(pluginsFolder);
