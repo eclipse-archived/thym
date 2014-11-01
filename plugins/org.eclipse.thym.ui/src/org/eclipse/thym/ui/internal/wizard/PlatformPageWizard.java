@@ -191,4 +191,9 @@ public abstract class PlatformPageWizard extends Wizard{
         }
         return canFinish;
     }
+    
+    @Override
+    public boolean needsPreviousAndNextButtons() {
+    	return true;
+    }
 }
