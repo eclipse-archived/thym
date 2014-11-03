@@ -36,7 +36,7 @@ import org.eclipse.thym.ui.wizard.IHybridPlatformWizardPage;
 public class AndroidSigningInfoWizardPage extends WizardPage implements IHybridPlatformWizardPage,Listener {
 
 	private static final String SETTING_KEYSTORE_HISTORY = "android.keystoreHistory";
-	private static final int DESTINATION_HISTORY_LENGTH = 5;
+	private static final int KEYSTORE_HISTORY_LENGTH = 5;
 
     private Combo keyStoreCombo;
     private Text keyStorePassTxt;
@@ -48,7 +48,7 @@ public class AndroidSigningInfoWizardPage extends WizardPage implements IHybridP
     public AndroidSigningInfoWizardPage() {
         super("Android application signing");
         setTitle("Android application signing");
-        setDescription("Enter details for signing the application for Android");
+        setDescription("Enter details for signing the application for Android devices");
     }
 
     @Override
@@ -129,8 +129,8 @@ public class AndroidSigningInfoWizardPage extends WizardPage implements IHybridP
 			String keystore = keyStoreCombo.getText();
 			l.remove(keystore);
 			l.add(keystore);
-			if (l.size() > DESTINATION_HISTORY_LENGTH) {
-				l.remove(DESTINATION_HISTORY_LENGTH);
+			if (l.size() > KEYSTORE_HISTORY_LENGTH) {
+				l.remove(KEYSTORE_HISTORY_LENGTH);
 			}
 			keyStoreHistory = l.toArray(new String[l.size()]);
 			settings.put(SETTING_KEYSTORE_HISTORY, keyStoreHistory);
@@ -160,7 +160,7 @@ public class AndroidSigningInfoWizardPage extends WizardPage implements IHybridP
     		return false;
     	}
     	if(keyStorePassTxt.getText().isEmpty()){
-    		setErrorMessage("Specify a key stroe password");
+    		setErrorMessage("Specify a key store password");
     		return false;
     	}
     	if(keyAliasTxt.getText().isEmpty()){
