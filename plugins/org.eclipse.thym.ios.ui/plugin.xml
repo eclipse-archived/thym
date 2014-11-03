@@ -55,4 +55,13 @@
             id="org.eclipse.thym.ios.ui.IOSSimulatorLaunchConfigTypeImage">
       </launchConfigurationTypeImage>
    </extension>
+    <extension
+         point="org.eclipse.thym.ui.platformWizardsPage">
+      <platformWizardPage
+            class="org.eclipse.thym.ios.ui.IOSSigningInfoWizardPage"
+            platform="ios"
+            wizard="org.eclipse.thym.ui.exportNativeBinaryWizard">
+      </platformWizardPage>
+   </extension>
+   
 </plugin>

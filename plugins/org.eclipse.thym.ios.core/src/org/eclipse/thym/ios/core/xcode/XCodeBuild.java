@@ -10,9 +10,15 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.core.xcode;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -83,6 +89,38 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		
 	}
 	
+	private class SecurityIdentityListParser implements IStreamListener{
+		private StringBuffer buffer = new StringBuffer();
+		private final Pattern pattern = Pattern.compile("\".*\"");
+
+		@Override
+		public void streamAppended(String text, IStreamMonitor monitor) {
+			buffer.append(text);
+		}
+		public List<String> getIdentityList(){
+			if (buffer == null || buffer.length() < 1)
+				return Collections.emptyList();
+			
+			ArrayList<String> identityList = new ArrayList<String>();
+			try {
+				StringReader reader = new StringReader(buffer.toString());
+				BufferedReader read = new BufferedReader(reader);
+				String line = null;
+				while ((line = read.readLine()) != null) {
+					Matcher matcher = pattern.matcher(line);
+					if(matcher.find()){
+						String identity = matcher.group();
+						identityList.add(identity);
+					}
+				}
+			}catch(IOException e){
+				IOSCore.log(IStatus.ERROR, "Error parsing the iOS identity list ", e);
+				return Collections.emptyList();
+			}
+			return identityList;
+		}
+	}
+	
 	/**
 	 * Returns the actual folder where the build artifacts can be found.
 	 * 
@@ -108,7 +146,14 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 				null, parser, parser, new NullProgressMonitor(), null, null);
 		return parser.getVersion();
 	}
-
+	
+	public List<String> findCodesigningIdentity() throws CoreException{
+		ExternalProcessUtility processUtility = new ExternalProcessUtility();
+		SecurityIdentityListParser parser = new SecurityIdentityListParser();
+		processUtility.execSync("security find-identity -p codesigning -v", null, parser, parser, new NullProgressMonitor(), null, null);
+		return parser.getIdentityList();
+	}
+	
 	@Override
 	public void buildNow(IProgressMonitor monitor) throws CoreException {
 
@@ -147,11 +192,13 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		
 			cmdString.append(" -sdk ").append(selectSDK());
 			cmdString.append(" clean build ");
+			
 			cmdString.append("VALID_ARCHS=\"i386 armv6 armv7\"");
 			cmdString.append(" CONFIGURATION_BUILD_DIR=").append("\"").append(getBuildDir(xcodeProjectDir).getPath()).append("\"");
-			if(isRelease()){
-				// We explicitly do not code sign until we have proper mechanisms to 
-				// get the correct signing certificates.
+			// leave signing to package
+			if(isSigned()){
+				cmdString.append(" CODE_SIGN_IDENTITY=").append(getSigningProperties().get("ios.identity"));
+			}else{
 				cmdString.append(" CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO");
 			}
 
@@ -166,7 +213,24 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			if(!listener.isTextDetected()){
 				throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "xcodebuild has failed"));
 			}
-			setBuildArtifact(new File(getBuildDir(xcodeProjectDir),name+".app"));
+			File appFile = new File(getBuildDir(xcodeProjectDir),name+".app");
+			if(isRelease() && isSigned()){
+				File ipaFile = new File(getBuildDir(xcodeProjectDir),name+".ipa");
+				StringBuilder packageCommand = new StringBuilder("xcrun -sdk iphoneos PackageApplication");
+				packageCommand.append(" -v ").append("\"").append(appFile.toString()).append("\"");
+				packageCommand.append(" -o ").append("\"").append(ipaFile.toString()).append("\"");
+//				packageCommand.append(" -sign " ).append(getSigningProperties().get("ios.identity"));
+				packageCommand.append(" -embed ").append("\"").append(getSigningProperties().get("ios.provisionPath")).append("\"");
+				if (monitor.isCanceled()) {
+					return;
+				}
+				monitor.worked(1);
+				processUtility.execSync(packageCommand.toString(), xcodeProjectDir,
+						null,null , monitor, null, getLaunchConfiguration());
+				setBuildArtifact(ipaFile);
+			}else{
+				setBuildArtifact(appFile);
+			}
 			if( !getBuildArtifact().exists()){
 				throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "xcodebuild has failed: build artifact does not exist"));
 			}
