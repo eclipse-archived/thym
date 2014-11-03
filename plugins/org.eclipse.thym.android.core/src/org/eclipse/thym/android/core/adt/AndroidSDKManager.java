@@ -440,23 +440,25 @@ public class AndroidSDKManager {
 	}
 	
 	private String getAndroidCommand(){
-		if(isWindows()){
-			return "cmd /c "+ toolsDir +"android";
-		}
-		return toolsDir+"android";
+		String command = addQuotes(toolsDir+"android");
+		return isWindows() ? "cmd /c "+ command : command;
 	}
 	
 	private String getADBCommand(){
-		return platformTools+"adb";
+		return addQuotes(platformTools+"adb");
 	}
 	
 	private String getEmulatorCommand(){
-		return toolsDir+"emulator";
+		return addQuotes(toolsDir+"emulator");
 	}
 	
 	private boolean isWindows(){
 		String OS = System.getProperty("os.name","unknown");
 		return OS.toLowerCase().indexOf("win")>-1;
+	}
+	
+	private String addQuotes(String path) {
+		return "\"" + path + "\"";
 	}
 	
 }
