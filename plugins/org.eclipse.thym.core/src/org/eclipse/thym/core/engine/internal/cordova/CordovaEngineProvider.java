@@ -31,12 +31,14 @@ import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
 import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
+import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 import com.github.zafarkhaja.semver.Version;
@@ -138,11 +140,45 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return path;
 	}
 	
-	public List<DownloadableCordovaEngine> getDownloadableVersions() throws CoreException{
-		DefaultEngineRepoProvider engineRepo = new DefaultEngineRepoProvider();
-		return engineRepo.getEngines();
+	public List<DownloadableCordovaEngine> getDownloadableVersions()
+			throws CoreException {
+		AbstractEngineRepoProvider defaultProvider = new DefaultEngineRepoProvider();
+		List<DownloadableCordovaEngine> result = defaultProvider.getEngines();
+		List<CordovaEngineRepoProvider> providerProxies = HybridCore
+				.getCordovaEngineRepoProviders();
+		for (CordovaEngineRepoProvider providerProxy : providerProxies) {
+			AbstractEngineRepoProvider provider = providerProxy
+					.createProvider();
+			List<DownloadableCordovaEngine> engines = provider.getEngines();
+			if (engines != null) {
+				if (provider.shouldOverride()) {
+					result = engines;
+				} else {
+					addEngines(engines, result);
+				}
+			}
+		}
+		return result;
 
 	}
+	
+	private void addEngines(List<DownloadableCordovaEngine> newEngines,
+			List<DownloadableCordovaEngine> allEngines) {
+		for (DownloadableCordovaEngine newEngine : newEngines) {
+			boolean merged = false;
+			for (DownloadableCordovaEngine engine : allEngines) {
+				if (engine.merge(newEngine)) {
+					merged = true;
+					break;
+				}
+			}
+			if (!merged) {
+				allEngines.add(newEngine);
+			}
+		}
+	}
+
+
 	private DownloadableCordovaEngine getDownloadableCordovaEngine(String version){
 		try {
 			List<DownloadableCordovaEngine> versions = getDownloadableVersions();
