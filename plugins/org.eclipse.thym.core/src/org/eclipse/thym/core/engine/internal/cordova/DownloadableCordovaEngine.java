@@ -38,22 +38,6 @@ public class DownloadableCordovaEngine {
 		public void setVersion(String version) {
 			this.version = version;
 		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof LibraryDownloadInfo) {
-				LibraryDownloadInfo info = (LibraryDownloadInfo) obj;
-				return platformId.equals(info.getPlatformId())
-						&& version.equals(info.getVersion());
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			int hash = 31 + platformId.hashCode();
-			return hash * 31 + version.hashCode();
-		}
 	}
 	
 	private String version;
@@ -81,26 +65,4 @@ public class DownloadableCordovaEngine {
 		}
 		return null;
 	}
-
-	/**
-	 * Merge two {@link DownloadableCordovaEngine} instances intro one. It is
-	 * performed only if they have the same version.
-	 * 
-	 * @param newEngine
-	 * @return <code>true</code> if libraries were merged; otherwise return
-	 *         <code>false</code>
-	 */
-	protected boolean merge(DownloadableCordovaEngine newEngine) {
-		if (this.version.endsWith(newEngine.getVersion())) {
-			List<LibraryDownloadInfo> newLibs = newEngine.libs;
-			for (LibraryDownloadInfo newLib : newLibs) {
-				if (!libs.contains(newLib)) {
-					libs.add(newLib);
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
 }

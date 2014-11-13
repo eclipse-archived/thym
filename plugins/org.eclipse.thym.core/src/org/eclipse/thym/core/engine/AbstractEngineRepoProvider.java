@@ -49,8 +49,6 @@ import com.google.gson.stream.JsonReader;
  */
 public abstract class AbstractEngineRepoProvider {
 
-	private boolean override;
-
 	/**
 	 * Returns a list of all {@link DownloadableCordovaEngine}s that are
 	 * available from this repository.
@@ -60,14 +58,6 @@ public abstract class AbstractEngineRepoProvider {
 	 */
 	public abstract List<DownloadableCordovaEngine> getEngines()
 			throws CoreException;
-
-	public void setOverride(boolean override) {
-		this.override = override;
-	}
-	
-	public boolean shouldOverride() {
-		return override;
-	}
 	
 	protected InputStream getRemoteJSonStream(String url) {
 		BundleContext context = HybridCore.getContext();

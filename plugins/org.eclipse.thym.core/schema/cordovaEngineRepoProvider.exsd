@@ -6,7 +6,7 @@
          <meta.schema plugin="org.eclipse.thym.core" id="org.eclipse.thym.core.cordovaEngineRepoProvider" name="Cordova Engine Repository Provider"/>
       </appinfo>
       <documentation>
-         This extension point allows contributors to extend list of available Cordova Engines. If override attribute is &apos;false&apos; then it merges already collected data from all contributors with the new one. Otherwise it overrides all previous data. Cordova Engine with the same platform&apos;s id and version is considered as a duplicate. It does not support multiple download URLs for one Cordova Engine.
+         This extension point allows contributors to provide a list of available Cordova Engines. It overrides all default repository provider base on a current product&apos;s id.
       </documentation>
    </annotation>
 
@@ -66,10 +66,10 @@
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="override" type="boolean">
+         <attribute name="productId" type="string" use="required">
             <annotation>
                <documentation>
-                  If true then provider overrides repositories from a default repository provider.
+                  Id of the product for which this repository provider replaces a default one.
                </documentation>
             </annotation>
          </attribute>
@@ -96,12 +96,12 @@
          point=&quot;org.eclipse.thym.core.cordovaEngineRepoProvider&quot;&gt;
       &lt;provider
             id=&quot;com.example.exampleProvider&quot;
-            override=&quot;true&quot;
+            product_id=&quot;org.eclipse.platform.ide&quot;
             provider=&quot;com.example.ExampleEngineRepoProvider&quot;&gt;
       &lt;/provider&gt;
    &lt;/extension&gt;
 &lt;/pre&gt;
-For such example all engines collected from com.example.ExampleEngineRepoProvider provider will override exisitng engines.
+For such example all com.example.ExampleEngineRepoProvider will provide engines for org.eclipse.platform.ide product.
       </documentation>
    </annotation>
 

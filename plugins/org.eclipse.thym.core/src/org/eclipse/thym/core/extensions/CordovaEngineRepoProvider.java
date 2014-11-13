@@ -32,17 +32,16 @@ public class CordovaEngineRepoProvider extends ExtensionPointProxy {
 	public static final String EXTENSION_POINT_ID = "org.eclipse.thym.core.cordovaEngineRepoProvider";
 
 	private static final String ATTR_ID = "id";
-	private static final String OVERRIDE_ID = "override";
+	private static final String PRODUCT_ID = "productId";
 	private static final String PROVIDER_ID = "provider";
 
 	private String id;
-	private boolean override;
+	private String productId;
 
 	CordovaEngineRepoProvider(IConfigurationElement element) {
 		super(element);
 		this.id = element.getAttribute(ATTR_ID);
-		String override = element.getAttribute(OVERRIDE_ID);
-		this.override = override != null ? Boolean.valueOf(override) : false;
+		this.productId = element.getAttribute(PRODUCT_ID);
 	}
 
 	/**
@@ -52,7 +51,12 @@ public class CordovaEngineRepoProvider extends ExtensionPointProxy {
 		return id;
 	}
 	
-	
+	/**
+	 * @return id of the product for which this repository provider replaces a default one.
+	 */
+	public String getProductId() {
+		return productId;
+	}
 
 	/**
 	 * Create {@link AbstractEngineRepoProvider} instance base on provider class
@@ -77,7 +81,6 @@ public class CordovaEngineRepoProvider extends ExtensionPointProxy {
 					if (configs[j].getAttribute(ATTR_ID).equals(getID())) {
 						AbstractEngineRepoProvider provider = (AbstractEngineRepoProvider) configs[j]
 								.createExecutableExtension(PROVIDER_ID);
-						provider.setOverride(override);
 						return provider;
 					}
 				}
