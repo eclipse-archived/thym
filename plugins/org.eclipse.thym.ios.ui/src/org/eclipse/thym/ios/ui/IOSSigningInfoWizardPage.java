@@ -10,19 +10,18 @@
  *******************************************************************************/
 package org.eclipse.thym.ios.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
+import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -30,28 +29,37 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.thym.ios.core.xcode.ProvisioningProfile;
 import org.eclipse.thym.ios.core.xcode.XCodeBuild;
 import org.eclipse.thym.ui.wizard.IHybridPlatformWizardPage;
 import org.eclipse.ui.statushandlers.StatusManager;
 
 public class IOSSigningInfoWizardPage extends WizardPage implements
-		IHybridPlatformWizardPage, Listener {
+		IHybridPlatformWizardPage, ISelectionChangedListener{
 
-	private static final String SETTING_PROVISION_PATH_HISTORY = "ios.provisionPathHistory";
-	private static final int PROVISION_PATH_HISTORY_LENGTH = 5;
 
 	
-	private Button btnBrowse;
-	private Combo provCombo;
+	private ComboViewer provCombo;
 	private ComboViewer identityCombo;
-	private String[] provisionPathHistory;
+	
+	
+	private static class ProvisionProfileLabelProvider extends BaseLabelProvider implements ILabelProvider{
+
+		@Override
+		public Image getImage(Object element) {
+			return null;
+		}
+
+		@Override
+		public String getText(Object element) {
+			ProvisioningProfile profile = (ProvisioningProfile) element;
+			return profile.getName();
+		}
+		
+	}
 
 	public IOSSigningInfoWizardPage() {
 		super("iOS application signing");
@@ -67,13 +75,7 @@ public class IOSSigningInfoWizardPage extends WizardPage implements
         // Identity
         createFieldLabel(container, "Identity:");
         identityCombo = new ComboViewer(container, SWT.READ_ONLY);
-        identityCombo.addSelectionChangedListener(new ISelectionChangedListener() {
-			
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				setPageComplete(validatePage());
-			}
-		});
+        identityCombo.addSelectionChangedListener(this);
         identityCombo.setContentProvider(new IStructuredContentProvider() {
 			
 			@Override
@@ -101,21 +103,39 @@ public class IOSSigningInfoWizardPage extends WizardPage implements
         GridDataFactory.fillDefaults().grab(true,false).applyTo(identityCombo.getControl());
         // Mobile provision
         createFieldLabel(container, "Provisioning profile:");
-        Composite directoryComposite = new Composite(container, SWT.NONE);
-        GridDataFactory.fillDefaults().grab(true, false).applyTo(directoryComposite);
-        GridLayoutFactory.fillDefaults().numColumns(2).applyTo(directoryComposite);
-        provCombo = new Combo(directoryComposite,SWT.NONE);
-        provCombo.addListener(SWT.Modify, this);
-        GridDataFactory.fillDefaults().grab(true, false).applyTo(provCombo);
-        btnBrowse = new Button(directoryComposite, SWT.PUSH);
-        btnBrowse.setText("Browse...");
-        btnBrowse.addListener(SWT.Selection, this);
+        provCombo = new ComboViewer(container, SWT.READ_ONLY);
+        provCombo.addSelectionChangedListener(this);
+        provCombo.setContentProvider(new IStructuredContentProvider() {
+			
+			@Override
+			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			}
+			
+			@Override
+			public void dispose() {
+			}
+			
+			@Override
+			public Object[] getElements(Object inputElement) {
+				XCodeBuild build = new XCodeBuild();
+				List<ProvisioningProfile> profiles;
+				try{
+					profiles = build.findProvisioningProfiles();
+					return profiles.toArray(new ProvisioningProfile[profiles.size()]);
+				}catch (CoreException e){
+					StatusManager.getManager().handle(e, IOSUI.PLUGIN_ID);
+				}
+				return new String[0];
+			}
+		});
+        provCombo.setLabelProvider(new ProvisionProfileLabelProvider());
+        GridDataFactory.fillDefaults().grab(true, false).applyTo(provCombo.getControl());
 
         
  
         setControl(container);
-        identityCombo.getCombo().setFocus();
         identityCombo.setInput(new Object());
+        provCombo.setInput(new Object());
         Dialog.applyDialogFont(container);
         setPageComplete(false);
         restoreWidgets();
@@ -124,30 +144,15 @@ public class IOSSigningInfoWizardPage extends WizardPage implements
 	@Override
 	public Map<String, Object> getValues() {
 		Map<String, Object> vals = new HashMap<String, Object>();
-		IStructuredSelection sel = (IStructuredSelection) identityCombo.getSelection();
-		vals.put("ios.identity", sel.getFirstElement());
-		vals.put("ios.provisionPath",provCombo.getText());
+		IStructuredSelection identitySel = (IStructuredSelection) identityCombo.getSelection();
+		IStructuredSelection provSel = (IStructuredSelection) provCombo.getSelection();
+		vals.put("ios.identity", identitySel.getFirstElement());
+		vals.put("ios.provision",((ProvisioningProfile)provSel.getFirstElement()).getUUID());
 		return vals;
 	}
 
 	@Override
 	public boolean finish() {
-		IDialogSettings settings = getDialogSettings();
-		if (settings != null) {
-			if (provisionPathHistory == null) {
-				provisionPathHistory = new String[0];
-			}
-			ArrayList<String> l = new ArrayList<String>(
-					Arrays.asList(provisionPathHistory));
-			String prov = provCombo.getText();
-			l.remove(prov);
-			l.add(prov);
-			if (l.size() > PROVISION_PATH_HISTORY_LENGTH) {
-				l.remove(PROVISION_PATH_HISTORY_LENGTH);
-			}
-			provisionPathHistory = l.toArray(new String[l.size()]);
-			settings.put(SETTING_PROVISION_PATH_HISTORY, provisionPathHistory);
-		}
 		return true;
 	}
 	
@@ -159,49 +164,27 @@ public class IOSSigningInfoWizardPage extends WizardPage implements
         return label;
     }
 
-	@Override
-	public void handleEvent(Event event) {
-        if(event.type == SWT.Selection && event.widget == btnBrowse){
-            selectFile();
-        }
+	
+	private void restoreWidgets() {
 		
 	}
 	
-	 private void selectFile(){
-	        FileDialog fileDialog = new FileDialog(getShell(), SWT.OPEN);
-	        fileDialog.setText("Select a mobile provisoning file");
-	        fileDialog.setFilterExtensions(new String[]{"mobileprovision"});
-	        String path = fileDialog.open();
-	        if(path != null ){
-	            provCombo.setText(path);
-	        }
-	        setPageComplete(validatePage());
-
-	    }
-	    private void restoreWidgets() {
-	    	IDialogSettings settings = getDialogSettings();
-	    	if(settings == null ) return;
-	    	provisionPathHistory = settings.getArray(SETTING_PROVISION_PATH_HISTORY);
-	    	if(provisionPathHistory != null ){
-	    		for (int i = 0; i < provisionPathHistory.length; i++) {
-	    			provCombo.add(provisionPathHistory[i], i);
-	    	    }
-	    	        if(provCombo.getItemCount()>0){
-	    	            provCombo.select(0);
-	    	        }
-	    	}
-	    }
 	private boolean validatePage() {
 		if(identityCombo.getSelection().isEmpty()){
-			setErrorMessage("Select and identity");
+			setErrorMessage("Please select an identity");
 			return false;
 		}
-		if(provCombo.getText().isEmpty()){
-			setErrorMessage("Please specify a mobile provisioning profile file");
+		if(provCombo.getSelection().isEmpty()){
+			setErrorMessage("Please select a mobile provisioning profile");
 			return false;
 		}
 		setErrorMessage(null);
 		return true;
+	}
+
+	@Override
+	public void selectionChanged(SelectionChangedEvent event) {
+		setPageComplete(validatePage());	
 	}
 
 }

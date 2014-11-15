@@ -16,10 +16,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -29,14 +31,17 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
-import org.eclipse.thym.ios.core.IOSCore;
-import org.eclipse.thym.ios.core.simulator.IOSDevice;
-import org.eclipse.thym.ios.core.simulator.IOSSimulator;
-import org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
 import org.eclipse.thym.core.internal.util.TextDetectingStreamListener;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
+import org.eclipse.thym.ios.core.IOSCore;
+import org.eclipse.thym.ios.core.simulator.IOSDevice;
+import org.eclipse.thym.ios.core.simulator.IOSSimulator;
+import org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants;
+import com.dd.plist.NSDictionary;
+import com.dd.plist.NSString;
+import com.dd.plist.PropertyListParser;
 
 /**
  * Wrapper around the xcodebuild command line tool.
@@ -72,6 +77,21 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			}
 			return sdkList;
 		}
+	}
+	
+	private class CollectingStreamListener implements IStreamListener{
+		private StringBuilder buffer = new StringBuilder(); 
+		@Override
+		public void streamAppended(String text, IStreamMonitor monitor) {
+			buffer.append(text);
+			
+		}
+		
+		public String getBuffer(){
+			return buffer.toString();
+		}
+		
+		
 	}
 	
 	private class XCodeVersionParser implements IStreamListener{
@@ -154,6 +174,38 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		return parser.getIdentityList();
 	}
 	
+	public List<ProvisioningProfile> findProvisioningProfiles() throws CoreException{
+		File provProfileDir = new File( FileUtils.getUserDirectory(), "/Library/MobileDevice/Provisioning Profiles");
+		Iterator<File> provisionIterator = FileUtils.iterateFiles(provProfileDir, new WildcardFileFilter("*.mobileprovision"), null);
+		List<ProvisioningProfile> profiles = new ArrayList<ProvisioningProfile>();
+		while (provisionIterator.hasNext()) {
+			try{
+				File file = provisionIterator.next();
+				ExternalProcessUtility processUtility = new ExternalProcessUtility();
+				
+				CollectingStreamListener collectingParser = new CollectingStreamListener();
+				processUtility.execSync("security cms -D -i\""+file.toString()+"\"", null, collectingParser, collectingParser, new NullProgressMonitor(), 
+						null, null);
+				
+				NSDictionary dic = (NSDictionary) PropertyListParser.parse(collectingParser.getBuffer().getBytes());
+				if(dic.containsKey("Name") && dic.containsKey("UUID")){
+					ProvisioningProfile profile = new ProvisioningProfile();
+					NSString name = (NSString) dic.get("Name");
+					NSString uuid = (NSString) dic.get("UUID");
+					profile.setName(name.getContent());
+					profile.setUUID(uuid.getContent());
+					profiles.add(profile);
+				}else{
+					IOSCore.log(IStatus.WARNING, String.format("%s missing name and/or uuid fields", file), null);
+				}
+				
+			}catch(Exception e){
+				IOSCore.log(IStatus.WARNING, "Error parsing the iOS mobile provision file", e);
+			}
+		}
+		return profiles;
+	}
+	
 	@Override
 	public void buildNow(IProgressMonitor monitor) throws CoreException {
 
@@ -163,7 +215,6 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		
 		try {
 			monitor.beginTask("Build Cordova project for iOS", 10);
-			//TODO: use extension point to create the generator.
 			XcodeProjectGenerator creator = new XcodeProjectGenerator(getProject(),null,"ios");
 			SubProgressMonitor generateMonitor = new SubProgressMonitor(monitor, 1);
 			File xcodeProjectDir  = creator.generateNow(generateMonitor);
@@ -173,9 +224,7 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 				return; 
 			}
 
-			// xcodebuild -project $PROJECT_NAME.xcodeproj -arch i386 -target
-			// $PROJECT_NAME -configuration Release -sdk $SDK clean build
-			// VALID_ARCHS="i386" CONFIGURATION_BUILD_DIR="$PROJECT_PATH/build"
+			// BUILD 
 			HybridProject hybridProject = HybridProject.getHybridProject(this.getProject());
 			if(hybridProject == null ){
 				throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Not a hybrid mobile project, can not generate files"));
@@ -183,17 +232,31 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 
 			String name = hybridProject.getBuildArtifactAppName();
 
+			try {
+				FileUtils.write( new File(xcodeProjectDir,"thym.xconfig"),"CODE_SIGN_RESOURCE_RULES_PATH = \"$(SDKROOT)/ResourceRules.plist\"" );
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			StringBuilder cmdString = new StringBuilder("xcodebuild -project ");
 			cmdString.append("\"").append(name).append(".xcodeproj").append("\"");
-
-//			cmdString.append(" -arch i386 armv6 armv7 -target ").append(name);
+			if(!isRelease()){
+				cmdString.append(" -arch i386");
+			}
 			cmdString.append(" -target ").append(name);
 			cmdString.append(" -configuration Release ");
-		
+			cmdString.append(" -xcconfig thym.xconfig");
 			cmdString.append(" -sdk ").append(selectSDK());
 			cmdString.append(" clean build ");
-			
-			cmdString.append("VALID_ARCHS=\"i386 armv6 armv7\"");
+			if(isRelease()){
+				cmdString.append(" VALID_ARCHS=\"armv6 armv7 arm64\"");
+				cmdString.append(" ARCHS=\"armv6 armv7 arm64\"");
+			}
+			else{
+				cmdString.append(" VALID_ARCHS=\"i386\"");
+				
+			}
 			cmdString.append(" CONFIGURATION_BUILD_DIR=").append("\"").append(getBuildDir(xcodeProjectDir).getPath()).append("\"");
 			// leave signing to package
 			if(isSigned()){
@@ -216,11 +279,15 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			File appFile = new File(getBuildDir(xcodeProjectDir),name+".app");
 			if(isRelease() && isSigned()){
 				File ipaFile = new File(getBuildDir(xcodeProjectDir),name+".ipa");
-				StringBuilder packageCommand = new StringBuilder("xcrun -sdk iphoneos PackageApplication");
+				StringBuilder packageCommand = new StringBuilder("xcrun");
+				packageCommand.append(" -sdk ").append(selectSDK());
+				packageCommand.append(" PackageApplication");
 				packageCommand.append(" -v ").append("\"").append(appFile.toString()).append("\"");
 				packageCommand.append(" -o ").append("\"").append(ipaFile.toString()).append("\"");
-//				packageCommand.append(" -sign " ).append(getSigningProperties().get("ios.identity"));
-				packageCommand.append(" -embed ").append("\"").append(getSigningProperties().get("ios.provisionPath")).append("\"");
+				packageCommand.append(" -sign " ).append(getSigningProperties().get("ios.identity"));
+				File provProfilePath = new File(FileUtils.getUserDirectory(), "Library/MobileDevice/Provisioning Profiles/"+
+						getSigningProperties().get("ios.provision")+".mobileprovision");
+				packageCommand.append(" -embed ").append("\"").append(provProfilePath.toString()).append("\"");
 				if (monitor.isCanceled()) {
 					return;
 				}
