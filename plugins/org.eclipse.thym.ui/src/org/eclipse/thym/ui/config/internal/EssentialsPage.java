@@ -16,6 +16,7 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.runtime.Assert;
@@ -311,12 +312,17 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 					new PropertyChangeListener() {
 
 						@Override
-						public void propertyChange(PropertyChangeEvent evt) {
-							if (evt.getNewValue() == null) {
-								value.setValue(new DummyAuthor());
-							} else {
-								value.setValue(evt.getNewValue());
-							}
+						public void propertyChange(final PropertyChangeEvent evt) {
+							value.getRealm().exec(new Runnable() {
+								@Override
+								public void run() {
+									if (evt.getNewValue() == null) {
+										value.setValue(new DummyAuthor());
+									} else {
+										value.setValue(evt.getNewValue());
+									}
+								}
+							});
 						}
 					});
 		}
@@ -349,12 +355,18 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 					new PropertyChangeListener() {
 
 						@Override
-						public void propertyChange(PropertyChangeEvent evt) {
-							if (evt.getNewValue() == null) {
-								value.setValue(new DummyContent());
-							} else {
-								value.setValue(evt.getNewValue());
-							}
+						public void propertyChange(final PropertyChangeEvent evt) {
+							value.getRealm().exec(new Runnable() {
+								@Override
+								public void run() {
+									if (evt.getNewValue() == null) {
+										value.setValue(new DummyContent());
+									} else {
+										value.setValue(evt.getNewValue());
+									}
+									
+								}
+							});
 						}
 					});
 		}

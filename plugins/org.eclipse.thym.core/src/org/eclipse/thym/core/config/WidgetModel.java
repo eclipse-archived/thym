@@ -37,7 +37,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -178,12 +177,11 @@ public class WidgetModel implements IModelLifecycleListener{
 		long enter = System.currentTimeMillis();
 		if (editableWidget == null){
 			synchronized (this) {
-				IFile configXml = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(Path.fromOSString(configFile.toString()));
+				IFile configXml = configXMLtoIFile();
 				if(configXml == null ){
 					return null;
 				}
-				IModelManager manager = StructuredModelManager
-						.getModelManager();
+				IModelManager manager = StructuredModelManager.getModelManager();
 				try {
 					underLyingModel = manager.getModelForEdit(configXml);
 					if ((underLyingModel != null) && (underLyingModel instanceof IDOMModel)) {
@@ -202,6 +200,16 @@ public class WidgetModel implements IModelLifecycleListener{
 		return editableWidget;
 	}
 
+	protected IFile configXMLtoIFile() {
+		IFile[] configFileCandidates = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(configFile.toURI());
+		if(configFileCandidates == null || configFileCandidates.length == 0){
+			return null;
+		}
+		// In case of linked resources, there is a chance that this will point to the wrong file.
+		// This may happen only if two eclipse projects link the same config.xml. 
+		return configFileCandidates[0];
+	}
+
 	/**
 	 * Syncs the changes done to the config.xml directly to the model by reloading it. 
 	 * This method needs to be called any time config.xml is modified without using the 
@@ -212,9 +220,11 @@ public class WidgetModel implements IModelLifecycleListener{
 	public void resyncModel() throws CoreException{
 		if (this.underLyingModel != null) {
 			try {
-				IFile configXml = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(Path.fromOSString(configFile.toString()));
-				configXml.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-				underLyingModel.getModelHandler().getModelLoader().load(configXml, underLyingModel);
+				IFile configXml = configXMLtoIFile();
+				if(configXml != null){
+					configXml.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
+					underLyingModel.getModelHandler().getModelLoader().load(configXml, underLyingModel);
+				}
 			} catch (IOException e) {
 				HybridCore.log(IStatus.ERROR,
 						"Error resyncing the editable model", e);
