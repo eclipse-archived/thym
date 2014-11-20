@@ -54,7 +54,7 @@ public class HttpUtil {
 
 				final IProxyService proxy =  HybridCore.getDefault().getProxyService();
 				HttpHost host =null;
-				if (proxy != null && proxy.isProxiesEnabled()) {
+				if (proxy != null ) {
 					try {
 						IProxyData[] proxyDatas = proxy.select(new URI(target.toURI()));
 						for (IProxyData data : proxyDatas) {
