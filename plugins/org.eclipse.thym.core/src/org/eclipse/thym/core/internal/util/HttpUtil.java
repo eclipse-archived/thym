@@ -54,16 +54,18 @@ public class HttpUtil {
 
 				final IProxyService proxy =  HybridCore.getDefault().getProxyService();
 				HttpHost host =null;
-				try {
-					IProxyData[] proxyDatas = proxy.select(new URI(target.toURI()));
-					for (IProxyData data : proxyDatas) {
-						if(data.getType().equals(IProxyData.HTTP_PROXY_TYPE)){
-							host = new HttpHost(data.getHost(), data.getPort());
-							break;
+				if (proxy != null && proxy.isProxiesEnabled()) {
+					try {
+						IProxyData[] proxyDatas = proxy.select(new URI(target.toURI()));
+						for (IProxyData data : proxyDatas) {
+							if (data.getType().equals(IProxyData.HTTP_PROXY_TYPE)) {
+								host = new HttpHost(data.getHost(), data.getPort());
+								break;
+							}
 						}
+					} catch (URISyntaxException e) {
+						HybridCore.log(IStatus.ERROR, "Incorrect URI", e);
 					}
-				} catch (URISyntaxException e) {
-					HybridCore.log(IStatus.ERROR, "Incorrect URI", e);
 				}
 				if(host == null ){
 					return new HttpRoute(target, null, secure);
