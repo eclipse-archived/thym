@@ -152,6 +152,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 						@Override
 						public void run() {
 							populatePluginInfos();
+							displayPluginInfos();
 						}
 					});
 				}
@@ -232,14 +233,24 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if(visible && getSelectedTabItem() == registryTab && cordovaPluginInfos == null){
+		if (visible && getSelectedTabItem() == registryTab) {
+			if (cordovaPluginInfos == null) {
+				Display.getCurrent().asyncExec(new Runnable() {
+					@Override
+					public void run() {
+						populatePluginInfos();
+					}
+				});
+			}
 			Display.getCurrent().asyncExec(new Runnable() {
+				
 				@Override
 				public void run() {
-					populatePluginInfos();
+					displayPluginInfos();
 				}
 			});
 		}
+		
 	}
 
 	private void createProjectGroup(Composite container) {
@@ -302,22 +313,6 @@ public class CordovaPluginSelectionPage extends WizardPage {
 								"Error while retrieving the Cordova Plug-in Registry Catalog"));
 						throw new InvocationTargetException(e);
 					}
-					final Object[] pluginInfos = cordovaPluginInfos.toArray();
-					final Display display = getControl().getDisplay();
-					display.syncExec(new Runnable() {
-						@Override
-						public void run() {
-							BusyIndicator.showWhile(display, new Runnable() {
-								@SuppressWarnings("restriction")
-								@Override
-								public void run() {
-									if(!getControl().isDisposed() && isCurrentPage()){
-										catalogViewer.getViewer().setInput(pluginInfos);
-									}
-								}
-							});
-						}
-					});
 				}
 			});
 		} catch (InvocationTargetException inve) {
@@ -562,6 +557,26 @@ public class CordovaPluginSelectionPage extends WizardPage {
 			tabFolder.setSelection(registryTab);
 			break;
 		}
+	}
+
+	protected void displayPluginInfos() {
+		if(getControl() == null || cordovaPluginInfos == null ) return;
+		final Display display = getControl().getDisplay();
+		final Object[] pluginInfos = cordovaPluginInfos.toArray();
+		display.syncExec(new Runnable() {
+			@Override
+			public void run() {
+				BusyIndicator.showWhile(display, new Runnable() {
+					@SuppressWarnings("restriction")
+					@Override
+					public void run() {
+						if(!getControl().isDisposed() && isCurrentPage()){
+							catalogViewer.getViewer().setInput(pluginInfos);
+						}
+					}
+				});
+			}
+		});
 	}
 	
 }
