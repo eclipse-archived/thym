@@ -20,10 +20,12 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.ecf.filetransfer.IncomingFileTransferException;
 import org.eclipse.ecf.filetransfer.identity.FileCreateException;
@@ -31,12 +33,14 @@ import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
 import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
+import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
 import com.github.zafarkhaja.semver.Version;
@@ -138,11 +142,23 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return path;
 	}
 	
-	public List<DownloadableCordovaEngine> getDownloadableVersions() throws CoreException{
-		DefaultEngineRepoProvider engineRepo = new DefaultEngineRepoProvider();
-		return engineRepo.getEngines();
-
+	public List<DownloadableCordovaEngine> getDownloadableVersions()
+			throws CoreException {
+		AbstractEngineRepoProvider provider = new DefaultEngineRepoProvider();
+		IProduct product = Platform.getProduct();
+		if (product != null) {
+			String productId = Platform.getProduct().getId();
+			List<CordovaEngineRepoProvider> providerProxies = HybridCore
+					.getCordovaEngineRepoProviders();
+			for (CordovaEngineRepoProvider providerProxy : providerProxies) {
+				if (productId.equals(providerProxy.getProductId())) {
+					provider = providerProxy.createProvider();
+				}
+			}
+		}
+		return provider.getEngines();
 	}
+
 	private DownloadableCordovaEngine getDownloadableCordovaEngine(String version){
 		try {
 			List<DownloadableCordovaEngine> versions = getDownloadableVersions();

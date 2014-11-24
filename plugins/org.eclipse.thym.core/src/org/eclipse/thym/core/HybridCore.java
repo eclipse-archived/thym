@@ -26,8 +26,10 @@ import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
 import org.eclipse.thym.core.config.WidgetModel;
+import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
+import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.ExtensionPointProxy;
 import org.eclipse.thym.core.extensions.NativeProjectBuilder;
 import org.eclipse.thym.core.extensions.PlatformSupport;
@@ -212,6 +214,16 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 	 */
 	public static List<NativeProjectBuilder> getNativeProjectBuilders(){
 		return ExtensionPointProxy.getNativeExtensionPointProxy(NativeProjectBuilder.EXTENSION_POINT_ID, NativeProjectBuilder.class);
+	}
+	
+	/**
+	 * Returns the {@link AbstractEngineRepoProvider} proxy objects defined by the 
+	 * extensions. 
+	 * 
+	 * @return project builder extension points if any
+	 */
+	public static List<CordovaEngineRepoProvider> getCordovaEngineRepoProviders(){
+		return ExtensionPointProxy.getNativeExtensionPointProxy(CordovaEngineRepoProvider.EXTENSION_POINT_ID, CordovaEngineRepoProvider.class);
 	}
 	
 	/**
