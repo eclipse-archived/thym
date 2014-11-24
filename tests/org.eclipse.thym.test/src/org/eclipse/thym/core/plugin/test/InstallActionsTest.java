@@ -251,7 +251,7 @@ public class InstallActionsTest {
 	@Test
 	@SuppressWarnings("restriction")
 	public void testPlistAction_mergeDictionary() throws Exception{
-		File target = TestUtils.createTempFile("test-info.plist");
+		File target = TestUtils.createTempFile("test-Info.plist");
 		String xml = "<config-file target=\"*-Info.plist\" parent=\"CFBundleIcons\">"+
 		"<dict> <key>UINewsstandIcon</key> <dict>" + 
 	       "<key>CFBundleIconFiles</key>" +
@@ -287,7 +287,7 @@ public class InstallActionsTest {
 	@Test
 	@SuppressWarnings("restriction")
 	public void testPlistAction_mergeArrays() throws Exception{
-		File target = TestUtils.createTempFile("test-info.plist");
+		File target = TestUtils.createTempFile("test-Info.plist");
 		String xml = "<config-file target=\"*-Info.plist\" parent=\"UISupportedInterfaceOrientations\">"+
 				"<array> <string>MyPluginValue</string> </array>" + 
 	        "</config-file>";
@@ -319,7 +319,7 @@ public class InstallActionsTest {
 	@Test
 	@SuppressWarnings("restriction")
 	public void testPlistAction_replaceValue() throws Exception{
-		File target = TestUtils.createTempFile("test-info.plist");
+		File target = TestUtils.createTempFile("test-Info.plist");
 		String xml = "<config-file target=\"*-Info.plist\" parent=\"CFBundleDevelopmentRegion\">"+
 		"<string>Klingon</string>"+
 	        "</config-file>";
