@@ -27,7 +27,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
-import org.apache.http.impl.client.cache.FileResourceFactory;
+import org.apache.http.impl.client.cache.HeapResourceFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.util.NLS;
@@ -36,7 +36,6 @@ import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
 import org.eclipse.thym.core.internal.util.BundleHttpCacheStorage;
 import org.eclipse.thym.core.internal.util.HttpUtil;
-import org.osgi.framework.BundleContext;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -60,14 +59,12 @@ public abstract class AbstractEngineRepoProvider {
 			throws CoreException;
 	
 	protected InputStream getRemoteJSonStream(String url) {
-		BundleContext context = HybridCore.getContext();
 		DefaultHttpClient defHttpClient = new DefaultHttpClient();
 		HttpUtil.setupProxy(defHttpClient);
 
 		HttpClient client = new CachingHttpClient(
 				defHttpClient,
-				new FileResourceFactory(context
-						.getDataFile(BundleHttpCacheStorage.SUBDIR_HTTP_CACHE)),
+				new HeapResourceFactory(),
 				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()),
 				cacheConfig());
 		HttpGet get = new HttpGet(url);

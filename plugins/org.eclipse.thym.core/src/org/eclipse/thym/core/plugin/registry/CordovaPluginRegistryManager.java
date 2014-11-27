@@ -34,7 +34,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
-import org.apache.http.impl.client.cache.FileResourceFactory;
+import org.apache.http.impl.client.cache.HeapResourceFactory;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -50,7 +50,6 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.internal.util.BundleHttpCacheStorage;
 import org.eclipse.thym.core.internal.util.HttpUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.osgi.framework.BundleContext;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -75,11 +74,10 @@ public class CordovaPluginRegistryManager {
 		CordovaRegistryPlugin plugin = detailedPluginInfoCache.get(name);
 		if(plugin != null )
 			return plugin;
-		BundleContext context = HybridCore.getContext();	
 		DefaultHttpClient defHttpClient = new DefaultHttpClient();
 		HttpUtil.setupProxy(defHttpClient);
 		HttpClient client =new CachingHttpClient(defHttpClient,
-				new FileResourceFactory(context.getDataFile(BundleHttpCacheStorage.SUBDIR_HTTP_CACHE)), 
+				new HeapResourceFactory(), 
 				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig()); 
 		
 		String url = registry.endsWith("/") ? registry + name : registry + "/"
@@ -208,11 +206,10 @@ public class CordovaPluginRegistryManager {
 			monitor = new NullProgressMonitor();
 		
 		monitor.beginTask("Retrieve plug-in registry catalog", 10);
-		BundleContext context = HybridCore.getContext();
 		DefaultHttpClient theHttpClient = new DefaultHttpClient();
 		HttpUtil.setupProxy(theHttpClient);
 		HttpClient client = new CachingHttpClient(theHttpClient, 
-				new FileResourceFactory(context.getDataFile(BundleHttpCacheStorage.SUBDIR_HTTP_CACHE)), 
+				new HeapResourceFactory(), 
 				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig());
 		String url = registry.endsWith("/") ? registry+"-/all" : registry+"/-/all";
 		HttpGet get = new HttpGet(url);

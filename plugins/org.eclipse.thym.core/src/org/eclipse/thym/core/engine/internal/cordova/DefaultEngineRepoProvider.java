@@ -40,7 +40,9 @@ public class DefaultEngineRepoProvider extends AbstractEngineRepoProvider {
 		List<DownloadableCordovaEngine> downloadableCordovaEngines = new ArrayList<DownloadableCordovaEngine>();
 		try {
 			InputStream stream = getRemoteJSonStream(REPO_JSON_URL);
-			if (stream == null) {
+			// check stream.available() in some platforms we receive a 
+			// closed stream when caching of the remote file fails 
+			if (stream == null || stream.available() < 1) {
 				URL url = FileLocator.find(HybridCore.getContext().getBundle(),
 						new Path("/res/platforms.json"), null);
 				if (url == null) {
