@@ -68,6 +68,15 @@ public class ConfigEditor extends FormEditor {
 	}
 
 	@Override
+	public Object getAdapter(Class adapter) {
+		Object object = super.getAdapter(adapter);
+		if (object != null) {
+			return object;
+		}
+		return (sourceEditor != null) ? sourceEditor.getAdapter(adapter) : null;
+	}
+
+	@Override
 	public void doSave(IProgressMonitor monitor) {
 		sourceEditor.doSave(monitor);
 	}
