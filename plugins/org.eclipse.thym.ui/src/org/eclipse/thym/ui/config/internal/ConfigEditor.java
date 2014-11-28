@@ -7,6 +7,7 @@
  *
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ * 		 Zend Technologies Ltd. - [447351] synchronization between Overview and Source page
  *******************************************************************************/
 package org.eclipse.thym.ui.config.internal;
 
@@ -38,6 +39,8 @@ import org.eclipse.ui.part.FileEditorInput;
 
 public class ConfigEditor extends FormEditor {
 
+	public static final String ID = "org.eclipse.thym.ui.config.internal.ConfigEditor"; //$NON-NLS-1$
+	
 	private SourceEditor sourceEditor;
 	private Widget widget;
 	private WidgetModel model;

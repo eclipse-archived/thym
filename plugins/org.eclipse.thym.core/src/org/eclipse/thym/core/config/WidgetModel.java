@@ -7,6 +7,7 @@
  *
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ * 		 Zend Technologies Ltd. - [447351] synchronization between Overview and Source page
  *******************************************************************************/
 package org.eclipse.thym.core.config;
 
@@ -62,6 +63,7 @@ import org.xml.sax.SAXException;
  * caller.
  *  
  * @author Gorkem Ercan
+ * @author Kaloyan Raev
  *
  */
 @SuppressWarnings("restriction")
@@ -242,8 +244,12 @@ public class WidgetModel implements IModelLifecycleListener{
 		return new Widget(document.getDocumentElement());
 	}
 	
-	private void reloadEditableWidget(Document document) {
-		editableWidget.reload(document.getDocumentElement());
+	public void reloadEditableWidget() {
+		if (underLyingModel != null) {
+			IDOMModel dom = (IDOMModel) underLyingModel;
+			Document document = dom.getDocument();
+			editableWidget.reload(document.getDocumentElement());
+		}
 	}
 	
 	public void save() throws CoreException {
@@ -384,8 +390,7 @@ public class WidgetModel implements IModelLifecycleListener{
 	public void processPostModelEvent(ModelLifecycleEvent event) {
 		if(event.getType() == ModelLifecycleEvent.MODEL_DIRTY_STATE && !underLyingModel.isDirty()){
 			synchronized (this) {
-				IDOMModel dom = (IDOMModel)underLyingModel;
-				reloadEditableWidget(dom.getDocument());
+				reloadEditableWidget();
 				//release the readOnly model to be reloaded
 				this.readonlyWidget = null;
 				this.readonlyTimestamp = -1;

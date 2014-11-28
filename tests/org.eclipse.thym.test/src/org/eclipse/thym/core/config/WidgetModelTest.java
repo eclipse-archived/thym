@@ -7,6 +7,7 @@
  *
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ * 		 Zend Technologies Ltd. - [447351] synchronization between Overview and Source page
  *******************************************************************************/
 package org.eclipse.thym.core.config;
 
@@ -35,10 +36,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.thym.hybrid.test.TestProject;
+import org.eclipse.wst.xml.core.internal.provisional.document.IDOMModel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -333,6 +336,29 @@ public class WidgetModelTest {
 		
 		feature.addParam(paramName2, value2);
 		
+	}
+	
+	@Test
+	public void testReloadEditableWidget() throws CoreException {
+		WidgetModel model = WidgetModel.getModel(project.hybridProject());
+		Widget widget = model.getWidgetForEdit();
+		
+		assertEquals("Test applciation", widget.getName());
+		
+		// change the widget name in the underlying DOM model
+		IDOMModel dom = (IDOMModel) model.underLyingModel;
+		Node nameTag = getNamedSingleNode(dom.getDocument(), "name");
+		Node nameText = nameTag.getChildNodes().item(0);
+		nameText.setNodeValue("My App");
+		
+		// check that the widget name has not changed yet in the editable widget
+		assertEquals("Test applciation", widget.getName());
+		
+		// reload the editable widget
+		model.reloadEditableWidget();
+		
+		// check that the widget name is now changed
+		assertEquals("My App", widget.getName());
 	}
 	
 }

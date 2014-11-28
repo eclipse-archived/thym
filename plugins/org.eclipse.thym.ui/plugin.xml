@@ -238,4 +238,15 @@
            label="hybrid mobile cordova">
      </keyword>
   </extension>
+   <extension
+         point="org.eclipse.wst.sse.ui.sourcevalidation">
+      <validator
+            scope="total"
+            id="org.eclipse.thym.ui.config.internal.ReconcilingStrategy"
+            class="org.eclipse.thym.ui.config.internal.ReconcilingStrategy">
+      <contentTypeIdentifier id="org.eclipse.thym.core.configType">
+         <partitionType id="org.eclipse.wst.xml.XML_DEFAULT"/>
+      </contentTypeIdentifier>
+      </validator>
+   </extension>
 </plugin>
