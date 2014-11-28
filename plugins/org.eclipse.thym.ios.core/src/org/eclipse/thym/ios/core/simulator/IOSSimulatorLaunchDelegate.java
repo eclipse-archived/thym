@@ -36,9 +36,7 @@ import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.ios.core.IOSCore;
 import org.eclipse.thym.ios.core.xcode.XCodeBuild;
-
-import com.github.zafarkhaja.semver.Version;
-import com.github.zafarkhaja.semver.util.UnexpectedElementException;
+import org.osgi.framework.Version;
 /**
  * {@link ILaunchDelegate} for running the iOS simulator. This delegate is unusual 
  * because besides running the emulator it also generates and builds the cordova project.
@@ -117,12 +115,12 @@ public class IOSSimulatorLaunchDelegate implements
 		XCodeBuild xcode = new XCodeBuild();
 		String version = xcode.version();
 		try{
-			Version v = Version.valueOf(version);
-			if(v.lessThan(MIN_VERSION)){
+			Version v = Version.parseVersion(version);
+			if(v.compareTo(MIN_VERSION) < 0){
 				throw new CoreException(new HybridMobileStatus(IStatus.ERROR, IOSCore.PLUGIN_ID, 300/*see org.eclipse.thym.ios.ui.xcodeVersionStatusHandler in plugin.xml*/,
 						NLS.bind("Hybrid mobile projects require XCode version {0} or greater to build iOS applications",XCodeBuild.MIN_REQUIRED_VERSION ), null));
 			}
-		}catch (UnexpectedElementException e) {
+		}catch (IllegalArgumentException e) {
 			//We could not parse the version
 			//still let the build continue 
 			HybridCore.log(IStatus.WARNING, "Error parsing the xcode version. Version String is "+ version, e);
