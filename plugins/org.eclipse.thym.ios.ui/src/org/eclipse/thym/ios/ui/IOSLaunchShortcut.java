@@ -16,6 +16,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.thym.core.HybridMobileStatus;
+import org.eclipse.thym.ios.core.IOSCore;
 import org.eclipse.thym.ios.core.simulator.IOSSimulatorLaunchConstants;
 import org.eclipse.thym.ios.core.xcode.XCodeBuild;
 import org.eclipse.thym.ios.core.xcode.XCodeSDK;
@@ -41,8 +44,8 @@ public class IOSLaunchShortcut extends HybridProjectLaunchShortcut{
 			Version minVersion = new Version(XCodeBuild.MIN_REQUIRED_VERSION);
 			Version v = Version.parseVersion(version);
 			if(v.compareTo(minVersion)<0){
-				throw new CoreException(new Status(IStatus.ERROR, IOSUI.PLUGIN_ID,
-						"Hybrid mobile projects can only be run with XCode version "+ XCodeBuild.MIN_REQUIRED_VERSION +" or greater"));
+				throw new CoreException(new HybridMobileStatus(IStatus.ERROR, IOSCore.PLUGIN_ID, 300/*see org.eclipse.thym.ios.ui.xcodeVersionStatusHandler in plugin.xml*/,
+						NLS.bind("Hybrid mobile projects require XCode version {0} or greater to build iOS applications", XCodeBuild.MIN_REQUIRED_VERSION),null));
 			}
 		}catch (IllegalArgumentException e) {
 			//ignored

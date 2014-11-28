@@ -30,6 +30,7 @@ import org.eclipse.debug.core.ILaunchDelegate;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.core.config.WidgetModel;
@@ -118,8 +119,8 @@ public class IOSSimulatorLaunchDelegate implements
 		try{
 			Version v = Version.valueOf(version);
 			if(v.lessThan(MIN_VERSION)){
-				throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID,
-						NLS.bind("Hybrid mobile projects can only be run with XCode version {0} or greater", XCodeBuild.MIN_REQUIRED_VERSION )));
+				throw new CoreException(new HybridMobileStatus(IStatus.ERROR, IOSCore.PLUGIN_ID, 300/*see org.eclipse.thym.ios.ui.xcodeVersionStatusHandler in plugin.xml*/,
+						NLS.bind("Hybrid mobile projects require XCode version {0} or greater to build iOS applications",XCodeBuild.MIN_REQUIRED_VERSION ), null));
 			}
 		}catch (UnexpectedElementException e) {
 			//We could not parse the version

@@ -189,7 +189,7 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			}
 
 		} catch (Exception e) {
-			throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Error updatign CordovaLib subproject", e));
+			throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Error updating CordovaLib subproject", e));
 		}
 	}
 	

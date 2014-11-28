@@ -55,4 +55,13 @@
             id="org.eclipse.thym.ios.ui.IOSSimulatorLaunchConfigTypeImage">
       </launchConfigurationTypeImage>
    </extension>
+   <extension
+         point="org.eclipse.thym.ui.hybridMobileStatusHandler">
+      <statusHandler
+            class="org.eclipse.thym.ios.ui.XCodeVersionErrorStatusHandler"
+            code="300"
+            id="org.eclipse.thym.ios.ui.xcodeVersionStatusHandler"
+            plugin="org.eclipse.thym.ios.core">
+      </statusHandler>
+   </extension>
 </plugin>
