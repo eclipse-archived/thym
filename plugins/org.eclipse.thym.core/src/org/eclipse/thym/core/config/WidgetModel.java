@@ -402,9 +402,10 @@ public class WidgetModel implements IModelLifecycleListener{
 	public void processPreModelEvent(ModelLifecycleEvent event) {
 	}
 	
-	synchronized void dispose(){
+	public synchronized void dispose(){
 		if(underLyingModel != null ){
 			underLyingModel.releaseFromEdit();
+			underLyingModel = null;
 		}
 		this.editableWidget = null;
 		this.readonlyWidget = null;

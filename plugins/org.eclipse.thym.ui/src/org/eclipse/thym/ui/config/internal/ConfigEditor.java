@@ -120,6 +120,12 @@ public class ConfigEditor extends FormEditor {
 		return widget;
 	}
 	
+	@Override
+	public void dispose() {
+		super.dispose();
+		model.dispose();
+	}
+
 	public WidgetModel getWidgetModel() {
 		if (model == null) {
 			IFile file = (IFile) getEditorInput().getAdapter(IFile.class);
