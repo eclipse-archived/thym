@@ -244,7 +244,7 @@
             scope="total"
             id="org.eclipse.thym.ui.config.internal.ReconcilingStrategy"
             class="org.eclipse.thym.ui.config.internal.ReconcilingStrategy">
-      <contentTypeIdentifier id="org.eclipse.core.runtime.xml">
+      <contentTypeIdentifier id="org.eclipse.thym.core.configType">
          <partitionType id="org.eclipse.wst.xml.XML_DEFAULT"/>
       </contentTypeIdentifier>
       </validator>

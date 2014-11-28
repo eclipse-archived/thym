@@ -245,9 +245,11 @@ public class WidgetModel implements IModelLifecycleListener{
 	}
 	
 	public void reloadEditableWidget() {
-		IDOMModel dom = (IDOMModel)underLyingModel;
-		Document document = dom.getDocument();
-		editableWidget.reload(document.getDocumentElement());
+		if (underLyingModel != null) {
+			IDOMModel dom = (IDOMModel) underLyingModel;
+			Document document = dom.getDocument();
+			editableWidget.reload(document.getDocumentElement());
+		}
 	}
 	
 	public void save() throws CoreException {
