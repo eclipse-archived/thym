@@ -126,6 +126,8 @@ public class CordovaPluginCatalogViewer extends FilteredViewer {
 				}
 			});
 		}
+		//A hack to get the native search field working on Mac
+		setFilterText(" ");
 	}
 	
 	@Override
