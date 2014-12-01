@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.thym.core.platformSupport">
+      <platform
+            id="org.eclipse.thym.wp.core.platformSupport"
+            libraryResolver="org.eclipse.thym.wp.core.WPLibraryResolver"
+            platform="Windows Phone 8 (Visual Studio)"
+            platformID="wp8"
+            pluginInstallActionFactory="org.eclipse.thym.wp.internal.core.vstudio.WPPluginInstallationActionsFactory"
+            projectGenerator="org.eclipse.thym.wp.internal.core.vstudio.WPProjectGenerator">
+      </platform>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.projectBuilder">
+      <builder
+            delegate="org.eclipse.thym.wp.core.vstudio.MSBuild"
+            id="org.eclipse.thym.wp.core.projectBuilder"
+            platform="Windows Phone 8 (Visual Studio)">
+      </builder>
+   </extension>
+<extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.thym.wp.internal.core.WPLaunchDelegate"
+            id="org.eclipse.thym.wp.core.WPLaunchConfigurationType"
+            modes="run"
+            name="Windows Phone 8 Emulator">
+      </launchConfigurationType>
+   </extension>
+</plugin>

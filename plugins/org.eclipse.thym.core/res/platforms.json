@@ -7,6 +7,10 @@
               'android' = {
                             download_url:'https://git-wip-us.apache.org/repos/asf?p=cordova-android.git;a=snapshot;h=3.6.3;sf=tgz',
                             version: '3.6.3'
+              },
+              'wp8' = {
+                            download_url:'https://git-wip-us.apache.org/repos/asf?p=cordova-wp8.git;a=snapshot;h=3.6.3;sf=tgz',
+                            version: '3.6.3'
               }
    },
   '3.5.0' = {
