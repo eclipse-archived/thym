@@ -369,11 +369,11 @@ public class WidgetModelTest {
 		WidgetModel model = WidgetModel.getModel(project.hybridProject());
 		Widget widget = model.getWidgetForEdit();
 		
-		assertEquals("Model isn't created", model.underLyingModel != null);
+		assertNotNull("Model isn't created", model.underLyingModel);
 		
 		model.dispose();
 		
-		assertEquals("Model isn't disposed", model.underLyingModel == null);
+		assertTrue("Model isn't disposed", model.underLyingModel == null);
 		
 	}
 	
