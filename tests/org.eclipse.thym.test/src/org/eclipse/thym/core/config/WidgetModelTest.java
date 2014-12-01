@@ -11,7 +11,11 @@
  *******************************************************************************/
 package org.eclipse.thym.core.config;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -41,7 +45,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -359,6 +362,19 @@ public class WidgetModelTest {
 		
 		// check that the widget name is now changed
 		assertEquals("My App", widget.getName());
+	}
+	
+	@Test
+	public void testDisposeWidget() throws CoreException {
+		WidgetModel model = WidgetModel.getModel(project.hybridProject());
+		Widget widget = model.getWidgetForEdit();
+		
+		assertEquals("Model isn't created", model.underLyingModel != null);
+		
+		model.dispose();
+		
+		assertEquals("Model isn't disposed", model.underLyingModel == null);
+		
 	}
 	
 }
