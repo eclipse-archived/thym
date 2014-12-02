@@ -11,8 +11,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.commons.io;bundle-version="[2.0.0,2.1.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
-Bundle-NativeCode: lib/x86/ICE_JNIRegistry.dll; selection-filter="(&(osgi.arch=x86)(osgi.os=win32))",
-    lib/x86_64/ICE_JNIRegistry.dll; selection-filter="(&(osgi.arch=x86_64)(osgi.os=win32))", *
 Export-Package: org.eclipse.thym.wp.core,
  org.eclipse.thym.wp.core.vstudio
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
