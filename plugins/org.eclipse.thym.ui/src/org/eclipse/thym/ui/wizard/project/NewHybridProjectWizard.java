@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
@@ -48,6 +47,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 
@@ -71,10 +71,10 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 
 	@Override
 	public boolean performFinish() {
-		IRunnableWithProgress runnable = new IRunnableWithProgress() {
+		WorkspaceModifyOperation runnable = new WorkspaceModifyOperation() {
 			
 			@Override
-			public void run(IProgressMonitor monitor) throws InvocationTargetException,
+			public void execute(IProgressMonitor monitor) throws InvocationTargetException,
 					InterruptedException {
 				HybridProjectCreator creator = new HybridProjectCreator();
 				WizardNewHybridProjectCreationPage page = (WizardNewHybridProjectCreationPage)pageOne;
