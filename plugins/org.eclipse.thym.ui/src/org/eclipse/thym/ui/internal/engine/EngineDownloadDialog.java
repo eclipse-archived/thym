@@ -46,6 +46,7 @@ import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -68,6 +69,9 @@ import com.github.zafarkhaja.semver.Version;
 
 public class EngineDownloadDialog extends TitleAreaDialog{
 
+	private static final int TABLE_WIDTH = 350;
+	private static final int TABLE_HEIGHT = 100;
+	
     private ComboViewer versionViewer;
     private CheckboxTableViewer platformList;
     private CordovaEngineProvider engineProvider;
@@ -214,7 +218,7 @@ public class EngineDownloadDialog extends TitleAreaDialog{
         });
 
         Table table= new Table(composite, SWT.CHECK | SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-        GridDataFactory.fillDefaults().grab(true, true).span(2, 1).applyTo(table);
+        GridDataFactory.fillDefaults().grab(true, true).span(2, 1).minSize(new Point(TABLE_WIDTH, TABLE_HEIGHT)).applyTo(table);
         table.setHeaderVisible(true);
         table.setLinesVisible(false);
 
