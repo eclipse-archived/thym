@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.wizard.project;
 
-import java.util.List;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -24,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
-import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
 
 public class EngineConfigurationPage extends WizardPage {
