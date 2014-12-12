@@ -234,23 +234,16 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
 		if (visible && getSelectedTabItem() == registryTab) {
-			if (cordovaPluginInfos == null) {
-				Display.getCurrent().asyncExec(new Runnable() {
-					@Override
-					public void run() {
-						populatePluginInfos();
-					}
-				});
-			}
 			Display.getCurrent().asyncExec(new Runnable() {
-				
 				@Override
 				public void run() {
+					if (cordovaPluginInfos == null) {
+						populatePluginInfos();
+					}
 					displayPluginInfos();
 				}
 			});
 		}
-		
 	}
 
 	private void createProjectGroup(Composite container) {
