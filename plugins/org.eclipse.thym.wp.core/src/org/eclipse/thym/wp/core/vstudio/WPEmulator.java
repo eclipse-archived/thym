@@ -137,7 +137,7 @@ public class WPEmulator {
 		}
 		File deployCmd = getDeployCommand();
 		StringBuilder cmdLine = new StringBuilder();
-		cmdLine.append(deployCmd.getAbsolutePath());
+		cmdLine.append(addQuotes(deployCmd.getAbsolutePath()));
 		cmdLine.append(" /EnumerateDevices"); //$NON-NLS-1$
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		DeviceListParser parser = new DeviceListParser();

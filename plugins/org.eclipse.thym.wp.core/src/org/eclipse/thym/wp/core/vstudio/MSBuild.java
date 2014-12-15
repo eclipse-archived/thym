@@ -173,12 +173,12 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 				File csprojFile = WPProjectUtils.getCsrojFile(projectLocation);
 				// on this stage it cannot be null
 				Assert.isNotNull(csprojFile);
-				StringBuilder cmdString = new StringBuilder(msBuild);
+				StringBuilder cmdString = new StringBuilder(addQuotes(msBuild));
 				cmdString.append(" "); //$NON-NLS-1$
 				if (isRelease()) {
 					cmdString.append("/p:Configuration=Release "); //$NON-NLS-1$
 				}
-				cmdString.append(csprojFile.getAbsolutePath());
+				cmdString.append(addQuotes(csprojFile.getAbsolutePath()));
 
 				ExternalProcessUtility processUtility = new ExternalProcessUtility();
 				if (monitor.isCanceled()) {
@@ -202,6 +202,10 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 
 	private String getInstallationRoot() throws CoreException {
 		return WindowsRegistry.readRegistry(DOT_NET, INSTALL_ROOT);
+	}
+	
+	private String addQuotes(String path) {
+		return "\"" + path + "\""; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 }

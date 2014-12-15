@@ -88,7 +88,7 @@ public class WPCore implements BundleActivator {
 				null);
 		if (sdkLocation == null) {
 			File location = detectSDK();
-			if (location.exists()) {
+			if (location != null && location.exists()) {
 				sdkLocation = location.getAbsolutePath();
 				IEclipsePreferences prefs = InstanceScope.INSTANCE
 						.getNode(THYM_UI_ID);
