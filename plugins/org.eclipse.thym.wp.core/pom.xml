@@ -7,8 +7,31 @@
 		<artifactId>plugins</artifactId>
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>.org.eclipse.thym.plugins</groupId>
+	<groupId>org.eclipse.thym.plugins</groupId>
 	<artifactId>org.eclipse.thym.wp.core</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<environments>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
