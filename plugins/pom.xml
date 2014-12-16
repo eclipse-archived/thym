@@ -17,6 +17,8 @@
 		<module>org.eclipse.thym.ios.ui</module>
 		<module>org.eclipse.thym.ui</module>
 		<module>org.eclipse.thym.android.core</module>
-		<module>org.eclipse.thym.android.ui</module>
+    <module>org.eclipse.thym.android.ui</module>
+    <module>org.eclipse.thym.wp.core</module> 
+    <module>org.eclipse.thym.wp.ui</module>
 	</modules>
 </project>

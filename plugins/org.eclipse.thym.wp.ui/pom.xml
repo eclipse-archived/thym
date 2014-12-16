@@ -8,7 +8,7 @@
 		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<groupId>.org.eclipse.thym.plugins</groupId>
-	<artifactId>org.eclipse.thym.wp.core</artifactId>
+	<artifactId>org.eclipse.thym.wp.ui</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 </project>
