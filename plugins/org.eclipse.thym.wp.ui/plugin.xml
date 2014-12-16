@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.thym.ui.platformImages">
+      <platformImage
+            icon="icons/elcl16/wp8_icon.png"
+            id="org.eclipse.thym.wp.ui.wpPlatformImage"
+            platformSupport="org.eclipse.thym.wp.core.platformSupport"
+            projectBuilder="org.eclipse.thym.wp.core.projectBuilder">
+      </platformImage>
+   </extension>
+<extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.eclipse.thym.wp.internal.ui.launch.WPEmulatorLaunchShortcut"
+            icon="icons/elcl16/wp8_icon.png"
+            id="org.eclipse.thym.wp.ui.launch.emulator"
+            label="Run on Windows Phone 8 Emulator"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.thym.wp.internal.ui.launch.WPLaunchConfigurationTabGroup"
+            description="Windows Phone 8 Emulator"
+            id="org.eclipse.thym.wp.uiWPLaunchConfigurationTabGroup"
+            type="org.eclipse.thym.wp.core.WPLaunchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="icons/elcl16/wp8_icon.png"
+            configTypeID="org.eclipse.thym.wp.core.WPLaunchConfigurationType"
+            id="org.eclipse.thym.wp.ui.WPLaunchConfigurationTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+         <page
+            category="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
+            class="org.eclipse.thym.wp.internal.ui.preferences.WPPreferencePage"
+            id="org.eclipse.thym.wp.ui.WPPreferencePages"
+            name="Windows Phone 8">
+         <keywordReference
+               id="org.eclipse.thym.ui.keyword">
+         </keywordReference>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.thym.ui.hybridMobileStatusHandler">
+      <statusHandler
+            class="org.eclipse.thym.wp.internal.ui.statushandler.MSBuildStatusHandler"
+            code="320"
+            id="org.eclipse.thym.wp.ui.missingMSBuildStatusHandler"
+            plugin="org.eclipse.thym.wp.core">
+      </statusHandler>
+      <statusHandler
+            class="org.eclipse.thym.wp.internal.ui.statushandler.SDKStatusHandler"
+            code="310"
+            id="org.eclipse.thym.wp.ui.missingSDKStatusHandler"
+            plugin="org.eclipse.thym.wp.core">
+      </statusHandler>
+      <statusHandler
+            class="org.eclipse.thym.wp.internal.ui.statushandler.EmulatorsStatusHandler"
+            code="330"
+            id="org.eclipse.thym.wp.ui.missingEmulatorsStatusHandler"
+            plugin="org.eclipse.thym.wp.core">
+      </statusHandler>
+   </extension>
+</plugin>
