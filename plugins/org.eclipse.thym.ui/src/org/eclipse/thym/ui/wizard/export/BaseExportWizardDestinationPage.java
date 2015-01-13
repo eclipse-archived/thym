@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.ui.util.DirectorySelectionGroup;
 import org.eclipse.thym.ui.util.HybridProjectContentProvider;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 

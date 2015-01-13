@@ -8,7 +8,7 @@
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.thym.ui.wizard.export;
+package org.eclipse.thym.ui.util;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,14 +30,20 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-
+/**
+ * UI widget for selecting a directory. Widget also manages the history of selected 
+ * directories. 
+ * 
+ * @author Gorkem Ercan
+ *
+ */
 public class DirectorySelectionGroup extends Group {
 
     private static final String SETTINGS_KEY_DESTINATION_HISTORY = "destinationHistory";
     private static final int DESTINATION_HISTORY_LENGTH = 5;
-
     private Combo destinationCombo;
     private String[] destinationHistory;
+    private String fallback;
 
     public DirectorySelectionGroup(Composite parent, int style) {
         super(parent, style);
@@ -46,7 +52,7 @@ public class DirectorySelectionGroup extends Group {
 
     private void createGroup() {
         setLayout(new GridLayout(3, false));
-        Label lblDirectory = new Label(this, SWT.NONE);
+        final Label lblDirectory = new Label(this, SWT.NONE);
         lblDirectory.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
         lblDirectory.setText("Directory:");
 
@@ -58,7 +64,7 @@ public class DirectorySelectionGroup extends Group {
         });
         destinationCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
-        Button btnBrowse = new Button(this, SWT.PUSH);
+        final Button btnBrowse = new Button(this, SWT.PUSH);
         btnBrowse.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -80,7 +86,7 @@ public class DirectorySelectionGroup extends Group {
     }
 
     private void chooseDirectory(){
-        DirectoryDialog dialog = new DirectoryDialog(this.getShell() );
+        final DirectoryDialog dialog = new DirectoryDialog(this.getShell());
         dialog.setText("Select Destination");
         dialog.setMessage("Select a destination directory");
         String directory = dialog.open();
@@ -89,13 +95,14 @@ public class DirectorySelectionGroup extends Group {
             sendModifyEvent();
         }
     }
+    
     /**
      * Sets the values to the internal Combo widget.
      * A null or empty array will clear the values.
      *
      * @param newValues
      */
-    public void setComboValues(String[] newValues){
+    public void setComboValues(String... newValues){
         destinationCombo.removeAll();
         if(newValues == null )
             return;
@@ -106,12 +113,20 @@ public class DirectorySelectionGroup extends Group {
             destinationCombo.select(0);
         }
     }
-
+    /**
+     * Returns the value on the directory field.
+     * @return directory
+     */
     public String getValue(){
         return destinationCombo.getText();
     }
 
-    public void saveHistory(IDialogSettings settings){
+    /**
+     * Saves the history of selected directories to given dialog settings
+     * 
+     * @param settings
+     */
+    public void saveHistory(final IDialogSettings settings){
         if(settings == null ) return;
         if(destinationHistory == null ){
             destinationHistory = new String[0];
@@ -129,15 +144,40 @@ public class DirectorySelectionGroup extends Group {
 
     }
 
-    public void restoreHistory(IDialogSettings settings){
-        if (settings == null ) return;
-        destinationHistory = settings.getArray(SETTINGS_KEY_DESTINATION_HISTORY);
-        if(destinationHistory != null ){
-            setComboValues(destinationHistory);
+    /**
+     * Restores the history from dialog settings 
+     * @param settings
+     */
+    public void restoreHistory(final IDialogSettings settings){
+        if ( settings == null) {
+        	if(fallback != null ){
+        		destinationHistory = new String[] {fallback};
+        	}
+        }else{
+        	String[] history = settings.getArray(SETTINGS_KEY_DESTINATION_HISTORY);
+        	if(history != null ){
+        		destinationHistory =history;
+        	}
         }
+        setComboValues(destinationHistory);
+    }
+   
+    /**
+     * Sets a default value to be used in case the history is empty.
+     * @param defaultValue
+     */
+    public void setDefaultValue(String defaultValue){
+    	this.fallback = defaultValue;
     }
 
+    /**
+     * Utility to check valid directory.
+     * 
+     * @param dstFile
+     * @return
+     */
     public static boolean isValidDirectory(File dstFile) {
+    	if(dstFile == null )return false;
         try {
             if(dstFile.getCanonicalPath().isEmpty()){
                 return false;

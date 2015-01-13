@@ -56,7 +56,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
-import org.eclipse.thym.ui.wizard.export.DirectorySelectionGroup;
+import org.eclipse.thym.ui.util.DirectorySelectionGroup;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.thym.core.HybridCore;
