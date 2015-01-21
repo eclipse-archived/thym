@@ -441,7 +441,7 @@ public class AndroidSDKManager {
 	
 	private String getAndroidCommand(){
 		String command = "android";
-		return isWindows() ? "cmd /c " + command : command; 
+		return isWindows() ? "cmd /c " + command :  "./" + command; 
 	}
 	
 	private String getADBCommand(){
