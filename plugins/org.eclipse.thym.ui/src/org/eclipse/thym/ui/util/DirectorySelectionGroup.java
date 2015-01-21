@@ -113,6 +113,7 @@ public class DirectorySelectionGroup extends Group {
             destinationCombo.select(0);
         }
     }
+    
     /**
      * Returns the value on the directory field.
      * @return directory
@@ -141,7 +142,6 @@ public class DirectorySelectionGroup extends Group {
         destinationHistory = l.toArray(new String[l.size()]);
         setComboValues(destinationHistory);
         settings.put(SETTINGS_KEY_DESTINATION_HISTORY, this.destinationHistory);
-
     }
 
     /**
@@ -149,13 +149,12 @@ public class DirectorySelectionGroup extends Group {
      * @param settings
      */
     public void restoreHistory(final IDialogSettings settings){
-        if ( settings == null) {
-        	if(fallback != null ){
-        		destinationHistory = new String[] {fallback};
-        	}
-        }else{
+    	if(fallback != null ){
+    		destinationHistory = new String[] {fallback};
+    	}
+        if(settings != null ){
         	String[] history = settings.getArray(SETTINGS_KEY_DESTINATION_HISTORY);
-        	if(history != null ){
+        	if(history != null && history.length >0){
         		destinationHistory =history;
         	}
         }
