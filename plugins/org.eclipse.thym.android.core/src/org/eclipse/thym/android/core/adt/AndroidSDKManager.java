@@ -440,7 +440,7 @@ public class AndroidSDKManager {
 	}
 	
 	private String getAndroidCommand(){
-		String command = "android";
+		String command = addQuotes(toolsDir+"android");
 		return isWindows() ? "cmd /c " + command : command; 
 	}
 	
