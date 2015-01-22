@@ -290,13 +290,13 @@ public class AndroidSDKManager {
 		command.append(getAndroidCommand());
 		command.append(" create project");
 		command.append(" --target ").append(target.getId());
-		command.append(" --path ").append('"').append(path.getPath()).append('"');
-		command.append(" --name ").append('"').append(projectName).append('"');
+		command.append(" --path ").append(addQuotes(path.getPath()));
+		command.append(" --name ").append(addQuotes(projectName));
 		command.append(" --activity ").append(activity);
 		command.append(" --package ").append(packageName);
 
 		CreateProjectResultParser parser = new CreateProjectResultParser();
-		processUtility.execSync(command.toString(), null, parser, parser, monitor, null, null);
+		processUtility.execSync(command.toString(), new File(toolsDir), parser, parser, monitor, null, null);
 		if( !monitor.isCanceled() && parser.getErrorString() != null ){
 			throw new CoreException(new Status(IStatus.ERROR,AndroidCore.PLUGIN_ID,"Error creating the Android project: "+ parser.getErrorString()));
 		}
@@ -321,7 +321,7 @@ public class AndroidSDKManager {
 		command.append(" --path ").append('"').append(path.getPath()).append('"');
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		CreateProjectResultParser parser = new CreateProjectResultParser();
-		processUtility.execSync(command.toString(), null, parser, parser, monitor, null, null);
+		processUtility.execSync(command.toString(), new File(toolsDir), parser, parser, monitor, null, null);
 		if( !monitor.isCanceled() && parser.getErrorString() != null ){
 			throw new CoreException(new Status(IStatus.ERROR,AndroidCore.PLUGIN_ID,"Error creating the Android project: "+ parser.getErrorString()));
 		}
@@ -340,7 +340,7 @@ public class AndroidSDKManager {
 	public List<AndroidAVD> listAVDs() throws CoreException{
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		AVDListParser parser = new AVDListParser();
-		processUtility.execSync(getAndroidCommand()+" list avd", null, parser, parser, 
+		processUtility.execSync(getAndroidCommand()+" list avd", new File(toolsDir), parser, parser, 
 				new NullProgressMonitor(), null, null);
 		return parser.getAVDList();
 	}
@@ -349,7 +349,7 @@ public class AndroidSDKManager {
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		TargetListParser parser = new TargetListParser();
 		processUtility.execSync(getAndroidCommand()+" list target", 
-				null, parser, parser, new NullProgressMonitor(), null, null);
+				new File(toolsDir), parser, parser, new NullProgressMonitor(), null, null);
 		return parser.getSDKList();
 	}
 	
@@ -436,12 +436,12 @@ public class AndroidSDKManager {
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		StringBuilder command = new StringBuilder(getAndroidCommand());
 		command.append(" avd ");
-		processUtility.execAsync(command.toString(), null, null, null, null);
+		processUtility.execAsync(command.toString(), new File(toolsDir), null, null, null);
 	}
 	
 	private String getAndroidCommand(){
-		String command = addQuotes(toolsDir+"android");
-		return isWindows() ? "cmd /c "+ command : command;
+		String command = "android";
+		return isWindows() ? "cmd /c " + command :  "./" + command; 
 	}
 	
 	private String getADBCommand(){
