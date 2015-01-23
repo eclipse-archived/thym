@@ -42,6 +42,7 @@ import org.eclipse.thym.hybrid.test.Activator;
 import org.eclipse.thym.hybrid.test.TestProject;
 import org.eclipse.thym.hybrid.test.TestUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -69,6 +70,13 @@ public class PluginInstallationTests {
 		pluginsDirectroy = new File(tempDir, "plugins");
 		FileUtils.directoryCopy(pluginsDir, FileUtils.toURL(pluginsDirectroy));
 		
+	}
+	@AfterClass
+	public static void cleanUpPlugins() throws IOException{
+		if(pluginsDirectroy != null )
+		{
+			org.apache.commons.io.FileUtils.forceDelete(pluginsDirectroy);
+		}
 	}
 	
 	@Before

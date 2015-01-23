@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.AssertionFailedException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -70,7 +72,7 @@ public class InstallActionsTest {
 	}
 	
 	@After
-	public void cleanProject() throws CoreException{
+	public void cleanProject() throws CoreException, IOException{
 		if(this.project != null ){
 			this.project.delete();
 			this.project = null;
@@ -88,6 +90,8 @@ public class InstallActionsTest {
 		action =  new CopyFileAction(source, target);
 		action.unInstall();
 		assertFalse(targetFile.exists());
+		// clean up 
+		FileUtils.forceDelete(new File(TestUtils.getTempDirectory(),"some"));
 	}
 	
 	@Test
@@ -116,6 +120,8 @@ public class InstallActionsTest {
 		assertFalse(targetFile.exists());
 		assertFalse(d2.exists());
 		assertFalse(d1.exists());
+		//clean up
+		FileUtils.deleteDirectory(d1);
 	}
 	
 	@Test

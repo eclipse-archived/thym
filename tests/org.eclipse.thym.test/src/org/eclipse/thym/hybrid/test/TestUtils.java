@@ -18,9 +18,13 @@ import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 
+import org.eclipse.thym.core.internal.util.FileUtils;
+
 public class TestUtils {
 	
 	public static final String FILE_PLAIN = "plain.file";
+	private static File temp;
+	
 	
 	public static File createTempFile(String fileName) throws IOException, FileNotFoundException {
 		File f = new File(getTempDirectory(), fileName);
@@ -46,7 +50,18 @@ public class TestUtils {
 	}
 
 	public static File getTempDirectory() {
-		return new File(System.getProperty("java.io.tmpdir"));
+		if(temp == null ){
+			String tsamp = Long.toHexString(System.currentTimeMillis());
+			File tempDir = new File(System.getProperty("java.io.tmpdir"));
+			temp= new File (tempDir,tsamp);
+			temp.mkdirs();
+			try {
+				org.apache.commons.io.FileUtils.forceDeleteOnExit(temp);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return temp;
 	}
 
 }
