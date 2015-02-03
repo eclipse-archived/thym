@@ -45,6 +45,8 @@ import org.eclipse.thym.ui.plugins.internal.RegistryConfirmPage;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkingSet;
+import org.eclipse.ui.IWorkingSetManager;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
@@ -58,6 +60,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 	private EngineConfigurationPage pageTwo;
 	private CordovaPluginSelectionPage pageThree;
 	private RegistryConfirmPage pageFour;
+	private IStructuredSelection selection;
 
 	public NewHybridProjectWizard() {
 		setWindowTitle("Hybrid Mobile (Cordova) Application Project");
@@ -67,6 +70,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
+		this.selection = selection;
 	}
 
 	@Override
@@ -89,6 +93,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 					HybridMobileEngine engine = enginePage.getSelectedEngine();
 					IProject project = creator.createBasicTemplatedProject(page.getProjectName(), location ,appName, appID, engine, monitor);
 					installSelectedPlugins(project, monitor);
+					addToWorkingSets(project);
 					openAndSelectConfigFile(project);
 					
 					} catch (CoreException e) {
@@ -160,10 +165,18 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 		}
 	}
 	
+	private void addToWorkingSets(IProject project) {
+		IWorkingSet[] selectedWorkingSets = ((WizardNewHybridProjectCreationPage) pageOne).getSelectedWorkingSets();
+		if(selectedWorkingSets == null || selectedWorkingSets.length == 0)
+			return; // no Working set is selected
+		IWorkingSetManager workingSetManager = PlatformUI.getWorkbench().getWorkingSetManager();
+		workingSetManager.addToWorkingSets(project, selectedWorkingSets);
+	}
+	
 	@Override
 	public void addPages() {
 		super.addPages();
-		pageOne = new WizardNewHybridProjectCreationPage(getWindowTitle());
+		pageOne = new WizardNewHybridProjectCreationPage(getWindowTitle(), selection);
 		addPage( pageOne );
 		pageTwo = new EngineConfigurationPage("Configure Engine");
 		addPage( pageTwo);

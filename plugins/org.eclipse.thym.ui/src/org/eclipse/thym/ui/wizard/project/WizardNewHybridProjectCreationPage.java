@@ -12,6 +12,7 @@ package org.eclipse.thym.ui.wizard.project;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -21,13 +22,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.eclipse.ui.dialogs.WorkingSetGroup;
 import org.eclipse.thym.core.HybridProjectConventions;
 
 public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreationPage{
 	private Text txtName;
 	private Text txtID;
+	private WorkingSetGroup workingSetGroup;
 	private final PropertyModifyListener propertyModifyListener = new PropertyModifyListener();
+	private IStructuredSelection currentSelection;
+	
 	
 	class PropertyModifyListener implements ModifyListener{
 		private boolean skipValidation = false;
@@ -51,8 +57,10 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 		}
 	}
 	
-	public WizardNewHybridProjectCreationPage(String pageName) {
+
+	public WizardNewHybridProjectCreationPage(String pageName, IStructuredSelection selection) {
 		super(pageName);
+		this.currentSelection = selection;
 		setTitle("Create Hybrid Mobile Application Project");
 		setDescription("Create a hybrid mobile application using Apache Cordova for cross-platform mobile development");
 	}
@@ -83,6 +91,9 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
         txtID.setMessage("com.mycom.app");
         txtID.addModifyListener(propertyModifyListener);
         txtID.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        
+        createWorkingSetGroup();
+
 
         setPageComplete(validatePage());
         setErrorMessage(null);
@@ -146,6 +157,12 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 		return true;
 	}
 	
+	private void createWorkingSetGroup() {
+		String[] workingSetIds = new String[] {"org.eclipse.ui.resourceWorkingSetPage",  //$NON-NLS-1$
+		"org.eclipse.wst.jsdt.ui.JavaWorkingSetPage"};  //$NON-NLS-1$
+    	workingSetGroup = new WorkingSetGroup((Composite)getControl(), currentSelection, workingSetIds);
+	}
+	
 	public String getApplicationName(){
 		return txtName.getText();
 	}
@@ -153,5 +170,8 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 	public String getApplicationID(){
 		return txtID.getText();
 	}
-
+	
+	public IWorkingSet[] getSelectedWorkingSets(){
+		return workingSetGroup.getSelectedWorkingSets();
+	}
 }
