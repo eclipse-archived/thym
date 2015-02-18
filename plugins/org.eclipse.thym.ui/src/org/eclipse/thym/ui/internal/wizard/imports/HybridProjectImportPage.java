@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -617,7 +618,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 			return false;
 		}
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-
+		
 		for (int i = 0; i < selectedCandidates.length; i++) {
 			ProjectCandidate pc = (ProjectCandidate) selectedCandidates[i];
 			
@@ -658,6 +659,16 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 				setErrorMessage(locationStatus.getMessage());
 				return false;
 			}
+			//Warn for an existing eclipse project
+			File[] files = pc.wwwLocation.getParentFile().listFiles();
+			for (File file : files) {
+				if(file.isFile() && IProjectDescription.DESCRIPTION_FILE_NAME.equals(file.getName())){
+					setMessage(NLS.bind("A project description for {0} already exists and will be replaced, use existing project import to restore the project", pc.getProjectName()),
+							IStatus.WARNING);
+					return false;
+				}
+			}
+			
 		}
 		setMessage(null);
 		setErrorMessage(null);
