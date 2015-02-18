@@ -38,7 +38,7 @@ public class ConfigXMLUpdateAction extends XMLConfigFileAction {
 		WidgetModel widgetModel = WidgetModel.getModel(project);
 		if(featureNode == null ){
 			// let parent handle it
-			// We do not want to limit what plugins can insert into config.xml with our Widget model
+			// We do not want to limit what plug-ins can insert into config.xml with our Widget model
 			// because our widget model may not be supporting the latest and greatest config.xml extensions
 			// direct xml injection that super uses does not have this problem.
 			super.install();

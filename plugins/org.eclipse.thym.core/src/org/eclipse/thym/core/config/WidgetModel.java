@@ -35,6 +35,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -162,7 +163,7 @@ public class WidgetModel implements IModelLifecycleListener{
 							"Parser error when parsing config.xml", e));
 				} catch (SAXException e) {
 					throw new CoreException(new Status(IStatus.ERROR,
-							HybridCore.PLUGIN_ID, "Parsing error on config.xml", e));
+							HybridCore.PLUGIN_ID, "Failed to parse config.xml", e));
 				} catch (IOException e) {
 					throw new CoreException(new Status(IStatus.ERROR,
 							HybridCore.PLUGIN_ID,
@@ -241,7 +242,10 @@ public class WidgetModel implements IModelLifecycleListener{
 	
 	
 	private Widget load(Document document) {
-		return new Widget(document.getDocumentElement());
+		Assert.isNotNull(document, "null document can not init widget");
+		Element el = document.getDocumentElement();
+		Assert.isNotNull(el, "null document root can not init widget");
+		return new Widget(el);
 	}
 	
 	public void reloadEditableWidget() {

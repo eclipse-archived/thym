@@ -59,6 +59,7 @@ public class PluginInstallActionsRunOperation implements IWorkspaceRunnable {
 		boolean rollback = false;
 		try {
 			for (IPluginInstallationAction action : actions) {
+				HybridCore.trace("Running Cordova plugin action: "+action);
 				if (monitor.isCanceled()) {
 					rollback = true;
 					break;
@@ -71,20 +72,21 @@ public class PluginInstallActionsRunOperation implements IWorkspaceRunnable {
 				monitor.worked(1);
 				executed.push(action);
 			}
-		} catch (CoreException e) {
+		} catch (Exception e) {
 			HybridCore.log(IStatus.ERROR, "Error while installing plugin", e);
 			rollback = true;
 		}
 		if (rollback) {
 			while (!executed.empty()) {
 				IPluginInstallationAction action = executed.pop();
+				HybridCore.trace("Rolling back Cordova plugin action: "+action);
 				try {
 					if(runUnInstall){
 						action.install();
 					}else{
 						action.unInstall();
 					}
-				} catch (CoreException e) {
+				} catch (Exception e) {
 					HybridCore.log(IStatus.ERROR,
 							"Error rolling back install action", e);
 				}
