@@ -17,6 +17,7 @@ import org.w3c.dom.Node;
  * @author Gorkem Ercan
  */
 public class Icon extends ImageResourceBase {
+	
 
 	Icon(Node node) {
 		super(node);

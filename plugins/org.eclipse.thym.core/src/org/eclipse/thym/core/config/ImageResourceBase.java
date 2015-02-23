@@ -16,7 +16,8 @@ import static org.eclipse.thym.core.config.WidgetModelConstants.IMAGERESOURCE_AT
 import static org.eclipse.thym.core.config.WidgetModelConstants.IMAGERESOURCE_ATTR_PLATFORM;
 import static org.eclipse.thym.core.config.WidgetModelConstants.IMAGERESOURCE_ATTR_SRC;
 import static org.eclipse.thym.core.config.WidgetModelConstants.IMAGERESOURCE_ATTR_WIDTH;
-import static org.eclipse.thym.core.config.WidgetModelConstants.NS_PHONEGAP_1_0;
+import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_PLATFORM;
+import static org.eclipse.thym.core.config.WidgetModelConstants.PLATFORM_ATTR_NAME;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,8 +48,15 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 		if ( s!= null ){
 			height.setValue(Integer.parseInt(s));
 		}
-		platform.setValue(getNodeAttribute(node, NS_PHONEGAP_1_0, IMAGERESOURCE_ATTR_PLATFORM));
-		density.setValue(getNodeAttribute(node, NS_PHONEGAP_1_0, IMAGERESOURCE_ATTR_DENSITY));
+		String platformString =  getNodeAttribute(node, null, IMAGERESOURCE_ATTR_PLATFORM);
+		if(platformString == null ){
+			Node parent = this.itemNode.getParentNode();
+			if(parent.getNodeName().equals(WIDGET_TAG_PLATFORM)){
+				platformString = getNodeAttribute(parent, null, PLATFORM_ATTR_NAME);
+			}
+		}
+		platform.setValue(platformString);
+		density.setValue(getNodeAttribute(node, null, IMAGERESOURCE_ATTR_DENSITY));
 	}
 
 	public String getSrc() {
@@ -92,12 +100,12 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 
 	public void setPlatform(String platform) {
 		this.platform.setValue(platform);
-		setAttributeValue(itemNode, NS_PHONEGAP_1_0, WidgetModelConstants.IMAGERESOURCE_ATTR_PLATFORM, platform);
+		setAttributeValue(itemNode, null, WidgetModelConstants.IMAGERESOURCE_ATTR_PLATFORM, platform);
 	}
 
 	public void setDensity(String density) {
 		this.density.setValue(density);
-		setAttributeValue(itemNode, NS_PHONEGAP_1_0, WidgetModelConstants.IMAGERESOURCE_ATTR_DENSITY, density);
+		setAttributeValue(itemNode, null, WidgetModelConstants.IMAGERESOURCE_ATTR_DENSITY, density);
 	}
 	
 	@Override

@@ -32,7 +32,7 @@ interface WidgetModelConstants {
 	static final String WIDGET_TAG_ICON = "icon";
 	static final String WIDGET_TAG_SPLASH = "splash";
 	static final String WIDGET_TAG_LICENSE = "license";
-	
+	static final String WIDGET_TAG_PLATFORM = "platform";
 	
 	static final String WIDGET_ATTR_VERSION = "version";
 	static final String WIDGET_ATTR_ID = "id";
@@ -62,4 +62,5 @@ interface WidgetModelConstants {
 	static final String PREFERENCE_ATTR_NAME = "name";
 	static final String PREFERENCE_ATTR_READONLY = "readonly";
 	static final String NAME_ATTR_SHORT = "short";
+	static final String PLATFORM_ATTR_NAME = "name";
 }
