@@ -22,6 +22,10 @@ public class Icon extends ImageResourceBase {
 	Icon(Node node) {
 		super(node);
 	}
+	
+	public final boolean isDefault(){
+		return (getDensity() == null || getDensity().isEmpty()) && getWidth()<0 && getHeight()<0;
+	}
 
 	@Override
 	public boolean equals(Object obj) {

@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidCore;
+import org.eclipse.thym.core.config.Icon;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.platform.PlatformConstants;
 
@@ -86,6 +87,38 @@ public class AndroidProjectUtils {
 		// We could not determine a targetValue	
 		throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID,
 				"Could not determine required Android level for the Cordova engine, please use a different one"));
+	}
+	/**
+	 * Calculates a density string for the given icon element from config.xml
+	 * 
+	 * @param icon
+	 * @return density or null if one can not be calculated or icon is null.
+	 */
+	public static String getDensityForIcon(Icon icon){
+		if(icon == null ){
+			return null;
+		}
+		String density = icon.getDensity();
+		if(density == null || density.isEmpty()){
+			int size = Math.max(icon.getHeight(),icon.getWidth());
+			if(size > 0){
+				switch (size) {
+				case 36: density = "ldpi";
+					break;
+				case 48: density = "mdpi";
+					break;
+				case 72: density = "hdpi";
+					break;
+				case 96: density = "xhdpi";
+					break;
+				case 144: density = "xxhdpi";
+					break;
+				case 192: density = "xxxhdpi";
+					break;
+				}
+			}
+		}
+		return density;
 	}
 
 }

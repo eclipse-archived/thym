@@ -63,12 +63,19 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 		return src.getValue();
 	}
 
+	/**
+	 * Returns the image width
+	 * @return width or a negative value if undefined
+	 */
 	public int getWidth() {
 		if(width.getValue() == null )
 			return -1;
 		return width.getValue().intValue();
 	}
-
+	/**
+	 * Returns the image height
+	 * @return height or a negative value if undefined
+	 */
 	public int getHeight() {
 		if(height.getValue() == null )
 			return -1;

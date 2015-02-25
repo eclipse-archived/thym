@@ -20,21 +20,26 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.thym.ios.core.IOSCore;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.config.Icon;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.platform.AbstractProjectGeneratorDelegate;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.ios.core.IOSCore;
 
 import com.dd.plist.ASCIIPropertyListParser;
 import com.dd.plist.NSDictionary;
@@ -81,6 +86,8 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			// which in some cases confuses the config file actions for plugin installation.
 			FileUtils.deleteQuietly(new File(prjdir,"__PROJECT_NAME__-Info.plist"));
 			FileUtils.deleteQuietly(new File(prjdir,"__PROJECT_NAME__-Prefix.pch"));
+			
+			handleIcons(widgetModel, hybridProject);
 			
 			// cordova
 			IPath cordovaScriptPath = destinationPath.append("cordova");
@@ -162,6 +169,73 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			throw new CoreException(new Status(IStatus.ERROR,IOSCore.PLUGIN_ID,"Error generating the native iOS project", e));
 		}
 		
+	}
+	
+	private void handleIcons(Widget widgetModel, HybridProject project) throws CoreException{
+		List<Icon> icons = widgetModel.getIcons();
+		if (icons == null || icons.isEmpty()) {
+			return;// no icons to process.
+		}
+		Map<Integer, String> platformIcons = getPlatformIcons();
+		Icon defaultIcon = null;
+		File iconsDir = new File(getDestination(), project.getBuildArtifactAppName()+"/Resources/icons");
+		try {
+			for (Icon icon : icons) {
+				if (icon.isDefault()) {
+					defaultIcon = icon;
+					continue;
+				}
+				if (icon.getPlatform().equals(getTargetShortName())) {
+					IFile iconFile = project.getProject().getFile(icon.getSrc());
+					if (!iconFile.exists()) {
+						IOSCore.log(IStatus.ERROR, NLS.bind("Missing icon file {0}", icon.getSrc()), null);
+						continue;
+					}
+					Integer size = Integer.valueOf(Math.max(icon.getHeight(), icon.getWidth()));
+					String destinationPath = platformIcons.get(size);
+					if (destinationPath != null) {
+						fileCopy(toURL(iconFile.getLocation().toFile()), toURL(new File(iconsDir, destinationPath)));
+						platformIcons.remove(size);
+					}
+				}
+			}
+			
+			if (defaultIcon != null) {// use default for any remaining sizes.
+				IFile iconFile = project.getProject().getFile(defaultIcon.getSrc());
+				if (!iconFile.exists()) {
+					IOSCore.log(IStatus.ERROR, NLS.bind("Missing icon file {0}", defaultIcon.getSrc()), null);
+				} else {
+					Collection<String> remaing = platformIcons.values();
+					for (String string : remaing) {
+						fileCopy(toURL(iconFile.getLocation().toFile()), toURL(new File(iconsDir,string)));
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new CoreException(
+					new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Error whiile processing iOS icons", e));
+		}
+
+	}
+	
+	private  Map<Integer,String> getPlatformIcons(){
+		HashMap<Integer, String> map = new HashMap<Integer, String>();
+		map.put(Integer.valueOf(60),  "icon-60.png");
+		map.put(Integer.valueOf(120), "icon-60@2x.png");
+		map.put(Integer.valueOf(180), "icon-60@3x.png");
+		map.put(Integer.valueOf(76),  "icon-76.png");
+		map.put(Integer.valueOf(152), "icon-76@2x.png");
+		map.put(Integer.valueOf(29),  "icon-small.png");
+		map.put(Integer.valueOf(58),  "icon-small@2x.png");
+		map.put(Integer.valueOf(40),  "icon-40.png");
+		map.put(Integer.valueOf(80),  "icon-40@2x.png");
+		map.put(Integer.valueOf(57),  "icon.png");
+		map.put(Integer.valueOf(114), "icon@2x.png");
+		map.put(Integer.valueOf(72),  "icon-72.png");
+		map.put(Integer.valueOf(144), "icon-72@2x.png");
+		map.put(Integer.valueOf(50),  "icon-50.png");
+		map.put(Integer.valueOf(100), "icon-50@2x.png");
+		return map;
 	}
 	
 	private void updateCordovaSubProjectPath(File pbxprojfile, String path,
