@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidCore;
-import org.eclipse.thym.core.config.Icon;
+import org.eclipse.thym.core.config.ImageResourceBase;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.platform.PlatformConstants;
 
@@ -94,7 +94,7 @@ public class AndroidProjectUtils {
 	 * @param icon
 	 * @return density or null if one can not be calculated or icon is null.
 	 */
-	public static String getDensityForIcon(Icon icon){
+	public static String getDensityForIcon(ImageResourceBase icon){
 		if(icon == null ){
 			return null;
 		}

@@ -11,7 +11,6 @@
 package org.eclipse.thym.core.config;
 
 import static org.eclipse.thym.core.config.WidgetModelConstants.NAME_ATTR_SHORT;
-import static org.eclipse.thym.core.config.WidgetModelConstants.NS_PHONEGAP_1_0;
 import static org.eclipse.thym.core.config.WidgetModelConstants.NS_W3C_WIDGET;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_ATTR_ID;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_ATTR_VERSION;
@@ -98,7 +97,7 @@ public class Widget extends AbstractConfigObject {
 		loadListItem(WIDGET_TAG_ACCESS,null, node, accesses, Access.class);
 		loadListItem(WIDGET_TAG_FEATURE, null,node,features, Feature.class);
 		loadListItem(WIDGET_TAG_ICON, null, node, icons, Icon.class);
-		loadListItem(WIDGET_TAG_SPLASH,NS_PHONEGAP_1_0, node, splashes, Splash.class);
+		loadListItem(WIDGET_TAG_SPLASH,null, node, splashes, Splash.class);
 	}
 
 

@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.thym.core.config;
 
-import static org.eclipse.thym.core.config.WidgetModelConstants.NS_PHONEGAP_1_0;
 import static org.eclipse.thym.core.config.WidgetModelConstants.NS_W3C_WIDGET;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_ACCESS;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_AUTHOR;
@@ -356,7 +355,7 @@ public class WidgetModel implements IModelLifecycleListener{
 	 * @return new Splash 
 	 */
 	public Splash createSplash(Widget widget){
-		return createObject(widget, NS_PHONEGAP_1_0, WIDGET_TAG_SPLASH, Splash.class);
+		return createObject(widget, null, WIDGET_TAG_SPLASH, Splash.class);
 	}
 	
 	/**

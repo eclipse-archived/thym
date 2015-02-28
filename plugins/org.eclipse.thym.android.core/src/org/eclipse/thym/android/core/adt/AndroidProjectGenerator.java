@@ -62,6 +62,8 @@ import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Icon;
+import org.eclipse.thym.core.config.ImageResourceBase;
+import org.eclipse.thym.core.config.Splash;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
@@ -133,6 +135,7 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 					toURL(xmlPath.append(PlatformConstants.FILE_XML_CONFIG).toFile()));
 			
 			handleIcons(widgetModel, hybridProject);
+			handleSplashScreens(widgetModel, hybridProject);
 			updateAppName(hybridProject.getAppName());
 			
 			// Copy templated files 
@@ -160,32 +163,79 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 		}
 	}
 	
+	private void handleSplashScreens(Widget widget, HybridProject project) throws CoreException{
+		final List<Splash> splashes = widget.getSplashes();
+		if(splashes == null || splashes.isEmpty()){
+			return;
+		}
+		
+		final File resDir = new File(getDestination(), DIR_RES);
+		boolean templateCleaned = false;
+		for (Splash splash : splashes) {
+			IFile splashFile = null;
+			String density = null;
+			if(splash.isDefault()){
+				splashFile = project.getProject().getFile(splash.getSrc());
+			}else
+			if(getTargetShortName().equals(splash.getPlatform()) && splash.getDensity() != null && !splash.getDensity().isEmpty()){
+				splashFile = project.getProject().getFile(splash.getSrc());
+				density = splash.getDensity();
+			}
+			if(splashFile != null ){// splash file found
+				if(!templateCleaned) {
+					deleteTemplateResources(resDir, "screen.png");
+					templateCleaned = true;
+				}
+				if(!splashFile.exists()){
+					AndroidCore.log(IStatus.ERROR, NLS.bind("Missing splash screen image {0}", splash.getSrc()), null);
+					continue;
+				}
+				
+				String filename= splashFile.getName().indexOf(".9.")> 0 ? "screen.9.png" : "screen.png";
+				if(density != null && !density.isEmpty()){
+					filename = "drawable-"+density+"/"+filename;
+				}
+				try{
+					fileCopy(toURL(splashFile.getLocation().toFile()), toURL(new File(resDir, filename))); 	
+				}catch(IOException e){
+					throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Error while processing android splash screens ", e));
+				}
+			}
+		}
+	}
+
 	private void handleIcons(Widget widgetModel, HybridProject project) throws CoreException{
-		List<Icon> icons = widgetModel.getIcons();
+		final List<Icon> icons = widgetModel.getIcons();
 		if(icons == null || icons.isEmpty()){
 			return; //Nothing to do; App uses the default icon from Cordova project template.
 		}
 		try{
-			File resFile = new File(getDestination(),DIR_RES);
-			deleteTemplateResources(resFile, "icon.png");
-			for (Icon icon : icons) {
+			final File resFile = new File(getDestination(),DIR_RES);
+			boolean templateCleaned =false;
+			for (ImageResourceBase icon : icons) {
+				IFile iconFile = null;
+				String density = null;
 				if(icon.isDefault()){
-					IFile iconFile = project.getProject().getFile(icon.getSrc());
-					fileCopy(toURL(iconFile.getLocation().toFile()),toURL(new File(resFile,"drawable/icon.png"))); 
-					
+					iconFile = project.getProject().getFile(icon.getSrc());
 				}else
-				if(icon.getPlatform().equals(this.getTargetShortName())){
-					IFile iconFile = project.getProject().getFile(icon.getSrc());
-					if(!iconFile.exists()){
-						AndroidCore.log(IStatus.ERROR, NLS.bind("Missing icon file {0}", icon.getSrc()), null);
-						continue;
-					}
-					String density = AndroidProjectUtils.getDensityForIcon(icon);
+				if(getTargetShortName().equals(icon.getPlatform())){
+					iconFile = project.getProject().getFile(icon.getSrc());
+					density = AndroidProjectUtils.getDensityForIcon(icon);
 					if(density == null || density.isEmpty()){
 						AndroidCore.log(IStatus.ERROR, NLS.bind("Can not determine density for icon {0}", icon.getSrc()), null);
 						continue;
 					}
-					String drawableDir = "drawable-"+density;
+				}
+				if(iconFile != null){//found an icon let's process.
+					if(!templateCleaned){
+						deleteTemplateResources(resFile, "icon.png");
+						templateCleaned = true;
+					}
+					if(!iconFile.exists()){
+						AndroidCore.log(IStatus.ERROR, NLS.bind("Missing icon file {0}", icon.getSrc()), null);
+						continue;
+					}
+					String drawableDir = density != null && !density.isEmpty() ? "drawable-"+density: "drawable";
 					fileCopy(toURL(iconFile.getLocation().toFile()),toURL(new File(resFile,drawableDir+"/icon.png"))); 
 				}
 			}

@@ -34,6 +34,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Icon;
+import org.eclipse.thym.core.config.ImageResourceBase;
+import org.eclipse.thym.core.config.Splash;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
@@ -88,6 +90,7 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			FileUtils.deleteQuietly(new File(prjdir,"__PROJECT_NAME__-Prefix.pch"));
 			
 			handleIcons(widgetModel, hybridProject);
+			handleSplashScreens(widgetModel, hybridProject);
 			
 			// cordova
 			IPath cordovaScriptPath = destinationPath.append("cordova");
@@ -171,16 +174,74 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 		
 	}
 	
+	private void handleSplashScreens(Widget widget, HybridProject hybridProject) throws CoreException{
+		final List<Splash> splashes = widget.getSplashes();
+		if(splashes == null || splashes.isEmpty()){
+			return;
+		}
+		final PlatformSplash[] platformSplashes = getPlatformSplashes();
+		final File platformHome = new File(getDestination(), hybridProject.getBuildArtifactAppName());
+		for (Splash splash : splashes) {
+			if(splash.getPlatform().equals(getTargetShortName())){
+				IFile splashFile = hybridProject.getProject().getFile(splash.getSrc());
+				if (!splashFile.exists()) {
+					IOSCore.log(IStatus.ERROR, NLS.bind("Missing splash image {0}", splash.getSrc()), null);
+					continue;
+				}
+				//find destination for the file
+				for (PlatformSplash platformSplash : platformSplashes) {
+					if( splash.getHeight() == platformSplash.height && 
+							splash.getWidth() == platformSplash.width){
+						try{
+							fileCopy(toURL(splashFile.getLocation().toFile()), toURL(new File(platformHome, platformSplash.fileName)));
+						}catch(IOException e){
+							throw new CoreException(
+									new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Error whiile processing iOS splash screens", e));
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	private PlatformSplash[] getPlatformSplashes(){
+		return new PlatformSplash[] {
+				new PlatformSplash("Resources/splash/Default~iphone.png", 320, 480),
+				new PlatformSplash("Resources/splash/Default@2x~iphone.png", 640, 960),
+				new PlatformSplash("Resources/splash/Default-Portrait~ipad.png", 768, 1024),
+				new PlatformSplash("Resources/splash/Default-Portrait@2x~ipad.png", 1536, 2048),
+				new PlatformSplash("Resources/splash/Default-Landscape~ipad.png", 1024, 768),
+				new PlatformSplash("Resources/splash/Default-Landscape@2x~ipad.png", 2048, 1536),
+				new PlatformSplash("Resources/splash/Default-568h@2x~iphone.png", 640, 1136),
+				new PlatformSplash("Resources/splash/Default-667h.png", 750, 1334),
+				new PlatformSplash("Resources/splash/Default-736h.png", 1242, 2208),
+				new PlatformSplash("Resources/splash/Default-Landscape-736h.png", 2208, 1242)
+		};
+	}
+	
+	// A small class to hold platform splash screen values.
+	private class PlatformSplash{
+		int width;
+		int height;
+		String fileName;
+		public PlatformSplash(String file, int w, int h) {
+			fileName = file;
+			width = w;
+			height = h;	
+		}		
+	}
+
 	private void handleIcons(Widget widgetModel, HybridProject project) throws CoreException{
-		List<Icon> icons = widgetModel.getIcons();
+		final List<Icon> icons = widgetModel.getIcons();
 		if (icons == null || icons.isEmpty()) {
 			return;// no icons to process.
 		}
-		Map<Integer, String> platformIcons = getPlatformIcons();
-		Icon defaultIcon = null;
-		File iconsDir = new File(getDestination(), project.getBuildArtifactAppName()+"/Resources/icons");
+		final Map<Integer, String> platformIcons = getPlatformIcons();
+		ImageResourceBase defaultIcon = null;
+		final File iconsDir = new File(getDestination(), project.getBuildArtifactAppName()+"/Resources/icons");
 		try {
-			for (Icon icon : icons) {
+			for (ImageResourceBase icon : icons) {
 				if (icon.isDefault()) {
 					defaultIcon = icon;
 					continue;

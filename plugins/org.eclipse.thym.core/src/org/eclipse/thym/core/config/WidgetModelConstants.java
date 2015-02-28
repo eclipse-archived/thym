@@ -17,7 +17,6 @@ package org.eclipse.thym.core.config;
  */
 interface WidgetModelConstants {
 	
-	static final String NS_PHONEGAP_1_0 = "http://phonegap.com/ns/1.0";
 	static final String NS_W3C_WIDGET = "http://www.w3.org/ns/widgets"; 
 
 	

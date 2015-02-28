@@ -135,4 +135,8 @@ public abstract class ImageResourceBase extends AbstractConfigObject {
 		return super.hashCode();
 	}
 
+	public final boolean isDefault() {
+		return (getDensity() == null || getDensity().isEmpty()) && getWidth()<0 && getHeight()<0;
+	}
+
 }
