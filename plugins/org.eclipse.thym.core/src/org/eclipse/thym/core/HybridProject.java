@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
@@ -34,8 +33,6 @@ import org.eclipse.thym.core.plugin.CordovaPluginManager;
  */
 public class HybridProject implements IAdaptable {
 	
-	private static final IPath[] CONFIG_PATHS = {new Path(PlatformConstants.DIR_WWW).append(PlatformConstants.FILE_XML_CONFIG),
-													new Path(PlatformConstants.FILE_XML_CONFIG) };
 	private IProject kernelProject;
 	private CordovaPluginManager pluginManager;
 	private HybridMobileEngineManager engineManager;
@@ -141,7 +138,7 @@ public class HybridProject implements IAdaptable {
 	 * @return
 	 */
 	public IFile getConfigFile(){
-		for (IPath configPath : CONFIG_PATHS) {
+		for (IPath configPath : PlatformConstants.CONFIG_PATHS) {
 			IFile f = kernelProject.getFile(configPath);
 			if(f.exists()){
 				return f;

@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.thym.core.platform;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
 
 public interface PlatformConstants {
 	
@@ -31,5 +34,9 @@ public interface PlatformConstants {
 	public static final String PREF_CUSTOM_LIB_LOCS = "custom_engine_loc";
 	public static final String PREF_DEFAULT_ENGINE = "default_engine";
 	public static final String PREF_SHRINKWRAP_PLUGIN_VERSIONS = "shrinkwrap_plugin_version";
+	
+	public static final IPath[] CONFIG_PATHS = {new Path(PlatformConstants.DIR_WWW).append(PlatformConstants.FILE_XML_CONFIG),
+		new Path(PlatformConstants.FILE_XML_CONFIG) };
+
 
 }

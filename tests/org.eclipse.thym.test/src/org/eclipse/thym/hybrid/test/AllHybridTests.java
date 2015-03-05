@@ -18,13 +18,14 @@ import org.eclipse.thym.core.test.FileUtilsTest;
 import org.eclipse.thym.core.test.HybridProjectConventionsTest;
 import org.eclipse.thym.core.test.TestBundleHttpStorage;
 import org.eclipse.thym.hybrid.test.ios.pbxproject.PBXProjectTest;
+import org.eclipse.thym.ui.wizard.project.HybridProjectConvertTest;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreatorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class, 
+@SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class,HybridProjectConvertTest.class, 
 	WidgetModelTest.class, CordovaPluginRegistryTest.class,HybridProjectConventionsTest.class, 
 	InstallActionsTest.class,PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class, TestBundleHttpStorage.class,PluginXMLHelperTests.class})
 public class AllHybridTests {
