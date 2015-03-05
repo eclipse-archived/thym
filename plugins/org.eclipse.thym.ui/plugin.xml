@@ -249,4 +249,54 @@
       </contentTypeIdentifier>
       </validator>
    </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="org.eclipse.thym.ui.ConvertToHybridProject"
+               style="push">
+         </command>
+        <visibleWhen checkEnabled="false">
+          <and>
+            <count value="1"/>
+            <iterate ifEmpty="false" operator="and">
+              <adapt type="org.eclipse.core.resources.IProject">
+                <and>
+                   <not>
+                      <test
+                            property="org.eclipse.core.resources.projectNature"
+                            value="org.eclipse.thym.core.HybridAppNature">
+                      </test>
+                   </not>
+                   <test
+                         forcePluginActivation="true"
+                         property="org.eclipse.thym.ui.canConvertToThym">
+                   </test>
+                </and>
+              </adapt>
+            </iterate>
+          </and>
+        </visibleWhen>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="org.eclipse.thym.ui.internal.project.ConvertToHybridProjectHandler"
+            id="org.eclipse.thym.ui.ConvertToHybridProject"
+            name="Convert to Hybrid Mobile Project">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.eclipse.thym.ui.internal.project.CanConvertToHybridTester"
+            id="org.eclipse.thym.ui.CanConvertToHybridMobileTester"
+            namespace="org.eclipse.thym.ui"
+            properties="canConvertToThym"
+            type="org.eclipse.core.resources.IProject">
+      </propertyTester>
+   </extension>
 </plugin>

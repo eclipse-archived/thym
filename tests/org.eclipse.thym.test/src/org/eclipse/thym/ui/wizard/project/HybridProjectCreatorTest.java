@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;

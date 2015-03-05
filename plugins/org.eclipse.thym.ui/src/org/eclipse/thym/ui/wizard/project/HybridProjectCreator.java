@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -51,8 +50,8 @@ import org.eclipse.thym.core.internal.libraries.CordovaLibraryJsContainerInitial
 import org.eclipse.thym.core.internal.util.ConfigJSon;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.natures.HybridAppNature;
-import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.thym.ui.internal.project.CanConvertToHybridTester;
 import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
 import org.eclipse.wst.jsdt.core.JavaScriptCore;
@@ -124,7 +123,7 @@ public class HybridProjectCreator {
             monitor = new NullProgressMonitor();
         HybridProject hp= HybridProject.getHybridProject(project);
         if(hp != null ) return;
-        if(!canConvert(project)){
+        if(!CanConvertToHybridTester.canConvert(project)){
             throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
                     NLS.bind("Project {0} can not be converted to a hybrid mobile project" , project.getName(),null)));
         }
@@ -132,19 +131,6 @@ public class HybridProjectCreator {
         addPlatformPaths(project, monitor);
         addNature(project, monitor);
         setUpJavaScriptProject(project, monitor);
-    }
-    
-    private boolean canConvert(IProject project){
-        boolean configExist = false;
-        for(IPath path: PlatformConstants.CONFIG_PATHS){
-            IFile config = project.getFile(path);
-            if(config.exists()){
-                configExist = true;
-                break;
-            }
-        }
-        IFolder wwwFile = project.getFolder(PlatformConstants.DIR_WWW);
-        return configExist && wwwFile.exists();
     }
 
     private IProject createHybridMobileProject(String projectName,
