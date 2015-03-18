@@ -20,6 +20,7 @@ import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_ICON;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_LICENSE;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_PREFERENCE;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_SPLASH;
+import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_ENGINE;
 
 import java.io.File;
 import java.io.IOException;
@@ -369,6 +370,10 @@ public class WidgetModel implements IModelLifecycleListener{
 	 */
 	public License createLicense(Widget widget){
 		return createObject(widget, NS_W3C_WIDGET, WIDGET_TAG_LICENSE, License.class);
+	}
+	
+	public Engine createEngine(Widget widget){
+		return createObject(widget, null, WIDGET_TAG_ENGINE, Engine.class);
 	}
 	
 	
