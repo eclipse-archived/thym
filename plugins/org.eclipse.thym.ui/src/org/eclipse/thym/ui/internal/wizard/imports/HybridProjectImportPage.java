@@ -577,7 +577,7 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 		if(!copyFiles){
 			location = pc.wwwLocation.getParentFile().toURI();
 		}
-		IProject project = projectCreator.createProject(projectName, location, w.getName(), w.getId(), HybridMobileEngineManager.getDefaultEngine(), monitor);
+		IProject project = projectCreator.createProject(projectName, location, w.getName(), w.getId(), null, monitor);
 		if(copyFiles){
 			ImportOperation operation = new ImportOperation(project
 					.getFullPath(), pc.wwwLocation.getParentFile(), FileSystemStructureProvider.INSTANCE

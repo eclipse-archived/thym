@@ -17,13 +17,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
+import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
@@ -43,12 +45,12 @@ public class TestProject {
 	
 	@SuppressWarnings("restriction")
 	public TestProject(){
-		HybridProjectCreator projectCreator = new HybridProjectCreator();
 		try {
-			CordovaEngineProvider engineProvider = new CordovaEngineProvider();
+			HybridProjectCreator projectCreator = new HybridProjectCreator();
 			projectCreator.createBasicTemplatedProject(PROJECT_NAME, null, APPLICATION_NAME, APPLICATION_ID, 
-					engineProvider.createEngine(CordovaEngineProvider.CORDOVA_ENGINE_ID, "3.1.0"),new NullProgressMonitor());
+					HybridMobileEngineManager.defaultEngines(), new NullProgressMonitor());
 		} catch (CoreException e) {
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

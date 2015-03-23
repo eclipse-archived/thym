@@ -20,8 +20,7 @@ public  interface HybridMobileEngineLocator {
 	 *
 	 */
 	public interface EngineSearchListener{
-		
-		public void libraryFound(PlatformLibrary library);
+		public void engineFound(HybridMobileEngine engine);
 	}
 	
 	/**

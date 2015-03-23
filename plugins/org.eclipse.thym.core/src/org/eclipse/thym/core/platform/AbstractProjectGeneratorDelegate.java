@@ -31,7 +31,6 @@ import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
@@ -96,18 +95,25 @@ public abstract class AbstractProjectGeneratorDelegate {
 				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
 						NLS.bind("Project {0} is missing or not a Hybrid Mobile project", getProjectName())));
 			}
-			HybridMobileEngine engine = hybridProject.getActiveEngine();
-			if(engine == null){
+			HybridMobileEngine[] engine = hybridProject.getActiveEngines();
+			if(engine == null || engine.length <1 ){
 				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(project, 
-					"Active Hybrid Mobile Engine is missing. Please install the missing engine or use a different engine."));
-			}
-			PlatformLibrary lib = engine.getPlatformLib(getTargetShortName());
-			if(lib == null ){
-				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(getProject(),
-						NLS.bind("Active Hybrid Mobile Engine for {0} project does not have {1} support installed.",new Object[]{getProject().getName(), getTargetShortName()}) ));
+					"Hybrid Mobile Engine is missing. Please install the missing engine or use a different engine."));
 			}
 			
-			HybridMobileLibraryResolver resolver = lib.getPlatformLibraryResolver();
+			HybridMobileEngine theEngine = null;
+				
+			for (HybridMobileEngine eng : engine) {
+				if(eng.getId().equals(getTargetShortName())){
+					theEngine = eng;
+				}
+			}
+			if(theEngine == null ){
+				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(getProject(),
+						NLS.bind("Project {0} does not have any engines with {1} support installed.",new Object[]{getProject().getName(), getTargetShortName()}) ));
+			}
+			
+			HybridMobileLibraryResolver resolver = theEngine.getResolver();
 			if(resolver == null ){
 				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(getProject(),
 						NLS.bind("Active Hybrid Mobile Engine can not support {0}.",getTargetShortName()) ));

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.internal.properties;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -60,9 +61,9 @@ public class EnginePropertyPage extends PropertyPage {
 		});
 		noDefaultAndApplyButton();
 		HybridProject hybridProject = getProject();
-		HybridMobileEngine activeEngine = hybridProject.getActiveEngine();
-		if(activeEngine != null){
-			engineSection.setSelection(new StructuredSelection(activeEngine));
+		HybridMobileEngine[] activeEngines = hybridProject.getActiveEngines();
+		if(activeEngines != null){
+			engineSection.setSelection(new StructuredSelection(activeEngines));
 		}
 		else{
 			setValid(isValid());
@@ -83,33 +84,37 @@ public class EnginePropertyPage extends PropertyPage {
 			return false;
 		}
 		IStructuredSelection sel = (IStructuredSelection) engineSection.getSelection();
-		HybridMobileEngine engine = (HybridMobileEngine) sel.getFirstElement();
-		IStatus consistentStatus = engine.isLibraryConsistent();
-		if(!consistentStatus.isOK()){
-			IStatus[] statusArray = consistentStatus.getChildren();
-			int severity = consistentStatus.getSeverity();
-			String message = consistentStatus.getMessage();
-			//Replace the message with child status message
-			for (int i = 0; i < statusArray.length; i++) {
-				if(statusArray[i].getSeverity() == severity){
-					message = statusArray[i].getMessage();
+		for (Iterator iterator = sel.iterator(); iterator.hasNext();) {
+			HybridMobileEngine engine = (HybridMobileEngine) iterator.next();
+			IStatus consistentStatus = engine.isLibraryConsistent();
+			if(!consistentStatus.isOK()){
+				IStatus[] statusArray = consistentStatus.getChildren();
+				int severity = consistentStatus.getSeverity();
+				String message = consistentStatus.getMessage();
+				//Replace the message with child status message
+				for (int i = 0; i < statusArray.length; i++) {
+					if(statusArray[i].getSeverity() == severity){
+						message = statusArray[i].getMessage();
+					}
 				}
+				setMessage(message, severity);
+				return severity != IStatus.ERROR;
 			}
-			setMessage(message, severity);
-			return severity != IStatus.ERROR;
-		}
-		try {
-			List<CordovaPlugin> installedPlugins = getProject().getPluginManager().getInstalledPlugins();
-			for (CordovaPlugin cordovaPlugin : installedPlugins) {
-				IStatus status = cordovaPlugin.isEngineCompatible(engine);
-				if( !status.isOK())
-				{
-					setMessage(status.getMessage(), status.getSeverity());
-					return status.getSeverity() != IStatus.ERROR;
+			//TODO: 
+			try {
+				List<CordovaPlugin> installedPlugins = getProject().getPluginManager().getInstalledPlugins();
+				for (CordovaPlugin cordovaPlugin : installedPlugins) {
+					IStatus status = cordovaPlugin.isEngineCompatible(engine);
+					if( !status.isOK())
+					{
+						setMessage(status.getMessage(), status.getSeverity());
+						return status.getSeverity() != IStatus.ERROR;
+					}
 				}
+			} catch (CoreException e) {
+				HybridUI.log(IStatus.WARNING, "Error while checking engine and plug-in compatability ",  e);
 			}
-		} catch (CoreException e) {
-			HybridUI.log(IStatus.WARNING, "Error while checking engine and plug-in compatability ",  e);
+			
 		}
 		setMessage(null);
 		setErrorMessage(null);
@@ -120,11 +125,13 @@ public class EnginePropertyPage extends PropertyPage {
 	 * (non-Javadoc)
 	 * @see org.eclipse.jface.preference.PreferencePage#performOk()
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean performOk() {
 		IStructuredSelection selection = (IStructuredSelection)engineSection.getSelection();
-		HybridMobileEngine engine = (HybridMobileEngine) selection.getFirstElement();
+		@SuppressWarnings("rawtypes")
+		List list = selection.toList();
 		try {
-			getProject().updateActiveEngine(engine);
+			getProject().updateActiveEngines((HybridMobileEngine[]) list.toArray(new HybridMobileEngine[list.size()]));
 		} catch (CoreException e) {
 			ErrorDialog.openError(getShell(), 
 					"Hybrid Mobile Engine Update failed", "Unable to update the active engine for the project "+ getProject().getProject().getName(), 

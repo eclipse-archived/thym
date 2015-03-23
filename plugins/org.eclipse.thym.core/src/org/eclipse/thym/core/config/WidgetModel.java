@@ -97,7 +97,13 @@ public class WidgetModel implements IModelLifecycleListener{
 		if( !widgetModels.containsKey(project) ){
 			synchronized (WidgetModel.class) {
 				WidgetModel wm = new WidgetModel(project);
-				widgetModels.put(project,wm);
+				if(wm.configFile != null ){
+					// Do not cache if config file is not present to allow it to correct itself. 
+					// This typically happens during project creation when widget model 
+					// is accessed before templates are copied. 
+					widgetModels.put(project,wm);
+				}
+				return wm;
 			}
 		}
 		return widgetModels.get(project);
@@ -142,7 +148,7 @@ public class WidgetModel implements IModelLifecycleListener{
 	 */
 	public Widget getWidgetForRead() throws CoreException{
 		long enter = System.currentTimeMillis();
-		if (!this.configFile.exists()) {
+		if (this.configFile == null || !this.configFile.exists()) {
 			return null;
 		}
 		if (readonlyWidget == null || readonlyTimestamp != configFile.lastModified()) {
@@ -204,7 +210,10 @@ public class WidgetModel implements IModelLifecycleListener{
 	}
 
 	protected IFile configXMLtoIFile() {
-		IFile[] configFileCandidates = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(configFile.toURI());
+		if(configFile == null ){
+			return null;
+		}
+		final IFile[] configFileCandidates = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(configFile.toURI());
 		if(configFileCandidates == null || configFileCandidates.length == 0){
 			return null;
 		}
@@ -237,7 +246,10 @@ public class WidgetModel implements IModelLifecycleListener{
 
 	private static File getConfigXml(HybridProject project) {
 		IFile configXml = project.getConfigFile();
-		return configXml.getLocation().toFile();
+		if(configXml != null && configXml.exists()){
+			return configXml.getLocation().toFile();
+		}
+		return null;
 	}
 	
 	

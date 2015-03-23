@@ -29,7 +29,6 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
@@ -121,15 +120,11 @@ public class CordovaLibraryJsContainerInitializer extends JsGlobalScopeContainer
 			if (!cordovaJS.exists()) {
 				HybridProject prj = HybridProject.getHybridProject(project.getProject());
 				
-				HybridMobileEngine activeEngine = prj.getActiveEngine();
-				if(activeEngine == null){
+				HybridMobileEngine[] activeEngines = prj.getActiveEngines();
+				if(activeEngines == null || activeEngines.length <1){
 					return null;
 				}
-				List<PlatformLibrary> platforms = activeEngine.getPlatformLibs();
-				if(platforms.isEmpty()){
-					return null;
-				}
-				HybridMobileLibraryResolver resolver = platforms.get(0).getPlatformLibraryResolver();
+				HybridMobileLibraryResolver resolver = activeEngines[0].getResolver();
 				URL templateCordovaJS = resolver.getTemplateFile(HybridMobileLibraryResolver.PATH_CORDOVA_JS);
 
 				org.eclipse.thym.core.internal.util.FileUtils.fileCopy(templateCordovaJS,

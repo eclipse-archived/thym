@@ -11,10 +11,8 @@
 package org.eclipse.thym.ui.wizard.project;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,16 +24,18 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
 import org.eclipse.wst.jsdt.core.JavaScriptCore;
@@ -44,19 +44,11 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-
 @SuppressWarnings("restriction")
 public class HybridProjectCreatorTest {
     private static final String PROJECT_NAME = "TestProject";
     private static final String APP_NAME = "Test App";
     private static final String APP_ID = "Test.id";
-    private static final String CORDOVA_ENGINE_VER = "3.1.0";
-
 
     private IProject getTheProject() {
         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
@@ -66,10 +58,15 @@ public class HybridProjectCreatorTest {
 
     @BeforeClass
     public static void createTestProject() throws CoreException{
-        HybridProjectCreator creator = new HybridProjectCreator();
-        CordovaEngineProvider engineProvider = new CordovaEngineProvider();
-        creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
-                engineProvider.createEngine(CordovaEngineProvider.CORDOVA_ENGINE_ID,  CORDOVA_ENGINE_VER),new NullProgressMonitor());
+    	IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+			@Override
+			public void run(IProgressMonitor monitor) throws CoreException {
+				HybridProjectCreator creator = new HybridProjectCreator();
+				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
+						HybridMobileEngineManager.defaultEngines(),new NullProgressMonitor());
+			}
+		};
+		ResourcesPlugin.getWorkspace().run(runnable, null);
     }
 
     @Test
@@ -100,26 +97,6 @@ public class HybridProjectCreatorTest {
             IFolder folder = theProject.getFolder(platformDir);
             assertTrue(platformDir+ " is not created. ", folder.exists());
         }
-    }
-    
-    @Test
-    public void configFileTest() throws JsonIOException, JsonParseException, CoreException{
-        IProject prj = getTheProject();
-        IFile f = prj.getFile(PlatformConstants.DIR_DOT_CORDOVA+"/config.json");
-        assertNotNull(f);
-        assertTrue(f.exists());
-        JsonParser parser = new JsonParser();
-        JsonElement el = parser.parse(new InputStreamReader(f.getContents()));
-        assertTrue(el.isJsonObject());
-        JsonObject object = el.getAsJsonObject();
-        assertEquals(APP_ID, object.get("id").getAsString());
-        assertEquals(APP_NAME, object.get("name").getAsString());
-        JsonElement engineEl = object.get("engine");
-        assertNotNull(engineEl);
-        assertTrue(engineEl.isJsonObject());
-        JsonObject engineObj = engineEl.getAsJsonObject();
-        assertEquals(CORDOVA_ENGINE_VER, engineObj.get("ver").getAsString());
-        assertEquals(CordovaEngineProvider.CORDOVA_ENGINE_ID, engineObj.get("id").getAsString());
     }
     
     @Test

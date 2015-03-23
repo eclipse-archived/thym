@@ -155,12 +155,28 @@ public class HybridProject implements IAdaptable {
 	}
 	
 	/**
-	 * Returns the currently used {@link HybridMobileEngine} for this project.
-	 * If an engine can not be determined a default engine is returned.
-	 * @return
+	 * Returns the currently used {@link HybridMobileEngine}s for this project.
+	 * 
+	 * @return array of engines
 	 */
-	public HybridMobileEngine getActiveEngine(){
-		return getHybridMobileEngineManager().getActiveEngine();
+	public HybridMobileEngine[] getActiveEngines(){
+		return getHybridMobileEngineManager().getActiveEngines();
+	}
+	
+	/**
+	 * Returns the active engine for the platform id or null if there is not one.
+	 * 
+	 * @param platformId
+	 * @return active engine or null
+	 */
+	public HybridMobileEngine getActiveEngineForPlatform(String platformId){
+		HybridMobileEngine[] engines = getActiveEngines();
+		for (HybridMobileEngine hybridMobileEngine : engines) {
+			if(platformId.equals(hybridMobileEngine.getId())){
+				return hybridMobileEngine;
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -168,9 +184,11 @@ public class HybridProject implements IAdaptable {
 	 * @param engine
 	 * @throws CoreException
 	 */
-	public void updateActiveEngine(HybridMobileEngine engine) throws CoreException{
-		Assert.isLegal(engine != null, "Engine can not be null" );
-		getHybridMobileEngineManager().updateEngine(engine);
+	public void updateActiveEngines(final HybridMobileEngine[] engines) throws CoreException{
+		Assert.isLegal(engines != null, "Engines can not be null" );
+		for (HybridMobileEngine hybridMobileEngine : engines) {
+			getHybridMobileEngineManager().updateEngine(hybridMobileEngine);
+		}
 	}
 	
 

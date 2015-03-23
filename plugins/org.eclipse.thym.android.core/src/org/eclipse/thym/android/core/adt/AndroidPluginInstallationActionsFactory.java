@@ -14,12 +14,13 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory;
 import org.eclipse.thym.core.platform.IPluginInstallationAction;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -119,10 +120,12 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 			throw new IllegalArgumentException("src not specified in framework element");
 		}
 		HybridProject hybridProject = HybridProject.getHybridProject(getProject());
-		HybridMobileLibraryResolver resolver = hybridProject.getActiveEngine().getPlatformLib("android").getPlatformLibraryResolver();
+		
 		AndroidSDK sdk=null;
 		try {
-			sdk = AndroidProjectUtils.selectBestValidTarget(resolver);
+			HybridMobileEngine activeEngineForPlatform = hybridProject.getActiveEngineForPlatform("android");
+			Assert.isNotNull(activeEngineForPlatform);// We should not be installing plugins if there is no active engine
+			sdk = AndroidProjectUtils.selectBestValidTarget(activeEngineForPlatform.getResolver());
 		} catch (CoreException e) {
 			AndroidCore.log(IStatus.ERROR, "Framework action fails to select a target", e);
 		}

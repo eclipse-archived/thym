@@ -38,7 +38,6 @@ import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.engine.PlatformLibrary;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
@@ -123,16 +122,16 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	 * 
 	 * @param version
 	 * @param platforms
+	 * @param resolver
 	 * @return
 	 */
-	public HybridMobileEngine createEngine(String id, String version, PlatformLibrary... platforms ){
+	public HybridMobileEngine createEngine(String id, String version, HybridMobileLibraryResolver resolver, IPath location){
 		HybridMobileEngine engine = new HybridMobileEngine();
 		engine.setId(id);
 		engine.setName(ENGINE_NAME);
+		engine.setResolver(resolver);
 		engine.setVersion(version);
-		for (int i = 0; i < platforms.length; i++) {
-			engine.addPlatformLib(platforms[i]);
-		}
+		engine.setLocation(location);
 		return engine;
 	}
 	
@@ -257,15 +256,14 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 						HybridMobileLibraryResolver resolver = platformSupport.getLibraryResolver();
 						resolver.init(libraryRoot);
 						if(resolver.isLibraryConsistent().isOK()){
-							PlatformLibrary lib = new PlatformLibrary(platformSupport.getPlatformId(),libraryRoot);
-							listener.libraryFound(lib);
+							HybridMobileEngine engine = createEngine(platformSupport.getPlatformId(),resolver.detectVersion(), resolver,libraryRoot);
+							listener.engineFound(engine);
 							return;
 						}
 					} catch (CoreException e) {
 						HybridCore.log(IStatus.WARNING, "Error on engine search", e);
 					}
 				}
-				
 			}
 		}
 		//search the sub-directories
@@ -284,51 +282,13 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	}
 
 	@Override
-	public void libraryFound(PlatformLibrary library) {
-		String version = getEngineVersion(library);
-		if(version == null ){
-			return;
-		}
-		boolean isDefaultLoc = getLibFolder().isPrefixOf(library.getLocation());
-		String id = isDefaultLoc ? CORDOVA_ENGINE_ID: CUSTOM_CORDOVA_ENGINE_ID;
-		Version v = Version.valueOf(version);
-		if(v.greaterThanOrEqualTo(MIN_VERSION)){//check the minimum supported version
-			HybridMobileEngine engine = getEngine(id, version);
-			if(engine == null ){
-				engineList.add(createEngine(id, version, library));
-			}else{
-				engine.addPlatformLib(library);
-			}
-		}
+	public void engineFound(HybridMobileEngine engine) {
+		engineList.add(engine);
 	}
-
-	private String getEngineVersion(PlatformLibrary library) {
-		String libVersion = library.getPlatformLibraryResolver().detectVersion();
-		try{
-			List<DownloadableCordovaEngine> engines = getDownloadableVersions();
-			for (DownloadableCordovaEngine cordovaEngine : engines) {
-				LibraryDownloadInfo platformLibraryInfo = cordovaEngine.getPlatformLibraryInfo(library.getPlatformId());
-				if(platformLibraryInfo != null && platformLibraryInfo.getVersion().equals(libVersion) ){
-					return cordovaEngine.getVersion();
-				}
-			}
-		}catch (CoreException e){
-			HybridCore.log(IStatus.WARNING, "Could not read downloadable engines", e);
-		}
-		return libVersion;
-	}
-
 
 	public void deleteEngineLibraries(HybridMobileEngine selectedEngine) {
-		if(selectedEngine.getId().equals(CORDOVA_ENGINE_ID)){
-			// Do not delete custom engines we do not manage them
-			List<PlatformLibrary> libs = selectedEngine.getPlatformLibs();
-			if(libs.isEmpty()) return;
-			for (PlatformLibrary library : libs) {
-				IPath path = library.getLocation();
-				FileUtils.deleteQuietly(path.toFile());
-			}
-		}
+		IPath path = selectedEngine.getLocation();
+		FileUtils.deleteQuietly(path.toFile());
 		resetEngineList();
 	}
 	

@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.PlatformLibrary;
 
 import com.github.zafarkhaja.semver.Version;
 
@@ -168,16 +167,7 @@ public class CordovaPlugin extends PlatformObject{
 		if(engine.getId().equals(definition.name)){// Engine ids match 
 			Version engineVer = Version.valueOf(engine.getVersion());
 			if(engineVer.satisfies(definition.version)){ // version is satisfied
-				List<PlatformLibrary> enginePlatforms = engine.getPlatformLibs();
-				for (PlatformLibrary ep : enginePlatforms) {	
-					if(definition.platform == null ||
-							"*".equals(definition.platform)||
-							definition.platform.contains(ep.getPlatformId()))
-					{
 						return Status.OK_STATUS;
-					}
-				}
-				reason = "engine platform: "+definition.platform;
 			}else{
 				reason = "engine version: "+definition.version;
 			}

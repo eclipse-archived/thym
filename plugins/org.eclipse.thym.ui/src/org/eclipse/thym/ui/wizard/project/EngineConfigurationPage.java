@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.wizard.project;
 
+import java.util.List;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -73,16 +75,18 @@ public class EngineConfigurationPage extends WizardPage {
 	}
 	
 	private void setDefaultEngine() {
-		HybridMobileEngine defaultEngine = HybridMobileEngineManager.getDefaultEngine();
-		if(defaultEngine != null ){
-			engineSection.setSelection(new StructuredSelection(defaultEngine));
+		HybridMobileEngine[] engines = HybridMobileEngineManager.defaultEngines();
+		if(engines != null && engines.length > 0 ){
+			engineSection.setSelection(new StructuredSelection(engines));
 		}
 	}
 	
-	public HybridMobileEngine getSelectedEngine(){
+	@SuppressWarnings("unchecked")
+	public HybridMobileEngine[] getSelectedEngines(){
 		IStructuredSelection selection = (IStructuredSelection) engineSection.getSelection();
-		HybridMobileEngine engine = (HybridMobileEngine) selection.getFirstElement();
-		return engine;
+		@SuppressWarnings("rawtypes")
+		List selected =  selection.toList();
+		return (HybridMobileEngine[]) selected.toArray(new HybridMobileEngine[selected.size()]);
 	}
 	
 }

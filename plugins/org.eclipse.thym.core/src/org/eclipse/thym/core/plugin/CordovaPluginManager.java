@@ -508,7 +508,8 @@ public class CordovaPluginManager {
 	public List<RestorableCordovaPlugin> getRestorablePlugins(IProgressMonitor monitor) throws CoreException{
 		Widget widget  = WidgetModel.getModel(this.project).getWidgetForRead();
 		if(widget == null ){
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Unable to read config.xml"));
+			HybridCore.log(IStatus.ERROR, "Unable to read config.xml for restorable plugins", null);
+			return Collections.emptyList();
 		}
 		List<Feature> features = widget.getFeatures();
 		List<RestorableCordovaPlugin> restorable = new ArrayList<RestorableCordovaPlugin>();

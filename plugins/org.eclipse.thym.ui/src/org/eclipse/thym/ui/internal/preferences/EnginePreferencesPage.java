@@ -75,7 +75,7 @@ public class EnginePreferencesPage extends PreferencePage implements
 	}
 
 	private void initDefaultEngine() {
-		HybridMobileEngine defaultEngine = HybridMobileEngineManager.getDefaultEngine();
+		HybridMobileEngine defaultEngine = null; 
 		if(defaultEngine != null ){
 			engineSection.setSelection(new StructuredSelection(defaultEngine));
 		}else{

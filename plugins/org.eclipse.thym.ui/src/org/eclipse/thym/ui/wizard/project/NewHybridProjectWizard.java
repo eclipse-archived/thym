@@ -90,8 +90,8 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 					}
 					String appName = page.getApplicationName();
 					String appID = page.getApplicationID();
-					HybridMobileEngine engine = enginePage.getSelectedEngine();
-					IProject project = creator.createBasicTemplatedProject(page.getProjectName(), location ,appName, appID, engine, monitor);
+					HybridMobileEngine[] engines = enginePage.getSelectedEngines();
+					IProject project = creator.createBasicTemplatedProject(page.getProjectName(), location ,appName, appID, engines, monitor);
 					installSelectedPlugins(project, monitor);
 					addToWorkingSets(project);
 					openAndSelectConfigFile(project);

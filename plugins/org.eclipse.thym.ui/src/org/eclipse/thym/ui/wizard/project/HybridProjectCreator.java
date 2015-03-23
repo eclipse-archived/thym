@@ -42,12 +42,12 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.internal.libraries.CordovaLibraryJsContainerInitializer;
-import org.eclipse.thym.core.internal.util.ConfigJSon;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.ui.HybridUI;
@@ -70,17 +70,22 @@ public class HybridProjectCreator {
      *  
      * @param projectName
      * @param location
+     * @param appName
+     * @param appID
+     * @param engines
      * @param monitor
      * @throws CoreException
      */
-    public IProject createBasicTemplatedProject( String projectName, URI location, String appName, String appID, HybridMobileEngine engine, IProgressMonitor monitor ) throws CoreException {
+    public IProject createBasicTemplatedProject( String projectName, URI location, String appName, String appID, HybridMobileEngine[] engines, IProgressMonitor monitor ) throws CoreException {
         if(monitor == null )
             monitor = new NullProgressMonitor();
         
-        IProject project = createProject(projectName, location, appName, appID, engine, monitor);
+        //don't pass the engines info to createProject. We will update the config.xml with 
+        //after we add template files. It causes premature resource change events.
+        IProject project = createProject(projectName, location, appName, appID, null, monitor);
         addTemplateFiles(project, new SubProgressMonitor(monitor, 5));    
         project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-        updateConfig(project, appName, appID, new SubProgressMonitor(monitor, 1));
+        updateConfig(project, appName, appID, engines, new SubProgressMonitor(monitor, 1));
         project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
         return project;
     }
@@ -88,21 +93,26 @@ public class HybridProjectCreator {
     /**
      * Creates a hybrid project with the given name and location. Location can be null, if location is null 
      * the default location will be used for creating the project. Does not add any files to the project 
-     * including the config.xml file. If location has existing files they are kept.
+     * including the config.xml file. If location has existing files they are kept. 
+     * config.xml is updated with the engine information if engines is not null or empty.
+     * 
      *  
      * @param projectName
      * @param location
+     * @param appName
+     * @param appID
+     * @param engines
      * @param monitor
      * @throws CoreException
      */
-    public IProject createProject( String projectName, URI location,  String appName, String appID, HybridMobileEngine engine, IProgressMonitor monitor ) throws CoreException {
+    public IProject createProject( String projectName, URI location,  String appName, String appID, HybridMobileEngine[] engines, IProgressMonitor monitor ) throws CoreException {
         if(monitor == null )
             monitor = new NullProgressMonitor();
         IProject project = createHybridMobileProject(projectName, location, new SubProgressMonitor(monitor, 1));
         addCommonPaths(project, monitor);
         addPlatformPaths(project, new SubProgressMonitor( monitor, 1));
-        addConfigJSon(project, appName, appID, engine, monitor);
         setUpJavaScriptProject(project, monitor);
+        updateConfig(project, appName, appID, engines, monitor);
         return project;
     }
     
@@ -145,32 +155,49 @@ public class HybridProjectCreator {
             IProgressMonitor monitor) throws JavaScriptModelException {
         IJavaScriptProject javascriptProject = JavaScriptCore.create(project);
         IIncludePathEntry[] entries = javascriptProject.getRawIncludepath();
-        List<IIncludePathEntry> entryList = new ArrayList<IIncludePathEntry>(Arrays.asList(entries));
+        List<IIncludePathEntry> entryList = new ArrayList<IIncludePathEntry>();
         
+        //remove all source entries && existing cordova libs
+        for (IIncludePathEntry aEntry : entries) {
+            if(!(IIncludePathEntry.CPE_SOURCE == aEntry.getEntryKind()) &&
+            		!aEntry.getPath().segment(0).equals(CordovaLibraryJsContainerInitializer.CONTAINER_ID)){
+            	entryList.add(aEntry);
+            }
+        }
+        
+        //add cordova.js lib
         IIncludePathEntry cordovaLibEntry = JavaScriptCore.newContainerEntry(new Path(CordovaLibraryJsContainerInitializer.CONTAINER_ID));
         entryList.add(cordovaLibEntry);
         
-        //remove all source entries
-        for (IIncludePathEntry aEntry : entryList) {
-            if(IIncludePathEntry.CPE_SOURCE == aEntry.getEntryKind()){
-                entryList.remove(aEntry);
-            }
-        }
         // add www
         IIncludePathEntry wwwSrcEntry = JavaScriptCore.newSourceEntry(project.getFolder("www").getFullPath());
         entryList.add(wwwSrcEntry);
         
         javascriptProject.setRawIncludepath(entryList.toArray(new IIncludePathEntry[entryList.size()]), monitor);
     }
-
-    private void updateConfig(IProject project, String appName, String appID, IProgressMonitor  monitor) throws CoreException{
+    
+    private void updateConfig(IProject project, String appName, String appID, HybridMobileEngine[] engines, IProgressMonitor  monitor) throws CoreException{
         HybridProject hybridProject = HybridProject.getHybridProject(project);
         try {
             WidgetModel model = WidgetModel.getModel(hybridProject);
             Widget w = model.getWidgetForEdit();
-            w.setId(appID);
-            w.setName(appName);
-            model.save();
+            if(w != null ){
+            	if(appID != null ){
+            		w.setId(appID);
+            	}
+            	if(appName != null ){
+            		w.setName(appName);
+            	}
+            	if(engines != null ){
+            		for (HybridMobileEngine hybridMobileEngine : engines) {
+            			Engine e = model.createEngine(w);
+            			e.setName(hybridMobileEngine.getId());
+            			e.setVersion(hybridMobileEngine.getVersion());
+            			w.addEngine(e);
+            		}
+            	}
+            	model.save();
+            }
         } catch (CoreException e) {
             HybridCore.log(IStatus.ERROR, "Error updating application name and id to config.xml", e);
         }
@@ -192,14 +219,6 @@ public class HybridProjectCreator {
         } catch (IOException e) {
             throw new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, "Error adding template files", e));
         }
-    }
-
-    private void addConfigJSon(IProject project, String applicationName, String applicationID, HybridMobileEngine engine, IProgressMonitor monitor) throws CoreException{
-        ConfigJSon configJson = new ConfigJSon();
-        configJson.setId(applicationID);
-        configJson.setName(applicationName);
-        configJson.setEngineInfo(engine);
-        configJson.persist(project);
     }
 
     private void addPlatformPaths(IProject project, IProgressMonitor monitor) throws CoreException{
@@ -273,7 +292,6 @@ public class HybridProjectCreator {
                 newProject.open(monitor);
             }
         }
-        
         return newProject;
     }
     
