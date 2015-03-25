@@ -51,7 +51,7 @@ public class Engine extends AbstractConfigObject {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if(obj == null || !(obj instanceof Access))
+		if(obj == null || !(obj instanceof Engine))
 			return false;
 		if(obj == this )
 			return true;

@@ -109,32 +109,24 @@ public class HybridMobileEngineManager {
 	}
 
 	/**
-	 * Persists the engine information. This either updates the existing 
-	 * information per platform or creates a new one if it does not exist.
+	 * Persists the engine information. 
 	 * 
 	 * @param engine
 	 * @throws CoreException
 	 */
-	public void updateEngine(HybridMobileEngine engine) throws CoreException{
+	public void updateEngines(HybridMobileEngine[] engines) throws CoreException{
 		WidgetModel model = WidgetModel.getModel(project);
 		Widget w = model.getWidgetForEdit();
 		List<Engine> existingEngines = w.getEngines();
-		Engine saveEngine = null;
-		if(existingEngines != null ){
-			for (Engine e: existingEngines) {//Check if an existing entry for the platform exists
-				if(e.getName().equals(engine.getId())){
-					saveEngine = e;
-					w.removeEngine(e);//remove here to avoid duplicates
-					break;
-				}
-			}
+		for (Engine existingEngine : existingEngines) {
+			w.removeEngine(existingEngine);
 		}
-		if(saveEngine == null ){
-			saveEngine = model.createEngine(w);
+		for (HybridMobileEngine engine : engines) {
+			Engine e = model.createEngine(w);
+			e.setName(engine.getId());
+			e.setVersion(engine.getVersion());
+			w.addEngine(e);
 		}
-		saveEngine.setName(engine.getId());
-		saveEngine.setVersion(engine.getVersion());
-		w.addEngine(saveEngine);
 		model.save();
 	}
 

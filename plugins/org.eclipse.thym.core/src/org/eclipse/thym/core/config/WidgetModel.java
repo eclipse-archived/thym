@@ -48,6 +48,7 @@ import org.eclipse.wst.sse.core.StructuredModelManager;
 import org.eclipse.wst.sse.core.internal.model.ModelLifecycleEvent;
 import org.eclipse.wst.sse.core.internal.provisional.IModelLifecycleListener;
 import org.eclipse.wst.sse.core.internal.provisional.IModelManager;
+import org.eclipse.wst.sse.core.internal.provisional.IModelStateListener;
 import org.eclipse.wst.sse.core.internal.provisional.IStructuredModel;
 import org.eclipse.wst.xml.core.internal.cleanup.CleanupProcessorXML;
 import org.eclipse.wst.xml.core.internal.provisional.document.IDOMModel;
@@ -68,7 +69,7 @@ import org.xml.sax.SAXException;
  *
  */
 @SuppressWarnings("restriction")
-public class WidgetModel implements IModelLifecycleListener{
+public class WidgetModel implements IModelStateListener{
 	
 	private static Map<HybridProject, WidgetModel> widgetModels = new HashMap<HybridProject, WidgetModel>();
 	public static final String[] ICON_EXTENSIONS = {"gif", "ico", "jpeg", "jpg", "png","svg" };
@@ -194,7 +195,7 @@ public class WidgetModel implements IModelLifecycleListener{
 				try {
 					underLyingModel = manager.getModelForEdit(configXml);
 					if ((underLyingModel != null) && (underLyingModel instanceof IDOMModel)) {
-						underLyingModel.addModelLifecycleListener(this);
+						underLyingModel.addModelStateListener(this);
 						IDOMModel domModel = (IDOMModel) underLyingModel;
 						editableWidget = load(domModel.getDocument());
 					}
@@ -406,22 +407,6 @@ public class WidgetModel implements IModelLifecycleListener{
 		return null;
 	}
 
-	@Override
-	public void processPostModelEvent(ModelLifecycleEvent event) {
-		if(event.getType() == ModelLifecycleEvent.MODEL_DIRTY_STATE && !underLyingModel.isDirty()){
-			synchronized (this) {
-				reloadEditableWidget();
-				//release the readOnly model to be reloaded
-				this.readonlyWidget = null;
-				this.readonlyTimestamp = -1;
-			}
-		}
-	}
-
-	@Override
-	public void processPreModelEvent(ModelLifecycleEvent event) {
-	}
-	
 	public synchronized void dispose(){
 		if(underLyingModel != null ){
 			underLyingModel.releaseFromEdit();
@@ -429,6 +414,46 @@ public class WidgetModel implements IModelLifecycleListener{
 		}
 		this.editableWidget = null;
 		this.readonlyWidget = null;
+	}
+
+	@Override
+	public void modelAboutToBeChanged(IStructuredModel model) {
+		
+	}
+
+	@Override
+	public void modelChanged(IStructuredModel model) {
+	}
+
+	@Override
+	public void modelDirtyStateChanged(IStructuredModel model, boolean isDirty) {
+		if(!isDirty){
+			synchronized (this) {
+				reloadEditableWidget();
+				//release the readOnly model to be reloaded
+				this.readonlyWidget = null;
+				this.readonlyTimestamp = -1;
+			}	
+		}
+	}
+
+	@Override
+	public void modelResourceDeleted(IStructuredModel model) {
+		dispose();
+	}
+
+	@Override
+	public void modelResourceMoved(IStructuredModel oldModel, IStructuredModel newModel) {
+		
+	}
+
+	@Override
+	public void modelAboutToBeReinitialized(IStructuredModel structuredModel) {
+		
+	}
+
+	@Override
+	public void modelReinitialized(IStructuredModel structuredModel) {
 	}
 	
 }

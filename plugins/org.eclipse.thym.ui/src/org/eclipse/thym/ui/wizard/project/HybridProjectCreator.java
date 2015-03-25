@@ -189,6 +189,12 @@ public class HybridProjectCreator {
             		w.setName(appName);
             	}
             	if(engines != null ){
+            		List<Engine> existingEngines = w.getEngines();
+            		if(existingEngines != null ){
+            			for (Engine engine : existingEngines) {
+            				w.removeEngine(engine);
+            			}
+            		}
             		for (HybridMobileEngine hybridMobileEngine : engines) {
             			Engine e = model.createEngine(w);
             			e.setName(hybridMobileEngine.getId());

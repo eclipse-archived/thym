@@ -186,9 +186,7 @@ public class HybridProject implements IAdaptable {
 	 */
 	public void updateActiveEngines(final HybridMobileEngine[] engines) throws CoreException{
 		Assert.isLegal(engines != null, "Engines can not be null" );
-		for (HybridMobileEngine hybridMobileEngine : engines) {
-			getHybridMobileEngineManager().updateEngine(hybridMobileEngine);
-		}
+		getHybridMobileEngineManager().updateEngines(engines);
 	}
 	
 

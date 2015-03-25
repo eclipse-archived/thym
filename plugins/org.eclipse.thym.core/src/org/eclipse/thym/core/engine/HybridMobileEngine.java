@@ -52,6 +52,12 @@ public class HybridMobileEngine{
     public void setResolver(HybridMobileLibraryResolver resolver) {
     	this.resolver = resolver;
     }
+	public IPath getLocation() {
+		return location;
+	}
+	public void setLocation(IPath location) {
+		this.location = location;
+	}
     
     /**
      * Checks if the underlying library compatible and 
@@ -95,11 +101,12 @@ public class HybridMobileEngine{
         }
         return super.hashCode();
     }
-	public IPath getLocation() {
-		return location;
-	}
-	public void setLocation(IPath location) {
-		this.location = location;
-	}
+    
+    @Override
+    public String toString() {
+    	return this.getClass().getSimpleName() + "[ id: " + getId()
+    			+" version: " + getVersion() +" ]"; 
+    }
+
     
 }
