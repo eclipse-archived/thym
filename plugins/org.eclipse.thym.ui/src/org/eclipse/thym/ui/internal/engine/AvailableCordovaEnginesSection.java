@@ -12,6 +12,8 @@ package org.eclipse.thym.ui.internal.engine;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -40,6 +42,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
@@ -60,6 +63,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
@@ -73,6 +77,7 @@ import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 
+import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
 public class AvailableCordovaEnginesSection implements ISelectionProvider{
@@ -160,7 +165,7 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 		
 	}
 	
-	private class CordovaEngineLabelProvider extends LabelProvider implements IFontProvider{
+	private class CordovaEngineLabelProvider extends LabelProvider implements ITableLabelProvider, IFontProvider{
 		private Font boldFont;
 		@Override
 		public Image getImage(Object element) {
@@ -183,6 +188,14 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 			}
 			return null;
 		}
+		
+		private String getLocationText(Object element) {
+			if(element instanceof HybridMobileEngine ){
+				HybridMobileEngine engine = (HybridMobileEngine) element;
+				return engine.getLocation().toOSString();
+			}
+			return null;
+		}
 
 		@Override
 		public Font getFont(Object element) {
@@ -195,10 +208,30 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 			}
 			return boldFont;
 		}
+
+		@Override
+		public String getColumnText(Object element, int columnIndex) {
+			switch (columnIndex) {
+			case 0:
+				return getText(element);
+			case 1:
+				return getLocationText(element);
+			default:
+				return "invalid";
+			}
+		}
+
+		@Override
+		public Image getColumnImage(Object element, int columnIndex) {
+			if(columnIndex == 0){
+				return getImage(element);
+			}
+			return null;
+		}
 		
 	}
 	
-	private static class EngineVersionComparator extends ViewerComparator{
+	private static class EngineVersionComparator extends ViewerComparator implements Comparator<HybridMobileEngine>{
 		private boolean descending = true;
 		public EngineVersionComparator(boolean isDescending) {
 			descending = isDescending;
@@ -210,12 +243,20 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 			}
 			HybridMobileEngine e1 = (HybridMobileEngine) o1;
 			HybridMobileEngine e2 = (HybridMobileEngine) o2;
-			Version version1 = Version.valueOf(e1.getVersion());
-			Version version2 = Version.valueOf(e2.getVersion());
-			if(descending){
-				return version2.compareTo(version1);
+			return compare(e1, e2);
 			}
-			return version1.compareTo(version2);
+		@Override
+		public int compare(HybridMobileEngine o1, HybridMobileEngine o2) {
+			try{
+				Version version1 = Version.valueOf(o1.getVersion());
+				Version version2 = Version.valueOf(o2.getVersion());
+				if(descending){
+					return version2.compareTo(version1);
+				}
+				return version1.compareTo(version2);
+			}catch(ParseException e){
+				return 1;
+			}
 		}
 	}
 	
@@ -238,7 +279,14 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 		
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);	
-		
+		TreeColumn col_0 = new TreeColumn(tree, SWT.CENTER);
+		col_0.setText("Engine");
+		col_0.setWidth(TREE_WIDTH/2);
+		col_0.setMoveable(false);
+		TreeColumn col_1 = new TreeColumn(tree, SWT.CENTER);
+		col_1.setText("Location");
+		col_1.setWidth(TREE_WIDTH/2);
+		col_1.setMoveable(false);
 			
 		engineList = new CheckboxTreeViewer(tree);
 		engineList.setContentProvider(new CordovaEnginesContentProvider());
@@ -252,7 +300,9 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 					ITreeContentProvider cp = (ITreeContentProvider) engineList.getContentProvider();
 					if(event.getElement() instanceof PlatformSupport ){
 						engineList.setChecked(event.getElement(), false);
-						Object[] children = cp.getChildren(event.getElement());
+						HybridMobileEngine[] children = (HybridMobileEngine[]) cp.getChildren(event.getElement());
+						//Sort so that we can select the highest version number.
+						Arrays.sort(children,new EngineVersionComparator(true));
 						engineList.setChecked(children[0], true);
 						for (int i = 1; i < children.length; i++) {
 							engineList.setChecked(children[i], false);
