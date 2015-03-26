@@ -75,9 +75,9 @@ public class EnginePreferencesPage extends PreferencePage implements
 	}
 
 	private void initDefaultEngine() {
-		HybridMobileEngine defaultEngine = null; 
-		if(defaultEngine != null ){
-			engineSection.setSelection(new StructuredSelection(defaultEngine));
+		HybridMobileEngine[] defaultEngines = HybridMobileEngineManager.defaultEngines(); 
+		if(defaultEngines != null ){
+			engineSection.setSelection(new StructuredSelection(defaultEngines));
 		}else{
 			List<HybridMobileEngine> engines = engineSection.getListedEngines();
 			if(engines != null && engines.size() ==1){
@@ -99,8 +99,20 @@ public class EnginePreferencesPage extends PreferencePage implements
 	@Override
 	public boolean performOk() {
 		IStructuredSelection sel = (IStructuredSelection) engineSection.getSelection();
-		HybridMobileEngine engine =(HybridMobileEngine) sel.getFirstElement();
-		getPreferenceStore().setValue(PlatformConstants.PREF_DEFAULT_ENGINE, engine.getId()+":"+engine.getVersion());
+		if(sel.isEmpty()){
+			getPreferenceStore().setToDefault(PlatformConstants.PREF_DEFAULT_ENGINE);
+		}else{
+			StringBuilder prefVal = new StringBuilder();
+			Object[] selections = sel.toArray();
+			for(int i=0; i< selections.length; i++){
+				HybridMobileEngine engine =(HybridMobileEngine) selections[i];
+				prefVal.append(engine.getId());
+				prefVal.append(":");
+				prefVal.append(engine.getVersion());
+				prefVal.append(",");
+			}
+			getPreferenceStore().setValue(PlatformConstants.PREF_DEFAULT_ENGINE, prefVal.toString());
+		}
 		return true;
 	}
 	

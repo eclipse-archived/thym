@@ -11,16 +11,20 @@
 package org.eclipse.thym.core.engine;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
+import org.eclipse.thym.core.platform.PlatformConstants;
+import org.osgi.framework.Version;
 /**
  * API for managing the engines for a {@link HybridProject}.
  * 
@@ -93,17 +97,38 @@ public class HybridMobileEngineManager {
 			return new HybridMobileEngine[0];
 		}
 		ArrayList<HybridMobileEngine> defaults = new ArrayList<HybridMobileEngine>();
-		for (HybridMobileEngine hybridMobileEngine : availableEngines) {
-			boolean skip=false;
-			//TODO: find the most recent version per platform too. 
-			for (HybridMobileEngine defaultEngine : defaults) {
-				if(hybridMobileEngine.getId().equals(defaultEngine.getId())){
-					skip= true;
+		
+		String pref =  Platform.getPreferencesService().getString(PlatformConstants.HYBRID_UI_PLUGIN_ID, PlatformConstants.PREF_DEFAULT_ENGINE, null, null);
+		if(pref != null && !pref.isEmpty()){
+			String[] engineStrings = pref.split(",");
+			for (String engineString : engineStrings) {
+				String[] engineInfo = engineString.split(":");
+				for (HybridMobileEngine hybridMobileEngine : availableEngines) {
+					if(engineInfo[0].equals(hybridMobileEngine.getId()) && engineInfo[1].equals(hybridMobileEngine.getVersion())){
+						defaults.add(hybridMobileEngine);
+					}
 				}
 			}
-			if(!skip){
-				defaults.add(hybridMobileEngine);
+		}else{
+			HashMap<String, HybridMobileEngine> platforms = new HashMap<String, HybridMobileEngine>();
+			for (HybridMobileEngine hybridMobileEngine : availableEngines) {
+				if(platforms.containsKey(hybridMobileEngine.getId())){
+					HybridMobileEngine existing = platforms.get(hybridMobileEngine.getId());
+					try{
+						Version ev = Version.parseVersion(existing.getVersion());
+						Version hv = Version.parseVersion(hybridMobileEngine.getVersion());
+						if(hv.compareTo(ev) >0 ){
+							platforms.put(hybridMobileEngine.getId(), hybridMobileEngine);
+						}
+					}catch(IllegalArgumentException e){
+						//catch the version parse errors because version field may actually contain 
+						//git urls and local paths.
+					}
+				}else{
+					platforms.put(hybridMobileEngine.getId(),hybridMobileEngine);
+				}
 			}
+			defaults.addAll(platforms.values());
 		}
 		return defaults.toArray(new HybridMobileEngine[defaults.size()]);
 	}
@@ -118,8 +143,10 @@ public class HybridMobileEngineManager {
 		WidgetModel model = WidgetModel.getModel(project);
 		Widget w = model.getWidgetForEdit();
 		List<Engine> existingEngines = w.getEngines();
-		for (Engine existingEngine : existingEngines) {
-			w.removeEngine(existingEngine);
+		if(existingEngines != null ){
+			for (Engine existingEngine : existingEngines) {
+				w.removeEngine(existingEngine);
+			}
 		}
 		for (HybridMobileEngine engine : engines) {
 			Engine e = model.createEngine(w);
