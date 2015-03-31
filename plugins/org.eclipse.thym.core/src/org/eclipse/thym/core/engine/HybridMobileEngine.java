@@ -28,6 +28,10 @@ public class HybridMobileEngine{
     private IPath location;
     private HybridMobileLibraryResolver resolver;
     
+    /**
+     * User friendly name
+     * @return
+     */
 	public String getName() {
         return name;
     }
@@ -40,6 +44,10 @@ public class HybridMobileEngine{
     public void setVersion(String version) {
         this.version = version;
     }
+    /**
+     * Platform id
+     * @return
+     */
     public String getId() {
         return id;
     }

@@ -32,6 +32,7 @@ import org.eclipse.ecf.filetransfer.identity.FileCreateException;
 import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
@@ -51,8 +52,6 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	 * Engine id for the engine provided by the Apache cordova project.
 	 */
 	public static final String CORDOVA_ENGINE_ID = "cordova";
-	public static final String ENGINE_NAME = "Apache Cordova";
-	
 	public static final String CUSTOM_CORDOVA_ENGINE_ID = "custom_cordova";
 	
 	private static ArrayList<HybridMobileEngine> engineList;
@@ -101,7 +100,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	 * @return
 	 */
 	public String getName(){
-		return ENGINE_NAME;
+		return "Apache Cordova";
 	}
 
 	public HybridMobileEngine getEngine(String id, String version){
@@ -128,7 +127,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	public HybridMobileEngine createEngine(String id, String version, HybridMobileLibraryResolver resolver, IPath location){
 		HybridMobileEngine engine = new HybridMobileEngine();
 		engine.setId(id);
-		engine.setName(ENGINE_NAME);
+		engine.setName(NLS.bind("{0}-{1}", new String[]{CORDOVA_ENGINE_ID,id}));
 		engine.setResolver(resolver);
 		engine.setVersion(version);
 		engine.setLocation(location);
