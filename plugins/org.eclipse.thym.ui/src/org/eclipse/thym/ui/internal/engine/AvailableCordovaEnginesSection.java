@@ -184,7 +184,8 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 			}
 			if(element instanceof HybridMobileEngine ){
 				HybridMobileEngine engine = (HybridMobileEngine) element;
-				return NLS.bind("{0}@{1})", new String[]{engine.getName(),engine.getVersion()});
+				String identifier = engine.isManaged()? engine.getVersion() : engine.getLocation().toString();
+				return NLS.bind("{0}@{1}", new String[]{engine.getName(),identifier});
 			}
 			return null;
 		}

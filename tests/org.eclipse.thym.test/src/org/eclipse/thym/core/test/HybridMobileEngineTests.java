@@ -13,11 +13,13 @@ import static org.junit.Assert.*;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.hybrid.test.TestProject;
 import org.junit.After;
 import org.junit.Before;
@@ -98,6 +100,20 @@ public class HybridMobileEngineTests {
 		engine_1.setId("platform_0");
 		engine_1.setVersion("0.0.0");
 		assertEquals(engine_0, engine_1);
+	}
+	
+	@Test
+	public void testHybridMobileEngineIsManaged(){
+		HybridMobileEngine engine_0 = new HybridMobileEngine(); 
+		engine_0.setId("platform_0");
+		engine_0.setVersion("0.0.0");
+		engine_0.setLocation(CordovaEngineProvider.getLibFolder().append("myplatform"));
+		assertTrue(engine_0.isManaged());
+		HybridMobileEngine engine_1 = new HybridMobileEngine(); 
+		engine_1.setId("platform_0");
+		engine_1.setVersion("0.0.0");
+		engine_1.setLocation(new Path("/some/location"));
+		assertFalse(engine_1.isManaged());
 	}
 
 }

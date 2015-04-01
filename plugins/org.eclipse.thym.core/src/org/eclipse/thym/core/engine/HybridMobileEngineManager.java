@@ -15,7 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
@@ -85,9 +87,14 @@ public class HybridMobileEngineManager {
 	}
 
 	private boolean engineMatches(Engine configEngine, HybridMobileEngine engine){
-		//null checks needed: sometimes we encounter engines without a name or version attribute. 
-		return configEngine.getName() != null && configEngine.getName().equals(engine.getId()) &&
+		//null checks needed: sometimes we encounter engines without a name or version attribute.
+		if(engine.isManaged()){
+			return configEngine.getName() != null && configEngine.getName().equals(engine.getId()) &&
 				configEngine.getVersion() != null && configEngine.getVersion().equals(engine.getVersion());
+		}else{
+			return engine.getLocation().isValidPath(configEngine.getVersion()) 
+					&& engine.getLocation().equals(new Path(configEngine.getVersion()));
+		}
 	}
 	
 	public static HybridMobileEngine[] defaultEngines() {
@@ -151,7 +158,11 @@ public class HybridMobileEngineManager {
 		for (HybridMobileEngine engine : engines) {
 			Engine e = model.createEngine(w);
 			e.setName(engine.getId());
-			e.setVersion(engine.getVersion());
+			if(!engine.isManaged()){
+				e.setVersion(engine.getLocation().toString());
+			}else{
+				e.setVersion(engine.getVersion());
+			}
 			w.addEngine(e);
 		}
 		model.save();

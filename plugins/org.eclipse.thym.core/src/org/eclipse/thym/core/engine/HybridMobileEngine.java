@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 /**
  * A cordova platform engine. 
  * 
@@ -65,6 +66,19 @@ public class HybridMobileEngine{
 	}
 	public void setLocation(IPath location) {
 		this.location = location;
+	}
+	/**
+	 * Managed engines are those loaded 
+	 * from registry to common library folder 
+	 * located usually at ~/.cordova 
+	 * 
+	 * @return
+	 */
+	public boolean isManaged(){
+		// default to managed if there is no location 
+        // this helps with unit tests as location should not be null in real life
+		return getLocation() == null 
+				|| CordovaEngineProvider.getLibFolder().isPrefixOf(getLocation());
 	}
     
     /**
