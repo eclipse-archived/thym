@@ -52,11 +52,9 @@ public class HttpUtil {
 			   	final boolean secure = scheme.isLayered();
 			   	
 
-				final IProxyService proxy =  HybridCore.getDefault().getProxyService();
 				HttpHost host =null;
-				if (proxy != null ) {
 					try {
-						IProxyData[] proxyDatas = proxy.select(new URI(target.toURI()));
+						IProxyData[] proxyDatas = getEclipseProxyData(new URI(target.toURI()));
 						for (IProxyData data : proxyDatas) {
 							if (data.getType().equals(IProxyData.HTTP_PROXY_TYPE)) {
 								host = new HttpHost(data.getHost(), data.getPort());
@@ -66,7 +64,6 @@ public class HttpUtil {
 					} catch (URISyntaxException e) {
 						HybridCore.log(IStatus.ERROR, "Incorrect URI", e);
 					}
-				}
 				if(host == null ){
 					return new HttpRoute(target, null, secure);
 				}
@@ -74,6 +71,14 @@ public class HttpUtil {
 			}
 		});
 		
+	}
+	
+	public static IProxyData[] getEclipseProxyData(URI uri){
+		final IProxyService proxyService = HybridCore.getDefault().getProxyService();
+		if(proxyService == null ){
+			return new IProxyData[0];
+		}
+		return proxyService.select(uri);
 	}
 
 }

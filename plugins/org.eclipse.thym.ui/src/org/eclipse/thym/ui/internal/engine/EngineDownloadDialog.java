@@ -11,6 +11,7 @@
 package org.eclipse.thym.ui.internal.engine;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,122 +28,120 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
-import org.eclipse.jface.viewers.BaseLabelProvider;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.ComboViewer;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.ui.HybridUI;
-import org.eclipse.thym.ui.internal.projectGenerator.ProjectGeneratorContentProvider;
-import org.eclipse.thym.ui.internal.projectGenerator.ProjectGeneratorLabelProvider;
+import org.eclipse.thym.ui.PlatformImage;
 import org.eclipse.thym.ui.internal.status.StatusManager;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.services.IEvaluationService;
 
 import com.github.zafarkhaja.semver.Version;
 
 public class EngineDownloadDialog extends TitleAreaDialog{
 
-	private static final int TABLE_WIDTH = 350;
-	private static final int TABLE_HEIGHT = 100;
+	private static final int TREE_WIDTH = 350;
+	private static final int TREE_HEIGHT = 175;
 	
-    private ComboViewer versionViewer;
-    private CheckboxTableViewer platformList;
+    private CheckboxTreeViewer platformList;
     private CordovaEngineProvider engineProvider;
     private List<HybridMobileEngine> engines;
     private ProgressMonitorPart progressMonitorPart;
 
 
-    private class DownloadableEngineLabelProvider extends BaseLabelProvider implements ILabelProvider{
+    private class DownloadableEngineLabelProvider extends LabelProvider implements ITableLabelProvider{
 
-        public String getText(Object element) {
-            DownloadableCordovaEngine engine = (DownloadableCordovaEngine) element;
-            return engine == null ? "" : engine.getVersion();
-        }
+    	
+    	@Override
+    	public Image getImage(Object element) {
+    		return getColumnImage(element, 0);
+    	}
+		@Override
+		public Image getColumnImage(Object element, int columnIndex) {
+			if(element instanceof PlatformSupport){
+				PlatformSupport platform = (PlatformSupport)element;
+				return PlatformImage.getImageFor(PlatformImage.ATTR_PLATFORM_SUPPORT, platform.getID());
+			}
+			return null;
+		}
 
-        @Override
-        public Image getImage(Object element) {
-            return null;
-        }
+		@Override
+		public String getColumnText(Object element, int columnIndex) {
+			if(element instanceof PlatformSupport){
+				return ((PlatformSupport)element).getPlatform();
+			}
+			if(element instanceof DownloadableCordovaEngine){
+				return ((DownloadableCordovaEngine) element).getVersion();
+			}
+			return null;
+		}
+		@Override
+		public String getText(Object element) {
+			return getColumnText(element, 0);
+		}
     }
 
-    private class VersionStringComparator implements Comparator<String>{
+    private class DownloadableEngineComparator extends ViewerComparator implements Comparator<DownloadableCordovaEngine>{
 
-        @Override
-        public int compare(String o1, String o2) {
-            Version version1 = Version.valueOf(o1);
-            Version version2 = Version.valueOf(o2);
-            //This is reversed intentionally to sort the
-            //latest version to the top
-            return version2.compareTo(version1);
-        }
+    	@Override
+    	public int compare(Viewer viewer, Object e1, Object e2) {
+    		if(e1 instanceof DownloadableCordovaEngine && e2 instanceof DownloadableCordovaEngine){
+    			DownloadableCordovaEngine o1 = (DownloadableCordovaEngine) e1;
+    			DownloadableCordovaEngine o2 = (DownloadableCordovaEngine) e2;
+    			return compare(o1, o2);
+    		}
+    		return 1;
+		}
+
+		@Override
+		public int compare(DownloadableCordovaEngine o1, DownloadableCordovaEngine o2) {
+			Version v1 = Version.valueOf(o1.getVersion());
+			Version v2 = Version.valueOf(o2.getVersion());
+			//Make it descending switch v1 to v2
+			return v2.compareTo(v1);
+		}
 
     }
 
-    private class ContentProviderSupportFilter extends ViewerFilter{
-
+    private class InstalledVersionsFilter extends ViewerFilter{
         @Override
         public boolean select(Viewer viewer, Object parentElement,
                 Object element) {
-            PlatformSupport gen = (PlatformSupport) element;
-            String version = (String) parentElement;
-
-            return engineProvider.isSupportedPlatform(version, gen.getPlatformId())
-                    && !isInstalled(version, gen.getPlatformId());
+        	if(element instanceof DownloadableCordovaEngine ){
+        		DownloadableCordovaEngine e = (DownloadableCordovaEngine)element;
+        		return !isInstalled(e.getVersion(), e.getPlatformId());
+        	}
+        	return true;
         }
     }
 
-    private class PlatformsLabelProvider extends ProjectGeneratorLabelProvider implements ITableLabelProvider{
 
-        @Override
-        public Image getColumnImage(Object element, int columnIndex) {
-            switch (columnIndex) {
-            case 0:
-                return super.getImage(element);
-            default:
-                return null;
-            }
-        }
 
-        @Override
-        public String getColumnText(Object element, int columnIndex) {
-            switch (columnIndex) {
-            case 0:
-                return super.getText(element);
-            default:
-                return null;
-            }
-        }
-    }
-
-    private class DownloadableVersionsContentProvider implements IStructuredContentProvider{
-        private DownloadableCordovaEngine[] versions;
+    private class DownloadableVersionsContentProvider implements ITreeContentProvider{
+        private DownloadableCordovaEngine[] downloadables;
+        private PlatformSupport[] platforms;
 
         @Override
         public void dispose() {
@@ -153,26 +152,66 @@ public class EngineDownloadDialog extends TitleAreaDialog{
             if(newInput != null ){
                 @SuppressWarnings("unchecked")
                 List<DownloadableCordovaEngine> list = (List<DownloadableCordovaEngine>)newInput;
-                versions = list.toArray(new DownloadableCordovaEngine[list.size()]);
+                downloadables = list.toArray(new DownloadableCordovaEngine[list.size()]);
             }else{
-                versions =  null;
+                downloadables =  null;
             }
 
         }
 
-        @Override
-        public Object[] getElements(Object inputElement) {
-            if(versions == null ){
-                 engineProvider = new CordovaEngineProvider();
-                try {
-                    List<DownloadableCordovaEngine> engineList = engineProvider.getDownloadableVersions();
-                    versions = engineList.toArray(new DownloadableCordovaEngine[engineList.size()]);
-                } catch (CoreException e) {
-                    StatusManager.handle(e);
-                }
-            }
-            return versions;
-        }
+		@Override
+		public Object[] getElements(Object inputElement) {
+			if(platforms == null ){
+				List<PlatformSupport> allPlatforms = HybridCore.getPlatformSupports();
+				ArrayList<PlatformSupport> elements = new ArrayList<PlatformSupport>();
+				IEvaluationService service = (IEvaluationService)PlatformUI.getWorkbench().getService(IEvaluationService.class);
+				for (PlatformSupport generator : allPlatforms) {
+					try {
+						if(generator.isEnabled(service.getCurrentState())){
+							elements.add(generator);
+						}
+						
+					} catch (CoreException e) {
+						HybridUI.log(IStatus.ERROR, "Error filtering objects", e);
+					}
+				}
+				platforms = elements.toArray(new PlatformSupport[elements.size()]);
+			}
+			return platforms;
+		}
+
+		@Override
+		public Object[] getChildren(Object parentElement) {
+			if(downloadables == null || !hasChildren(parentElement)){
+				return null;
+			}
+			PlatformSupport platform = (PlatformSupport) parentElement;
+			ArrayList<DownloadableCordovaEngine> platformDownloadables = new ArrayList<DownloadableCordovaEngine>();
+			for (DownloadableCordovaEngine engine : downloadables) {
+				if(engine.getPlatformId().equals(platform.getPlatformId())){
+					platformDownloadables.add(engine);
+				}
+			}
+			return platformDownloadables.toArray(new DownloadableCordovaEngine[platformDownloadables.size()]);
+		}
+
+		@Override
+		public Object getParent(Object element) {
+			if(platforms != null && element instanceof DownloadableCordovaEngine){
+				DownloadableCordovaEngine engine = (DownloadableCordovaEngine) element;
+				for (PlatformSupport platformSupport : platforms) {
+					if(engine.getPlatformId().equals(platformSupport.getPlatformId())){
+						return platformSupport;
+					}
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public boolean hasChildren(Object element) {
+			return element instanceof PlatformSupport;
+		}
 
     }
 
@@ -191,61 +230,39 @@ public class EngineDownloadDialog extends TitleAreaDialog{
     @Override
     protected Control createDialogArea(Composite parent) {
         setTitle("Download Hybrid Mobile Engine");
-        setMessage("Download a new engine version or add a platform to an existing one");
+        setMessage("Download a new engine version");
         parent.getShell().setText("Download Hybrid Mobile Engine");
 
-
         final Composite composite = new Composite(parent, SWT.NONE);
-        GridLayoutFactory.fillDefaults().margins(LayoutConstants.getMargins()).spacing(LayoutConstants.getSpacing()).numColumns(2).applyTo(composite);
-        GridDataFactory.fillDefaults().grab(true, true).applyTo(composite);
-        Label versionLbl = new Label(composite, SWT.NONE);
-        versionLbl.setText("Version:");
-        Combo versionCombo = new Combo(composite, SWT.READ_ONLY);
-        versionViewer = new ComboViewer(versionCombo);
-        versionViewer.setContentProvider(new DownloadableVersionsContentProvider());
-        versionViewer.setComparator(new ViewerComparator(new VersionStringComparator()));
-        versionViewer.setLabelProvider(new DownloadableEngineLabelProvider());
-        versionViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+        GridLayoutFactory.fillDefaults().margins(LayoutConstants.getMargins()).spacing(LayoutConstants.getSpacing()).numColumns(1).applyTo(composite);
+        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).applyTo(composite);
 
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                if(event.getSelection().isEmpty()) return;
-                IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-                DownloadableCordovaEngine engine = (DownloadableCordovaEngine) sel.getFirstElement();
-                platformList.setInput(engine.getVersion());
-                validate();
-            }
-        });
+        Tree tree = new Tree(composite, SWT.CHECK | SWT.BORDER | SWT.FULL_SELECTION);
+        GridDataFactory.fillDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).minSize(new Point(TREE_WIDTH, TREE_HEIGHT)).applyTo(tree);
+        tree.setHeaderVisible(false);
+        tree.setLinesVisible(true);
 
-        Table table= new Table(composite, SWT.CHECK | SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-        GridDataFactory.fillDefaults().grab(true, true).span(2, 1).minSize(new Point(TABLE_WIDTH, TABLE_HEIGHT)).applyTo(table);
-        table.setHeaderVisible(true);
-        table.setLinesVisible(false);
-
-        TableColumn col = new TableColumn(table, SWT.NONE);
-        col.setWidth(120);
-        col.setText("Platform");
-
-        platformList = new CheckboxTableViewer(table);
-        // Use ProjectGeneratorContentProvider which gives us the supported platforms.
-        // we then filter out the platforms that are not supported by the content provider
-        // and the already installed using the ContentProviderSupportFilter
-        platformList.setContentProvider(new ProjectGeneratorContentProvider());
-        platformList.setFilters(new ViewerFilter[]{ new ContentProviderSupportFilter()});
-        platformList.setLabelProvider(new PlatformsLabelProvider());
+        platformList = new CheckboxTreeViewer(tree);
+        platformList.setContentProvider(new DownloadableVersionsContentProvider());
+        platformList.setLabelProvider(new DownloadableEngineLabelProvider());
+        platformList.setComparator(new DownloadableEngineComparator());
+        platformList.addFilter(new InstalledVersionsFilter());
+        
         platformList.addCheckStateListener(new ICheckStateListener() {
 
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
+            	if(event.getElement() instanceof PlatformSupport ){
+            		platformList.setChecked(event.getElement(), false);
+            	}
                 validate();
             }
         });
 
         createProgressMonitorPart(composite);
-
         engineProvider = new CordovaEngineProvider();
         try {
-            versionViewer.setInput(engineProvider.getDownloadableVersions());
+            platformList.setInput(engineProvider.getDownloadableVersions());
         } catch (CoreException e) {
             setErrorMessage("Unable to retrieve the downloadable versions list, please try again later.");
             HybridUI.log(IStatus.ERROR, "Unable to retrieve the downloadable versions list", e);
@@ -255,21 +272,8 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 
     private void createProgressMonitorPart(final Composite composite) {
         progressMonitorPart = new ProgressMonitorPart(composite, new GridLayout());
-//		progressMonitorPart.attachToCancelComponent(getButton(IDialogConstants.CANCEL_ID));
         progressMonitorPart.setVisible(true);
-        GridDataFactory.fillDefaults().span(2, 1).applyTo(progressMonitorPart);
-    }
-
-    public void setVersion(String version){
-        versionViewer.setSelection(new StructuredSelection(version));
-        validate();
-    }
-
-    public String getVersion(){
-        IStructuredSelection sel = (IStructuredSelection) versionViewer.getSelection();
-        if(sel.isEmpty()) return null;
-        DownloadableCordovaEngine engine = (DownloadableCordovaEngine)sel.getFirstElement();
-        return engine.getVersion();
+        GridDataFactory.fillDefaults().applyTo(progressMonitorPart);
     }
 
     private boolean isInstalled(String version, String platformId){
@@ -287,11 +291,6 @@ public class EngineDownloadDialog extends TitleAreaDialog{
     }
 
     private void validate() {
-        if(platformList.getElementAt(0) == null ){
-            setErrorMessage(NLS.bind("All supported platforms are already installed for {0} {1}", new String[]{engineProvider.getName(),getVersion()} ));
-            toggleOKButton(false);
-            return;
-        }
         Object[] checked = platformList.getCheckedElements();
         if(checked == null || checked.length == 0 ){
             toggleOKButton(false);
@@ -311,15 +310,12 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 
     @Override
     protected void okPressed() {
-        Object[] checked = platformList.getCheckedElements();
-        final String[] platforms = new String[checked.length];
+        final Object[] checked = platformList.getCheckedElements();
+        final DownloadableCordovaEngine[] downloads = new DownloadableCordovaEngine[checked.length];
         for (int i = 0; i < checked.length; i++) {
-            PlatformSupport gen = (PlatformSupport) checked[i];
-            platforms[i] = gen.getPlatformId();
+            DownloadableCordovaEngine dce = (DownloadableCordovaEngine) checked[i];
+            downloads[i] = dce;
         }
-        final String version = getVersion();
-        versionViewer.getCombo().setEnabled(false);
-        platformList.getTable().setEnabled(false);
         run(new IRunnableWithProgress() {
 
             @Override
@@ -332,7 +328,7 @@ public class EngineDownloadDialog extends TitleAreaDialog{
                         okButton.setEnabled(false);
                     }
                 });
-                engineProvider.downloadEngine(version, monitor, platforms);
+                engineProvider.downloadEngine(downloads, monitor);
             }
         });
         super.okPressed();

@@ -39,7 +39,6 @@ import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine.LibraryDownloadInfo;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
@@ -142,7 +141,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	
 	public List<DownloadableCordovaEngine> getDownloadableVersions()
 			throws CoreException {
-		AbstractEngineRepoProvider provider = new DefaultEngineRepoProvider();
+		AbstractEngineRepoProvider provider = new NpmBasedEngineRepoProvider();//new DefaultEngineRepoProvider();
 		IProduct product = Platform.getProduct();
 		if (product != null) {
 			String productId = Platform.getProduct().getId();
@@ -157,46 +156,30 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return provider.getEngines();
 	}
 
-	private DownloadableCordovaEngine getDownloadableCordovaEngine(String version){
-		try {
-			List<DownloadableCordovaEngine> versions = getDownloadableVersions();
 
-			for (DownloadableCordovaEngine downloadableCordovaEngine : versions) {
-				if (version.equals(downloadableCordovaEngine.getVersion())) {
-					return downloadableCordovaEngine;
-				}
-			}
-		}catch(CoreException e){
-			HybridCore.log(IStatus.ERROR, "Could not retrieve downloadable engine list", e);
-		}
-		return null;
-	}
-	public void downloadEngine(String version, IProgressMonitor monitor, String... platforms) {
+	public void downloadEngine(DownloadableCordovaEngine[] engines, IProgressMonitor monitor) {
 		if(monitor == null ){
 			monitor = new NullProgressMonitor();
 		}
 		
-		DownloadableCordovaEngine theEngine = getDownloadableCordovaEngine(version);
 		
 		IRetrieveFileTransfer transfer = HybridCore.getDefault().getFileTransferService();
 		IFileID remoteFileID;
 
-		int platformSize = platforms.length;
+		int platformSize = engines.length;
 		Object lock = new Object();
 		int incompleteCount = platformSize;
-		monitor.beginTask("Download Cordova Engine "+version, platformSize *100 +1);
 		monitor.worked(1);
 		for (int i = 0; i < platformSize; i++) {
-			LibraryDownloadInfo downloadInfo = theEngine.getPlatformLibraryInfo(platforms[i]);
-			Assert.isNotNull(downloadInfo); //platforms.json does not have info on platform
+			monitor.beginTask("Download Cordova Engine "+engines[i].getVersion(), platformSize *100 +1);
 			try {
-				URI uri = URI.create(downloadInfo.getDownloadURL());
+				URI uri = URI.create(engines[i].getDownloadURL());
 				remoteFileID = FileIDFactory.getDefault().createFileID(transfer.getRetrieveNamespace(), uri);
 				SubProgressMonitor sm = new SubProgressMonitor(monitor, 100);
 				if(monitor.isCanceled()){
 					return;
 				}
-				transfer.sendRetrieveRequest(remoteFileID, new EngineDownloadReceiver(downloadInfo.getVersion(), platforms[i], lock, sm), null);
+				transfer.sendRetrieveRequest(remoteFileID, new EngineDownloadReceiver(engines[i].getVersion(), engines[i].getPlatformId(), lock, sm), null);
 			} catch (FileCreateException e) {
 				HybridCore.log(IStatus.ERROR, "Engine download file create error", e);
 			} catch (IncomingFileTransferException e) {
@@ -226,12 +209,22 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	public boolean isSupportedPlatform(String version, String platformId){
 		Assert.isNotNull(platformId);
 		Assert.isNotNull( version);
-		DownloadableCordovaEngine engine = getDownloadableCordovaEngine(version);
-		if(engine == null ){
+		List<DownloadableCordovaEngine> engines = null;
+		try {
+			engines = getDownloadableVersions();
+		} catch (CoreException e) {
+			HybridCore.log(IStatus.ERROR, "Error retrieving downloadable engines", e);
+		}
+		if(engines == null ){
 			return false;
 		}
-		LibraryDownloadInfo lib = engine.getPlatformLibraryInfo(platformId);
-		return lib != null;
+		for (DownloadableCordovaEngine downloadable : engines) {
+			if(downloadable.getVersion().equals(version) 
+					&& downloadable.getPlatformId().equals(platformId) ){
+				return true;
+			}
+		}
+		return false;
 	}
 
 
