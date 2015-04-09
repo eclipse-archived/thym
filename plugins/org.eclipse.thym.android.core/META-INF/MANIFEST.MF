@@ -8,7 +8,7 @@ Bundle-Vendor: %BundleVendor
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="[3.8.1,4.0.0)",
  org.eclipse.debug.core;bundle-version="[3.7.0,4.0.0)",
- org.apache.commons.io;bundle-version="[2.0.0,2.1.0)",
+ org.apache.commons.io;bundle-version="[2.0.0,3.0.0)",
  org.eclipse.osgi.util,
  org.eclipse.thym.core;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

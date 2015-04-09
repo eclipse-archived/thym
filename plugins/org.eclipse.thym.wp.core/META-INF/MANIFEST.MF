@@ -8,7 +8,7 @@ Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.thym.core,
  org.eclipse.debug.core,
- org.apache.commons.io;bundle-version="[2.0.0,2.1.0)"
+ org.apache.commons.io;bundle-version="[2.0.0,3.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: org.eclipse.thym.wp.core,
