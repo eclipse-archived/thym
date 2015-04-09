@@ -141,7 +141,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	
 	public List<DownloadableCordovaEngine> getDownloadableVersions()
 			throws CoreException {
-		AbstractEngineRepoProvider provider = new NpmBasedEngineRepoProvider();//new DefaultEngineRepoProvider();
+		AbstractEngineRepoProvider provider = new NpmBasedEngineRepoProvider();
 		IProduct product = Platform.getProduct();
 		if (product != null) {
 			String productId = Platform.getProduct().getId();

@@ -149,7 +149,7 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-            if(newInput != null ){
+            if(newInput != null && newInput instanceof List){
                 @SuppressWarnings("unchecked")
                 List<DownloadableCordovaEngine> list = (List<DownloadableCordovaEngine>)newInput;
                 downloadables = list.toArray(new DownloadableCordovaEngine[list.size()]);
@@ -264,7 +264,8 @@ public class EngineDownloadDialog extends TitleAreaDialog{
         try {
             platformList.setInput(engineProvider.getDownloadableVersions());
         } catch (CoreException e) {
-            setErrorMessage("Unable to retrieve the downloadable versions list, please try again later.");
+        	platformList.setInput(new Object());//Set the input to allow platforms to be displayed
+            setErrorMessage(e.getMessage());
             HybridUI.log(IStatus.ERROR, "Unable to retrieve the downloadable versions list", e);
         }
         return composite;

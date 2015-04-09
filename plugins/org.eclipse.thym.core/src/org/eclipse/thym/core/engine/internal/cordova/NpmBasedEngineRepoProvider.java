@@ -22,11 +22,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.http.HttpHost;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
@@ -42,7 +42,7 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 
 	private static final String NPM_URL ="https://registry.npmjs.org/cordova-{0}";
 	
-	protected InputStream getRemoteJSonStream(String url){
+	private InputStream getRemoteJSonStream(String url) throws IOException{
 		try {
 			IProxyData[] proxies =  HttpUtil.getEclipseProxyData(new URI(url));
 			HttpHost proxyHost = null;
@@ -52,8 +52,8 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 				}
 			}
 			return Request.Get(url).viaProxy(proxyHost).execute().returnContent().asStream();
-		} catch (IOException | URISyntaxException e) {
-			HybridCore.log(IStatus.ERROR, "Unable to retrieve downloadable platform information", e);
+		} catch (URISyntaxException e) {
+			HybridCore.log(IStatus.ERROR, "Incorrect URI: "+ url  , e);
 		}
 		return null;
 	}
@@ -71,17 +71,18 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 		return allEngines;
 	}
 	
-	private List<DownloadableCordovaEngine> getPlatformEngines(String platformId){
-		InputStream stream = getRemoteJSonStream(NLS.bind(NPM_URL, platformId));
+	private List<DownloadableCordovaEngine> getPlatformEngines(String platformId) throws CoreException{
 		try {
+			InputStream stream = getRemoteJSonStream(NLS.bind(NPM_URL, platformId));
 			if (stream != null && stream.available() >0) {
 				return parseEngines(stream, platformId);
+			}else{
+				return null;
 			}
 		} catch (IOException e) {
-			HybridCore.log(IStatus.WARNING, NLS.bind(
-					"Could not retrieve the downloadable platform information for ({0})", platformId), e);
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, NLS.bind(
+					"Could not retrieve and parse downloadable platform information for ({0})", platformId)));
 		}
-		return null;
 	}
 	
 	private List<DownloadableCordovaEngine> parseEngines(InputStream stream, String platformId) throws IOException{
