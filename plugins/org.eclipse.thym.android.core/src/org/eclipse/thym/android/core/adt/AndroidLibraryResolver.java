@@ -32,8 +32,11 @@ import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.internal.util.FileUtils;
 
+import com.github.zafarkhaja.semver.Version;
+
 public class AndroidLibraryResolver extends
 		HybridMobileLibraryResolver {
+	private static final Version VERSION_4_0_0 = Version.valueOf("4.0.0");
 
 	public static final String DIR_LIBS = "libs";
 	public static final String DIR_RES = "res";
@@ -50,6 +53,8 @@ public class AndroidLibraryResolver extends
 		if(version == null ){
 			return;
 		}
+		Version ver = Version.valueOf(version);
+		
 		IPath templatePrjRoot = libraryRoot.append("bin/templates/project");
 		IPath cordovaJar = libraryRoot.append("framework").append(NLS.bind("cordova-{0}.jar",version));
 		files.put(KEY_PATH_CORDOVA_JAR, getEngineFile(cordovaJar));	
@@ -57,9 +62,13 @@ public class AndroidLibraryResolver extends
 		files.put(new Path(FILE_XML_ANDROIDMANIFEST), getEngineFile(templatePrjRoot.append(FILE_XML_ANDROIDMANIFEST)));
 		files.put(new Path(DIR_SRC).append(VAR_PACKAGE_NAME.replace('.', '/')).append(VAR_APP_NAME+".java"), 
 				getEngineFile(templatePrjRoot.append("Activity.java")));
-		files.put(PATH_CORDOVA_JS, getEngineFile(libraryRoot.append("framework/assets/www/cordova.js")));
+		if(ver.lessThan(VERSION_4_0_0)){
+			files.put(PATH_CORDOVA_JS, getEngineFile(libraryRoot.append("framework/assets/www/cordova.js")));
+		}else{
+			// version 4.0.0 places cordova.js to a new location
+			files.put(PATH_CORDOVA_JS, getEngineFile(templatePrjRoot.append("assets/www/cordova.js")));
+		}
 		files.put(new Path("framework/project.properties"), getEngineFile(libraryRoot.append("framework/project.properties")));
-		
 	}
 
 
