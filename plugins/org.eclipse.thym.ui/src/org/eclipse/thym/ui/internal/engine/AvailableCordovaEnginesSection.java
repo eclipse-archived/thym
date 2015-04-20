@@ -302,12 +302,14 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 					if(event.getElement() instanceof PlatformSupport ){
 						engineList.setChecked(event.getElement(), false);
 						HybridMobileEngine[] children = (HybridMobileEngine[]) cp.getChildren(event.getElement());
-						//Sort so that we can select the highest version number.
-						Arrays.sort(children,new EngineVersionComparator(true));
-						engineList.setChecked(children[0], true);
-						for (int i = 1; i < children.length; i++) {
-							engineList.setChecked(children[i], false);
-						} 
+						if(children != null && children.length>0){
+							//Sort so that we can select the highest version number.
+							Arrays.sort(children,new EngineVersionComparator(true));
+							engineList.setChecked(children[0], true);
+							for (int i = 1; i < children.length; i++) {//start with index 1
+								engineList.setChecked(children[i], false);
+							} 
+						}
 					}
 					else{
 						Object[] siblings = cp.getChildren(cp.getParent(event.getElement()));
