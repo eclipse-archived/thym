@@ -387,7 +387,9 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 	}
 
 	private void updateButtons() {
-		removeBtn.setEnabled(!engineList.getSelection().isEmpty());
+		IStructuredSelection selection = (IStructuredSelection) engineList.getSelection();
+		removeBtn.setEnabled(!selection.isEmpty() 
+				&& selection.getFirstElement() instanceof HybridMobileEngine );
 	}
 
 	private void updateAvailableEngines() {
@@ -474,7 +476,7 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 					engineList.setCheckedElements(new Object[0]);
 				} else {
 					IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-					for (Iterator iterator = structuredSelection.iterator(); iterator.hasNext();) {
+					for (Iterator<?> iterator = structuredSelection.iterator(); iterator.hasNext();) {
 						HybridMobileEngine engine = (HybridMobileEngine) iterator.next();
 						engineList.setChecked(engine, true);
 						engineList.reveal(engine);
@@ -599,13 +601,12 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 
 	private void handleRemoveEngine() {
 		IStructuredSelection selection = (IStructuredSelection) engineList.getSelection();
-		ISelection cSelection = getSelection();
-		HybridMobileEngine checkedEngine =null;
-		if(cSelection != null && !cSelection.isEmpty() ){
-			IStructuredSelection css = (IStructuredSelection) cSelection;
-			checkedEngine = (HybridMobileEngine) css.getFirstElement();
+		if(selection.isEmpty()) return;
+		Object selectedObject = selection.getFirstElement();
+		if(!(selectedObject instanceof HybridMobileEngine)){
+			return;
 		}
-		HybridMobileEngine selectedEngine = (HybridMobileEngine) selection.getFirstElement();
+		HybridMobileEngine selectedEngine = (HybridMobileEngine)selectedObject;
 		boolean deleteConfirm = MessageDialog.openConfirm( this.engineList.getTree().getShell(), "Confirm Delete",
 				NLS.bind( "This will remove {0} {1} from your computer. Do you want to continue?",
 						new String[] { selectedEngine.getName(), selectedEngine.getVersion() }));
@@ -615,6 +616,12 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 				removePathFromPreference(selectedEngine.getLocation());
 			}
 			updateAvailableEngines();
+			ISelection cSelection = getSelection();
+			HybridMobileEngine checkedEngine =null;
+			if(cSelection != null && !cSelection.isEmpty() ){
+				IStructuredSelection css = (IStructuredSelection) cSelection;
+				checkedEngine = (HybridMobileEngine) css.getFirstElement();
+			}
 			if(checkedEngine != null && checkedEngine == selectedEngine){
 				setSelection(new StructuredSelection());
 			}
