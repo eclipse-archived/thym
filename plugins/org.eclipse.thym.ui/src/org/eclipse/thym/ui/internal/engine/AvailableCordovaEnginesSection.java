@@ -403,14 +403,9 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 					try {
 						hybridMobileEngine.preCompile(monitor);
 					} catch (CoreException e) {
-						// Because at this point whether the an engine is going to 
-						// be used or not is not determined yet 
-						// We just log the engine pre-compilation problems here. 
-						HybridUI.log(
-								IStatus.WARNING,
-								NLS.bind(
-										"Pre-compilation for engine {0} {1} has failed",
-										new String[] { hybridMobileEngine.getName(), hybridMobileEngine.getVersion() }), e);
+						// Because at this point whether the engine is going to 
+						// be used or not is not determined yet, we can ignore 
+						// the pre-compilation problems
 					}
 				}
 				return Status.OK_STATUS;
