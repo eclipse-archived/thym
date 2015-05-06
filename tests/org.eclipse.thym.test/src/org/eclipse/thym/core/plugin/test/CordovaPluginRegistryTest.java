@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,9 +15,9 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
 
 import static org.junit.Assert.*;
 
@@ -45,17 +45,17 @@ public class CordovaPluginRegistryTest {
 		assertNotNull(plugin.getName());
 		assertEquals(info.getName(), plugin.getName());
 		assertNotNull(plugin.getVersions());
-		List<CordovaRegistryPluginVersion> versions = plugin.getVersions();
+		List<RegistryPluginVersion> versions = plugin.getVersions();
 		assertFalse(versions.isEmpty());
-		CordovaRegistryPluginVersion version = versions.get(0);
+		RegistryPluginVersion version = versions.get(0);
 		assertNotNull(version.getName());
 		assertNotNull(version.getVersionNumber());
-		assertNotNull(version.getDistributionSHASum());
-		assertNotNull(version.getDistributionTarball());
+		assertNotNull(version.getShasum());
+		assertNotNull(version.getTarball());
 	}
 
 	private CordovaPluginRegistryManager getCordovaIORegistryClient() {
-		CordovaPluginRegistryManager client = new CordovaPluginRegistryManager("http://registry.cordova.io/");
+		CordovaPluginRegistryManager client = new CordovaPluginRegistryManager();
 		return client;
 	}
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -201,7 +201,7 @@ public class PluginRestorePage extends WizardPage {
 					try{
 						final List<RestorableCordovaPlugin> restorables = project.getPluginManager().getRestorablePlugins(monitor);
 //						final List<CordovaRegistryPluginVersion> restoreVersion = new ArrayList<CordovaRegistryPluginVersion>();
-//						CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+//						CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.REGISTRY_URL);
 //						for (RestorableCordovaPlugin restorable : restorables) {
 //							if(monitor.isCanceled()){
 //								throw new OperationCanceledException();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 
 
 @SuppressWarnings("restriction")
@@ -58,7 +58,7 @@ public class CordovaPluginViewer extends FilteredViewer {
 	}
 
 	private final SelectionProviderAdapter selectionProvider;
-	private List<CordovaRegistryPluginVersion> selectedItems = new ArrayList<CordovaRegistryPluginVersion>(); 
+	private List<RegistryPluginVersion> selectedItems = new ArrayList<RegistryPluginVersion>(); 
 	public CordovaPluginViewer(){
 		this.selectionProvider = new SelectionProviderAdapter();
 	}
@@ -75,7 +75,7 @@ public class CordovaPluginViewer extends FilteredViewer {
 		return (IStructuredSelection) selectionProvider.getSelection();
 	}
 	
-	void modifySelection ( CordovaRegistryPluginVersion element, boolean remove){
+	void modifySelection ( RegistryPluginVersion element, boolean remove){
 		if (remove) {
 			selectedItems.remove(element);
 		}else if( !selectedItems.contains(element) ){

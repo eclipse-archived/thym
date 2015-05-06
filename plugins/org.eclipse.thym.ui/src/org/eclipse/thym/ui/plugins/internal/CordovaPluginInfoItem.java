@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.eclipse.thym.ui.plugins.internal;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -23,14 +22,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 
 public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistryPluginInfo>{
 
-	private static final String LABEL_TEXT_KEYWORDS = "keywords:";
-	private static final String LABEL_TEXT_LATEST = "Latest: ";
 	private static final int MAX_DESCRIPTION_CHARS = 162;
 	private final CordovaPluginCatalogViewer viewer;
 	private Button checkbox;
@@ -39,7 +35,6 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 	private Label description;
 	private String nameString;
 	private String descriptionText;
-	private Composite keywordsContainer;
 
 	public CordovaPluginInfoItem(Composite parent, CordovaRegistryPluginInfo element, CordovaPluginWizardResources resources, CordovaPluginCatalogViewer viewer, boolean installed) {
 		super(parent,element,resources);
@@ -53,44 +48,10 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 		checkbox.setEnabled(!installed);
 		nameLabel.setText(getNameString());
 		description.setText(getDescriptionText()); 
-		initKeywords();
 	}
 	
 
-	private void initKeywords() {
-		List<String> keywords = getData().getKeywords();
-		if (keywordsContainer == null && keywords != null) {
-			int colSize = keywords == null ? 1 : keywords.size() + 1;
-			keywordsContainer = new Composite(this,
-					SWT.INHERIT_NONE);
-			GridDataFactory.swtDefaults().align(SWT.END, SWT.BEGINNING)
-					.span(3, 1).applyTo(keywordsContainer);
-			GridLayoutFactory.fillDefaults().spacing(1, 1).numColumns(colSize)
-					.applyTo(keywordsContainer);
 
-			final Label keywordLbl = new Label(keywordsContainer, SWT.NONE);
-			keywordLbl.setFont(resources.getSubTextFont());
-			keywordLbl.setText(LABEL_TEXT_KEYWORDS);
-			
-			for (String string : keywords) {
-				final Link hyperlink = new Link(keywordsContainer, SWT.NONE);
-				hyperlink.setFont(resources.getSubTextFont());
-				GridDataFactory.fillDefaults().grab(false, false)
-						.applyTo(hyperlink);
-				hyperlink.setText(NLS.bind("<a >{0}</a>", string));
-				hyperlink.setData(string);
-				hyperlink.addListener(SWT.Selection, new Listener() {
-					
-					@Override
-					public void handleEvent(Event event) {
-						Link link = (Link)event.widget;
-						String keyword = (String) link.getData();
-						viewer.applyFilter(keyword);
-					}
-				});
-			}     
-		}
-	}
 
 	private String getDescriptionText() {
 		if(descriptionText == null ){
@@ -163,12 +124,6 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 		
 		description = new Label(this, SWT.NULL | SWT.WRAP);
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 2).hint(100, SWT.DEFAULT).applyTo(description);
-		
-		final Label versionLbl = new Label(this, SWT.NONE);
-		versionLbl.setFont(resources.getSubTextFont());
-		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(versionLbl);
-		versionLbl.setText(LABEL_TEXT_LATEST+ getData().getLatestVersion());
-		
 	}
 	
 	@Override

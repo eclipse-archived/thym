@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,18 +23,18 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.ui.HybridUI;
 
 @SuppressWarnings("restriction")
 public class RegistryConfirmPage extends WizardPage {
 
 	private CordovaPluginViewer pluginViewer;
 	private List<CordovaRegistryPluginInfo> selected;
-	final CordovaPluginRegistryManager client = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+	final CordovaPluginRegistryManager client = new CordovaPluginRegistryManager();
 	private static final String PAGE_NAME = "Fetch from Registry";
 	private static final String PAGE_TITLE = "Confirm plug-ins to be downloaded from registry";
 	private static final String PAGE_DESC = "Confirm the plug-ins to be downloaded and installed from registry or go back to select again.";
@@ -110,7 +110,7 @@ public class RegistryConfirmPage extends WizardPage {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<CordovaRegistryPluginVersion> getSelectedPluginVersions(){
+	public List<RegistryPluginVersion> getSelectedPluginVersions(){
 			IStructuredSelection selection = (IStructuredSelection) pluginViewer.getSelection();
 			if(selection == null || selection.isEmpty())
 				return Collections.emptyList();

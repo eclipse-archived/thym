@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,13 +15,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
@@ -29,8 +26,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
@@ -50,22 +45,20 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.internal.util.BundleHttpCacheStorage;
 import org.eclipse.thym.core.internal.util.HttpUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
 public class CordovaPluginRegistryManager {
 	
-	private static final String REGISTRY_CLIENT_ID = "eclipseTHyM";
-	public static final String DEFAULT_REGISTRY_URL = "http://registry.cordova.io/";
-	private String registry;
+	private static final String REGISTRY_URL = "http://registry.npmjs.org/";
+//    private static final String PLUGIN_LIST_URL = 
+	
 	private final File cacheHome;
 	private HashMap<String, CordovaRegistryPlugin> detailedPluginInfoCache = new HashMap<String, CordovaRegistryPlugin>();
 	
-	public CordovaPluginRegistryManager(String url) {
-		this.registry = url;
+	public CordovaPluginRegistryManager() {
 		cacheHome = new File(FileUtils.getUserDirectory(), ".plugman"+File.separator+"cache");
 	}
 	
@@ -80,9 +73,7 @@ public class CordovaPluginRegistryManager {
 				new HeapResourceFactory(), 
 				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig()); 
 		
-		String url = registry.endsWith("/") ? registry + name : registry + "/"
-				+ name;
-		HttpGet get = new HttpGet(url);
+		HttpGet get = new HttpGet(REGISTRY_URL+name);
 		HttpResponse response;
 		try {
 			response = client.execute(get);
@@ -108,7 +99,7 @@ public class CordovaPluginRegistryManager {
 	 * @param plugin
 	 * @return
 	 */
-	public File getInstallationDirectory( CordovaRegistryPluginVersion plugin, IProgressMonitor monitor ){
+	public File getInstallationDirectory( RegistryPluginVersion plugin, IProgressMonitor monitor ){
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		
@@ -122,7 +113,7 @@ public class CordovaPluginRegistryManager {
 		IFileID remoteFileID;
 		
 		try {
-			remoteFileID = FileIDFactory.getDefault().createFileID(transfer.getRetrieveNamespace(), plugin.getDistributionTarball());
+			remoteFileID = FileIDFactory.getDefault().createFileID(transfer.getRetrieveNamespace(), plugin.getTarball());
 			Object lock = new Object();
 			PluginReceiver receiver = new PluginReceiver(newCacheDir,monitor, lock);
 		    synchronized (lock) {
@@ -136,45 +127,10 @@ public class CordovaPluginRegistryManager {
 		} catch (InterruptedException e) {
 			HybridCore.log(IStatus.ERROR, "Cordova plugin fetch error", e);
 		}
-		updateDownlodCounter(plugin.getName());
 		return new File(newCacheDir, "package");
 	}
 	
-	private void updateDownlodCounter(String pluginId) {
-		if(!registry.contains("registry.cordova.io"))//ping only cordova registry
-			return;
-		
-		DefaultHttpClient client = new DefaultHttpClient();
-		HttpUtil.setupProxy(client);
-		String url = registry.endsWith("/") ? registry+"downloads" : registry+"/downloads";
-		HttpPost post = new HttpPost(url);
-		Date now =new Date();
-		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM.dd");
-		df.setTimeZone(TimeZone.getTimeZone("UTC"));
-		
-		JsonObject obj = new JsonObject();
-		obj.addProperty("day", df.format(now));
-		obj.addProperty("pkg", pluginId);
-		obj.addProperty("client", REGISTRY_CLIENT_ID );
-		Gson gson = new Gson();
-		String json = gson.toJson(obj);
-		StringEntity entity;
-		try {
-			entity = new StringEntity(json);
-			entity.setContentType("application/json");
-			post.setEntity(entity);
-			HttpResponse response = client.execute(post);
-			if (response.getStatusLine().getStatusCode() != 201) {
-				HybridCore.log(IStatus.INFO, "Unable to ping Cordova registry download counter", null);
-			}
-		} catch (UnsupportedEncodingException e) {
-			HybridCore.log(IStatus.INFO, "Unable to ping Cordova registry download counter", e);
-		} catch (IOException e) {
-			HybridCore.log(IStatus.INFO, "Unable to ping Cordova registry download counter", e);
-		}
-	}
-
-	private File getFromCache( CordovaRegistryPluginVersion plugin ){
+	private File getFromCache( RegistryPluginVersion plugin ){
 		File cachedPluginDir = calculateCacheDir(plugin);
 		File packageDir = new File(cachedPluginDir,"package");
 		if( !packageDir.isDirectory()){
@@ -186,7 +142,7 @@ public class CordovaPluginRegistryManager {
 		return null;
 	}
 
-	private File calculateCacheDir(CordovaRegistryPluginVersion plugin) {
+	private File calculateCacheDir(RegistryPluginVersion plugin) {
 		File cachedPluginDir = new File(this.cacheHome, plugin.getName() + File.separator +
 				plugin.getVersionNumber());
 				
@@ -211,42 +167,35 @@ public class CordovaPluginRegistryManager {
 		HttpClient client = new CachingHttpClient(theHttpClient, 
 				new HeapResourceFactory(), 
 				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig());
-		String url = registry.endsWith("/") ? registry+"-/all" : registry+"/-/all";
-		HttpGet get = new HttpGet(url);
-		HttpResponse response;
-		
+		JsonReader reader= null;
 		try {
 			if(monitor.isCanceled()){
 				return null;
 			}
-			response = client.execute(get);
+			String url = REGISTRY_URL + "-/_view/byKeyword?startkey=%5B%22ecosystem:cordova%22%5D&endkey=%5B%22ecosystem:cordova1%22%5D&group_level=3";
+			HttpGet get = new HttpGet(URI.create(url));
+			HttpResponse response = client.execute(get);
 			HttpEntity entity = response.getEntity();
 			InputStream stream = entity.getContent();
 			monitor.worked(7);
-			JsonReader reader = new JsonReader(new InputStreamReader(stream));
+			reader = new JsonReader(new InputStreamReader(stream));
 			reader.beginObject();//start the Registry
 			final ArrayList<CordovaRegistryPluginInfo> plugins = new ArrayList<CordovaRegistryPluginInfo>();
 			while(reader.hasNext()){
 				JsonToken token = reader.peek();
 				switch (token) {
-				case BEGIN_OBJECT:
-					CordovaRegistryPluginInfo info = new CordovaRegistryPluginInfo();
-					readPluginInfo(reader, info);
-					plugins.add(info);
+				case BEGIN_ARRAY: 
+					reader.beginArray();
 					break;
-				case NAME:
-					String name = reader.nextName();
-					if(name.equals("_updated")){
-						 reader.nextLong();
-					}
+				case BEGIN_OBJECT: 
+					plugins.add(parseCordovaRegistryPluginInfo(reader));
 					break;
 				default:
-					Assert.isTrue(false, "Unexpected token: " + token);
+					reader.skipValue();
 					break;
 				}
 				
 			}
-			reader.endObject();
 			return plugins;
 
 		} catch (ClientProtocolException e) {
@@ -254,12 +203,54 @@ public class CordovaPluginRegistryManager {
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin catalog", e));
 		}finally{
+			if(reader != null )
+				try {
+					reader.close();
+				} catch (IOException e) { /*ignored*/ }
 			monitor.done();
 		}
 		
 	}
+	private CordovaRegistryPluginInfo parseCordovaRegistryPluginInfo(JsonReader reader) throws IOException{
+		reader.beginObject();
+		reader.skipValue(); // name
+		reader.beginArray();
+		reader.nextString();
+		String name = reader.nextString();
+		String desc = reader.nextString();
+		CordovaRegistryPluginInfo info = new CordovaRegistryPluginInfo();
+		info.setName(name);
+		info.setDescription(desc);
+		reader.endArray();
+		reader.nextName();reader.nextInt();
+		reader.endObject();
+		return info;
 
-	private void readPluginInfo(JsonReader reader, CordovaRegistryPluginInfo plugin ) throws IOException {
+	}
+
+	private void readVersionInfo(JsonReader reader, RegistryPluginVersion version)throws IOException{
+		Assert.isNotNull(version);
+		reader.beginObject();
+		while(reader.hasNext()){
+			JsonToken token = reader.peek();
+			switch (token) {
+			case NAME:
+				String name = reader.nextName();
+				if("dist".equals(name)){
+					parseDistDetails(reader,  version);
+					break;
+				}
+				break;
+
+			default:
+				reader.skipValue();
+				break;
+			}
+		}
+		reader.endObject();
+	}
+	
+	private void readPluginInfo(JsonReader reader, CordovaRegistryPlugin plugin ) throws IOException {
 		Assert.isNotNull(plugin);
 		reader.beginObject();
 
@@ -289,16 +280,11 @@ public class CordovaPluginRegistryManager {
 					break;
 				}
 				if("versions".equals(name) && plugin instanceof CordovaRegistryPlugin) { 
-					parseDetailedVersions(reader, (CordovaRegistryPlugin)plugin);       
+					parseVersions(reader, (CordovaRegistryPlugin)plugin);       
 					break;
 				}
-				if("dist".equals(name) && plugin instanceof CordovaRegistryPluginVersion ){
-					parseDistDetails(reader, (CordovaRegistryPluginVersion) plugin);
-					break;
-				}
-				if("license".equals(name) && plugin instanceof CordovaRegistryPluginVersion ){
-					CordovaRegistryPluginVersion v = (CordovaRegistryPluginVersion) plugin;
-					v.setLicense(reader.nextString());
+				if("license".equals(name)){
+					plugin.setLicense(reader.nextString());
 					break;
 				}
 				break;
@@ -312,7 +298,7 @@ public class CordovaPluginRegistryManager {
 		reader.endObject();
 	}
 
-	private void parseDistDetails(JsonReader reader, CordovaRegistryPluginVersion plugin) throws IOException{
+	private void parseDistDetails(JsonReader reader, RegistryPluginVersion plugin) throws IOException{
 		reader.beginObject();
 		JsonToken token = reader.peek();
 		while(token != JsonToken.END_OBJECT){
@@ -320,11 +306,11 @@ public class CordovaPluginRegistryManager {
 			case NAME:
 				String name = reader.nextName();
 				if("shasum".equals(name)){
-					plugin.setDistributionSHASum(reader.nextString());
+					plugin.setShasum(reader.nextString());
 					break;
 				}
 				if("tarball".equals(name)){
-					plugin.setDistributionTarball(reader.nextString());
+					plugin.setTarball(reader.nextString());
 					break;
 				}
 				break;
@@ -338,16 +324,16 @@ public class CordovaPluginRegistryManager {
 		reader.endObject();
 	}
 
-	private void parseDetailedVersions(JsonReader reader,
+	private void parseVersions(JsonReader reader,
 			CordovaRegistryPlugin plugin) throws IOException{
 		reader.beginObject();//versions
 		JsonToken token = reader.peek();
 		while( token != JsonToken.END_OBJECT ){
 			switch (token) {
 			case NAME:
-				CordovaRegistryPluginVersion version = new CordovaRegistryPluginVersion();
+				RegistryPluginVersion version = plugin.new RegistryPluginVersion();
 				version.setVersionNumber(reader.nextName());
-				readPluginInfo(reader, version);
+				readVersionInfo(reader, version);
 				plugin.addVersion(version);
 				break;
 
@@ -360,7 +346,7 @@ public class CordovaPluginRegistryManager {
 		reader.endObject();
 	}
 
-	private void parseLatestVersion(JsonReader reader, CordovaRegistryPluginInfo plugin) throws IOException{
+	private void parseLatestVersion(JsonReader reader, CordovaRegistryPlugin plugin) throws IOException{
 		reader.beginObject();
 		JsonToken token = reader.peek();
 		while ( token != JsonToken.END_OBJECT){
@@ -381,7 +367,7 @@ public class CordovaPluginRegistryManager {
 		reader.endObject();
 	}
 
-	private void parseMaintainers(JsonReader reader, CordovaRegistryPluginInfo plugin) throws IOException{
+	private void parseMaintainers(JsonReader reader, CordovaRegistryPlugin plugin) throws IOException{
 		reader.beginArray();
 		String name=null, email = null;
 		JsonToken token = reader.peek();
@@ -415,7 +401,7 @@ public class CordovaPluginRegistryManager {
 		reader.endArray();
 	}
 
-	private void parseKeywords(JsonReader reader, CordovaRegistryPluginInfo plugin) throws IOException{
+	private void parseKeywords(JsonReader reader, CordovaRegistryPlugin plugin) throws IOException{
 		reader.beginArray();
 		while(reader.hasNext()){
 			plugin.addKeyword(reader.nextString());

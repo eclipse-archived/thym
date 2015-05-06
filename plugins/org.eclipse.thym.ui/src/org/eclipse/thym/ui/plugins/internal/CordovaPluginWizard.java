@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.IWorkbench;
@@ -83,7 +83,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 		private int opType;
 		private File dir;
 		private URI gitRepo;
-		private List<CordovaRegistryPluginVersion> plugins;
+		private List<RegistryPluginVersion> plugins;
 		private FileOverwriteCallback fileOverwriteCallback;
 		
 		private PluginInstallOperation(CordovaPluginManager pm, FileOverwriteCallback overwrite){
@@ -103,7 +103,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 			opType = PLUGIN_SOURCE_GIT;
 		}
 		
-		public PluginInstallOperation(List<CordovaRegistryPluginVersion> plugins, CordovaPluginManager pm, FileOverwriteCallback overwite ){
+		public PluginInstallOperation(List<RegistryPluginVersion> plugins, CordovaPluginManager pm, FileOverwriteCallback overwite ){
 			this(pm,overwite);
 			this.plugins = plugins;
 			opType = PLUGIN_SOURCE_REGISTRY;
@@ -121,7 +121,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 				pm.installPlugin(this.gitRepo,fileOverwriteCallback,false, monitor );
 				break;
 			case PLUGIN_SOURCE_REGISTRY:
-				for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
+				for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
 					pm.installPlugin(cordovaRegistryPluginVersion,fileOverwriteCallback,false, monitor);
 				}
 				break;
@@ -171,7 +171,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, Fil
 			op = new PluginInstallOperation(uri, pm, this);
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
-			List<CordovaRegistryPluginVersion> plugins = pageTwo.getSelectedPluginVersions();
+			List<RegistryPluginVersion> plugins = pageTwo.getSelectedPluginVersions();
 			op = new PluginInstallOperation(plugins, pm, this);
 			break;
 		default:

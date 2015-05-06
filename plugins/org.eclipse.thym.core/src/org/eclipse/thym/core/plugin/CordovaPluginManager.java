@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -70,7 +70,7 @@ import org.eclipse.thym.core.plugin.actions.CopyFileAction;
 import org.eclipse.thym.core.plugin.actions.DependencyInstallAction;
 import org.eclipse.thym.core.plugin.actions.PluginInstallRecordAction;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -147,13 +147,13 @@ public class CordovaPluginManager {
 	 *<li>if an error occurs during installation</li>
 	 *</ul>
 	 */
-	public void installPlugin(CordovaRegistryPluginVersion plugin, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor ) throws CoreException{
+	public void installPlugin(RegistryPluginVersion plugin, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor ) throws CoreException{
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled())
 					return;
 		
-		CordovaPluginRegistryManager regMgr = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+		CordovaPluginRegistryManager regMgr = new CordovaPluginRegistryManager();
 		File directory = regMgr.getInstallationDirectory(plugin,monitor);
 		Document doc = readPluginXML(directory);
 		doInstallPlugin(directory,doc,overwrite,monitor);

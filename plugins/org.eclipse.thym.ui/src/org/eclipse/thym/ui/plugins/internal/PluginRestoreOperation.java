@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,7 +27,7 @@ import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.core.plugin.RestorableCordovaPlugin;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
@@ -59,7 +59,7 @@ public class PluginRestoreOperation extends WorkspaceModifyOperation {
 		for (RestorableCordovaPlugin feature : restorables) {
 			switch (feature.getType()) {
 			case REGISTRY:
-				CordovaRegistryPluginVersion version = getVersion(feature);
+				RegistryPluginVersion version = getVersion(feature);
 				if(version == null ){
 					throw new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, 
 							NLS.bind("Version {0} for Cordova plugin {1} does not exist on registry", new String[]{feature.getVersion(), })));
@@ -85,8 +85,8 @@ public class PluginRestoreOperation extends WorkspaceModifyOperation {
 	}
 	
 	
-	private CordovaRegistryPluginVersion getVersion(RestorableCordovaPlugin restorable) throws CoreException{
-		CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+	private RegistryPluginVersion getVersion(RestorableCordovaPlugin restorable) throws CoreException{
+		CordovaPluginRegistryManager regMng = new CordovaPluginRegistryManager();
 			CordovaRegistryPlugin plugin = regMng.getCordovaPluginInfo(restorable.getId());
 			String version = restorable.getVersion();
 			if(version == null){

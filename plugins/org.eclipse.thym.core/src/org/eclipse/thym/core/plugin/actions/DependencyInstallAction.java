@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,7 @@ import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 
 public class DependencyInstallAction implements IPluginInstallationAction {
 
@@ -46,10 +46,10 @@ public class DependencyInstallAction implements IPluginInstallationAction {
 			if( uri != null){
 				pluginManager.installPlugin(uri,overwriteCallback, true, new NullProgressMonitor());
 			}else{//install from registry
-				CordovaPluginRegistryManager manager = new CordovaPluginRegistryManager(CordovaPluginRegistryManager.DEFAULT_REGISTRY_URL);
+				CordovaPluginRegistryManager manager = new CordovaPluginRegistryManager();
 				CordovaRegistryPlugin plugin = manager.getCordovaPluginInfo(dependencyPluginId);
-				List<CordovaRegistryPluginVersion> versions = plugin.getVersions();
-				for (CordovaRegistryPluginVersion version : versions) {
+				List<RegistryPluginVersion> versions = plugin.getVersions();
+				for (RegistryPluginVersion version : versions) {
 					if(plugin.getLatestVersion().equals(version.getVersionNumber())){
 						pluginManager.installPlugin(version, this.overwriteCallback, true, new NullProgressMonitor());
 					}
