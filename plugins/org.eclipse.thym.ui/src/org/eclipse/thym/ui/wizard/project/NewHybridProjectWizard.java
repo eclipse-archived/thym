@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,7 +36,7 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
@@ -140,8 +140,8 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 			pm.installPlugin(uri,cb,false, monitor );
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
-			List<CordovaRegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
-			for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
+			List<RegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
+			for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
 				pm.installPlugin(cordovaRegistryPluginVersion,cb,false, monitor);
 			}
 			break;

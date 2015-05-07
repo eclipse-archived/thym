@@ -37,7 +37,7 @@ public class CordovaRegistryPlugin extends CordovaRegistryPluginInfo {
 		}
 		
 		public String getName(){
-			return getName();
+			return CordovaRegistryPlugin.this.getName();
 		}
 
 		public String getTarball() {

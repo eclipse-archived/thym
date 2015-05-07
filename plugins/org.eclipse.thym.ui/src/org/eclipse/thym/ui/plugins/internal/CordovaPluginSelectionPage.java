@@ -237,9 +237,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 			Display.getCurrent().asyncExec(new Runnable() {
 				@Override
 				public void run() {
-					if (cordovaPluginInfos == null) {
-						populatePluginInfos();
-					}
+					populatePluginInfos();
 					displayPluginInfos();
 				}
 			});
@@ -251,7 +249,6 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		grpProject.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		grpProject.setText("Project");
 		grpProject.setLayout(new GridLayout(3, false));
-		
 		Label lblProject = new Label(grpProject, SWT.NONE);
 		lblProject.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblProject.setText("Project:");
@@ -294,12 +291,16 @@ public class CordovaPluginSelectionPage extends WizardPage {
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException,
 						InterruptedException {
-					try {
-						if(cordovaPluginInfos == null ){
-							cordovaPluginInfos = client.retrievePluginInfos(monitor);
+					synchronized (this.getClass()) {
+						// called from multiple locations! synchronize 
+						// to avoid multiple trips to retrieve the info
+						try {
+							if (cordovaPluginInfos == null) {
+								cordovaPluginInfos = client.retrievePluginInfos(monitor);
+							}
+						} catch (CoreException ce) {
+							throw new InvocationTargetException(ce);
 						}
-					} catch (CoreException ce) {
-						throw new InvocationTargetException(ce);
 					}
 					if(cordovaPluginInfos == null){
 						CoreException e =  new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, 
