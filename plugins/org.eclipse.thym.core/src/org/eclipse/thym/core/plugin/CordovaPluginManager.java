@@ -441,7 +441,7 @@ public class CordovaPluginManager {
 		if(pluginId == null ) return false;
 		IFolder plugins = getPluginsFolder();
 		IPath pluginIDPath = new Path(pluginId);
-		pluginIDPath.append(PlatformConstants.FILE_XML_PLUGIN);
+		pluginIDPath = pluginIDPath.append(PlatformConstants.FILE_XML_PLUGIN);
 		boolean result = plugins.exists(pluginIDPath);
 		return result;
 	}
