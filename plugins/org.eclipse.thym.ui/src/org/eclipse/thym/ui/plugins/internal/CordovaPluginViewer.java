@@ -38,8 +38,6 @@ public class CordovaPluginViewer extends FilteredViewer {
 
 		@Override
 		public void dispose() {
-			// TODO Auto-generated method stub
-			
 		}
 
 		@SuppressWarnings("unchecked")

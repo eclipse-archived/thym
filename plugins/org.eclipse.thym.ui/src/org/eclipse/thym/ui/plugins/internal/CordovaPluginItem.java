@@ -30,26 +30,29 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 
-public class CordovaPluginItem extends BaseCordovaPluginItem<CordovaRegistryPlugin> {
+public class CordovaPluginItem extends ControlListItem<CordovaRegistryPlugin> {
 	
 	private final static int MAX_DESCRIPTION_LENGTH = 162;
 	
+	private final CordovaPluginViewer viewer;
+	private final CordovaPluginWizardResources resources;
 	private Label description;
 	private Label nameLabel;
 	private Label licenseLbl;
-	private final CordovaPluginViewer viewer;
 	private RegistryPluginVersion currentSelectedVersion;
 	private ComboViewer versionComboViewer;
 
 	public CordovaPluginItem(Composite parent, int style, CordovaRegistryPlugin element, CordovaPluginWizardResources resources, CordovaPluginViewer viewer ) {
-		super(parent, element, resources);
+		super(parent, SWT.NULL, element);
 		this.viewer = viewer;
-		createContent();
+		this.resources = resources;
 	}
 
 	@Override
 	protected void refresh() {
-	//Nothing to do
+		if(nameLabel == null){
+			createContent();
+		}
 	}
 
 	private void createContent(){
@@ -58,8 +61,7 @@ public class CordovaPluginItem extends BaseCordovaPluginItem<CordovaRegistryPlug
 		layout.marginTop = 2;
 		layout.marginBottom = 2;
 		setLayout(layout);
-
-		Composite versionContainer = new Composite(this, SWT.INHERIT_NONE);
+		Composite versionContainer = new Composite(this, SWT.NULL);
 		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.BEGINNING).span(1, 2).applyTo(versionContainer);
 		GridLayoutFactory.fillDefaults().spacing(1, 1).numColumns(2).applyTo(versionContainer);
 		
@@ -118,6 +120,14 @@ public class CordovaPluginItem extends BaseCordovaPluginItem<CordovaRegistryPlug
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(licenseLbl);
 		setDescriptionText(getData().getDescription());
 		licenseLbl.setText("License:"+getData().getLicense());
+		
+		Label separator = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridDataFactory.fillDefaults()
+		.indent(0, 2)
+		.grab(true, false)
+		.span(3, 1)
+		.align(SWT.FILL, SWT.BEGINNING)
+		.applyTo(separator);
 	}
 
 	private void modifyVersionSelection(RegistryPluginVersion selectedVersion) {

@@ -25,10 +25,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 
-public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistryPluginInfo>{
+public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPluginInfo>{
 
 	private static final int MAX_DESCRIPTION_CHARS = 162;
 	private final CordovaPluginCatalogViewer viewer;
+	private final CordovaPluginWizardResources resources;
 	private Button checkbox;
 	private boolean installed;
 	private Label nameLabel;
@@ -37,15 +38,22 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 	private String descriptionText;
 
 	public CordovaPluginInfoItem(Composite parent, CordovaRegistryPluginInfo element, CordovaPluginWizardResources resources, CordovaPluginCatalogViewer viewer, boolean installed) {
-		super(parent,element,resources);
+		super(parent,SWT.NULL, element);
+		this.resources = resources;
 		this.viewer = viewer;
 		this.installed = installed;
 	}
 
 	@Override
 	protected void refresh() {
-		createContent();
+		if(nameLabel == null ){//already created¸
+			createContent();
+		}
 		checkbox.setEnabled(!installed);
+		if(installed){
+			nameLabel.setFont(resources.getSmallItalicHeaderFont());
+			description.setFont(resources.getItalicFont());
+		}
 		nameLabel.setText(getNameString());
 		description.setText(getDescriptionText()); 
 	}
@@ -95,21 +103,21 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 	}
 	
 	private void createContent(){
-		if(nameLabel != null ){//already created
-			return;
-		}
+
 		GridLayout layout = new GridLayout(3, false);
 		layout.marginLeft = 7;
 		layout.marginTop = 2;
 		setLayout(layout);
 
-		final Composite checkboxContainer = new Composite(this, SWT.INHERIT_NONE);
+		final Composite checkboxContainer = new Composite(this, SWT.NULL);
 		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.BEGINNING).span(1, 3).applyTo(checkboxContainer);
 		GridLayoutFactory.fillDefaults().spacing(1, 1).numColumns(3).applyTo(checkboxContainer);
 
 		checkbox = new Button(checkboxContainer, SWT.CHECK | SWT.INHERIT_FORCE);
 		checkbox.setText(" "); //$NON-NLS-1$
-		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.CENTER).applyTo(checkbox);
+		GridDataFactory.swtDefaults()
+		.align(SWT.CENTER, SWT.CENTER)
+		.applyTo(checkbox);
 		checkbox.addListener(SWT.Selection, new Listener() {
 			
 			@Override
@@ -124,16 +132,12 @@ public class CordovaPluginInfoItem extends BaseCordovaPluginItem<CordovaRegistry
 		
 		description = new Label(this, SWT.NULL | SWT.WRAP);
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 2).hint(100, SWT.DEFAULT).applyTo(description);
+		Label separator = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
+		GridDataFactory.fillDefaults()
+		.indent(0, 2)
+		.grab(true, false)
+		.span(2, 1)
+		.align(SWT.FILL, SWT.BEGINNING)
+		.applyTo(separator);
 	}
-	
-	@Override
-	public void updateColors(int index) {
-		super.updateColors(index);
-		if(installed){
-			setForeground(resources.getDisabledColor());
-		}else{
-			setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-		}
-	}
-	
 }

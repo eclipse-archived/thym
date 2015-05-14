@@ -45,7 +45,7 @@ public abstract class PluginControlListViewer extends StructuredViewer {
 	 * @param style
 	 */
 	public PluginControlListViewer(Composite parent, int style) {
-		scrolled = new ScrolledComposite(parent, style | SWT.VERTICAL);
+		scrolled = new ScrolledComposite(parent, style | SWT.V_SCROLL);
 		int height = JFaceResources.getDefaultFont().getFontData()[0].getHeight();
 		scrolled.getVerticalBar().setIncrement(height * 2);
 		scrolled.setExpandHorizontal(true);
@@ -74,7 +74,6 @@ public abstract class PluginControlListViewer extends StructuredViewer {
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 0;
 		control.setLayout(layout);
-		control.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 		control.setBackgroundMode(SWT.INHERIT_FORCE);
 		control.addControlListener(new ControlListener() {
 			public void controlMoved(ControlEvent e) {
@@ -204,8 +203,7 @@ public abstract class PluginControlListViewer extends StructuredViewer {
 		}
 
 		for (int i = 0; i < infos.length; i++) {
-			ControlListItem<?> item = createNewItem(infos[i]);
-			item.updateColors(i);
+			createNewItem(infos[i]);
 		}
 
 		control.layout(true);
@@ -381,12 +379,6 @@ public abstract class PluginControlListViewer extends StructuredViewer {
 				item.dispose();
 			}
 		}
-
-		Control[] existingChildren = control.getChildren();
-		for (int i = 0; i < existingChildren.length; i++) {
-			ControlListItem<?> item = (ControlListItem<?>) existingChildren[i];
-			item.updateColors(i);
-		}
 		control.layout(true);
 		doUpdateContent();
 	}
@@ -476,8 +468,7 @@ public abstract class PluginControlListViewer extends StructuredViewer {
 		}
 
 		for (int i = 0; i < infos.length; i++) {
-			ControlListItem<?> item = createNewItem(infos[i]);
-			item.updateColors(i);
+			createNewItem(infos[i]);
 		}
 
 		control.layout(true);

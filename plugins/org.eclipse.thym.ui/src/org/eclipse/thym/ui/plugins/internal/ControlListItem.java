@@ -12,15 +12,13 @@
 package org.eclipse.thym.ui.plugins.internal;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.PlatformUI;
 
 /**
  * Based on {@link org.eclipse.ui.internal.progress.ProgressInfoItem}.
@@ -30,7 +28,6 @@ import org.eclipse.ui.PlatformUI;
 @SuppressWarnings("restriction")
 public abstract class ControlListItem<T> extends Composite {
 
-	static String DARK_COLOR_KEY = "org.eclipse.mylyn.commons.ui.ControlListItem.DARK_COLOR"; //$NON-NLS-1$
 
 	interface IndexListener {
 
@@ -54,25 +51,9 @@ public abstract class ControlListItem<T> extends Composite {
 	}
 
 	IndexListener indexListener;
-
-	private int currentIndex;
-
 	private boolean selected;
-
 	private final MouseAdapter mouseListener;
-
 	protected boolean isShowing = false;
-
-	static {
-		// Mac has different Gamma value
-		int shift = "carbon".equals(SWT.getPlatform()) ? -25 : -10;//$NON-NLS-1$ 
-
-		Color lightColor = PlatformUI.getWorkbench().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-
-		// Determine a dark color by shifting the list color
-		RGB darkRGB = new RGB(Math.max(0, lightColor.getRed() + shift), Math.max(0, lightColor.getGreen() + shift), Math.max(0, lightColor.getBlue() + shift));
-		JFaceResources.getColorRegistry().put(DARK_COLOR_KEY, darkRGB);
-	}
 
 	/**
 	 * Create a new instance of the receiver with the specified parent, style and info object/
@@ -82,16 +63,12 @@ public abstract class ControlListItem<T> extends Composite {
 	 * @param element
 	 */
 	public ControlListItem(Composite parent, int style, T element) {
-		super(parent, style | SWT.NO_FOCUS);
+		super(parent, style | SWT.NO_FOCUS | SWT.DOUBLE_BUFFERED );
 		Assert.isNotNull(element);
 		super.setData(element);
 		setLayoutData(new GridData(SWT.FILL, SWT.NONE, true, false));
 		mouseListener = doCreateMouseListener();
 		registerChild(this);
-		//		Control[] children = getChildren();
-		//		for (Control child : children) {
-		//			registerChild(child);
-		//		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -131,26 +108,6 @@ public abstract class ControlListItem<T> extends Composite {
 	 */
 	protected abstract void refresh();
 
-	/**
-	 * Set the color base on the index
-	 * 
-	 * @param index
-	 */
-	public void updateColors(int index) {
-		currentIndex = index;
-
-		if (selected) {
-			setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-			setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
-		} else {
-			if (index % 2 == 0) {
-				setBackground(JFaceResources.getColorRegistry().get(DARK_COLOR_KEY));
-			} else {
-				setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
-			}
-			setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-		}
-	}
 
 	@Override
 	public void setForeground(Color color) {
@@ -178,7 +135,6 @@ public abstract class ControlListItem<T> extends Composite {
 	 */
 	public void setSelected(boolean select) {
 		selected = select;
-		updateColors(currentIndex);
 	}
 
 	/**
