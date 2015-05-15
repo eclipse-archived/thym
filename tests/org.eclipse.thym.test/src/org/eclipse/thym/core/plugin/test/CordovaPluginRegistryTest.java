@@ -18,6 +18,7 @@ import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
+import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
 
 import static org.junit.Assert.*;
 
@@ -53,7 +54,27 @@ public class CordovaPluginRegistryTest {
 		assertNotNull(version.getShasum());
 		assertNotNull(version.getTarball());
 	}
+	
+	@Test
+	public void testCordovaRegistryMapper_toOld(){
+		String oldID = CordovaPluginRegistryMapper.toOld("cordova-plugin-console"); 
+		assertEquals("org.apache.cordova.console", oldID);
+		assertNull("unkown new id should return null",CordovaPluginRegistryMapper.toOld("some-unknown-id"));
+	}
 
+	@Test
+	public void testCordovaRegistryMapper_toNew(){
+		String newId = CordovaPluginRegistryMapper.toNew("org.apache.cordova.console");
+		assertEquals("cordova-plugin-console", newId);
+		assertNull("unknow old  id should return null", CordovaPluginRegistryMapper.toNew("some.old.id"));
+	}
+	
+	@Test
+	public void testCordovaRegistryMapper_nullParams(){
+		assertNull(CordovaPluginRegistryMapper.toNew(null));
+		assertNull(CordovaPluginRegistryMapper.toOld(null));
+	}
+	
 	private CordovaPluginRegistryManager getCordovaIORegistryClient() {
 		CordovaPluginRegistryManager client = new CordovaPluginRegistryManager();
 		return client;

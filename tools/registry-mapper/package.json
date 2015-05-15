@@ -1,0 +1,9 @@
+{ 
+	"name": "registry-mapper-converter",
+	"version": "0.1.0",
+	"main": "createJavaMapper.js",
+	"dependencies": {
+		"cordova-registry-mapper": "latest",
+		"shelljs" :"latest"
+	}
+}
