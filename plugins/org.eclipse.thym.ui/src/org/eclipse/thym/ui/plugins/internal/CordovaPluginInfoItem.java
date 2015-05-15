@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 
 public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPluginInfo>{
@@ -36,6 +37,7 @@ public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPlugin
 	private Label description;
 	private String nameString;
 	private String descriptionText;
+	private Label oldIdLabel;
 
 	public CordovaPluginInfoItem(Composite parent, CordovaRegistryPluginInfo element, CordovaPluginWizardResources resources, CordovaPluginCatalogViewer viewer, boolean installed) {
 		super(parent,SWT.NULL, element);
@@ -56,6 +58,9 @@ public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPlugin
 		}
 		nameLabel.setText(getNameString());
 		description.setText(getDescriptionText()); 
+		if(oldIdLabel != null ){
+			oldIdLabel.setText(NLS.bind("formerly: {0}", CordovaPluginRegistryMapper.toOld(getData().getName())));
+		}
 	}
 	
 
@@ -110,7 +115,7 @@ public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPlugin
 		setLayout(layout);
 
 		final Composite checkboxContainer = new Composite(this, SWT.NULL);
-		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.BEGINNING).span(1, 3).applyTo(checkboxContainer);
+		GridDataFactory.swtDefaults().align(SWT.CENTER, SWT.BEGINNING).span(1, 4).applyTo(checkboxContainer);
 		GridLayoutFactory.fillDefaults().spacing(1, 1).numColumns(3).applyTo(checkboxContainer);
 
 		checkbox = new Button(checkboxContainer, SWT.CHECK | SWT.INHERIT_FORCE);
@@ -132,6 +137,14 @@ public class CordovaPluginInfoItem extends ControlListItem<CordovaRegistryPlugin
 		
 		description = new Label(this, SWT.NULL | SWT.WRAP);
 		GridDataFactory.fillDefaults().grab(true, false).span(2, 2).hint(100, SWT.DEFAULT).applyTo(description);
+		
+		String oldId = CordovaPluginRegistryMapper.toOld(getData().getName());
+		if( oldId != null ){
+			oldIdLabel = new Label(this, SWT.NULL);
+			GridDataFactory.fillDefaults().grab(true, false).span(2,1).align(SWT.FILL, SWT.CENTER).applyTo(oldIdLabel);
+			oldIdLabel.setFont(resources.getSubTextFont());
+		}
+		
 		Label separator = new Label(this, SWT.SEPARATOR | SWT.HORIZONTAL);
 		GridDataFactory.fillDefaults()
 		.indent(0, 2)
