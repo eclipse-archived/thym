@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ * 		 Kaloyan Raev <kaloyan.r@zend.com> - Bug 449766
  *******************************************************************************/
 package org.eclipse.thym.android.core.adt;
 
@@ -440,8 +441,8 @@ public class AndroidSDKManager {
 	}
 	
 	private String getAndroidCommand(){
-		String command = addQuotes(toolsDir+"android");
-		return isWindows() ? "cmd /c " + command : command; 
+		String scriptName = isWindows() ? "android.bat" : "android"; 
+		return addQuotes(toolsDir + scriptName);
 	}
 	
 	private String getADBCommand(){
