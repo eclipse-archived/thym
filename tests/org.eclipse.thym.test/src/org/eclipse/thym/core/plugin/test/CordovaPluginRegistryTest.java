@@ -26,6 +26,9 @@ import org.junit.Test;
 
 public class CordovaPluginRegistryTest {
 	
+	private static final String MAPPER_OLD_ID = "org.apache.cordova.console";
+	private static final String MAPPER_NEW_ID = "cordova-plugin-console";
+
 	@Test
 	public void testRetrievePluginInfosFromCordovaRegistry() throws CoreException{
 		CordovaPluginRegistryManager client = getCordovaIORegistryClient();
@@ -57,16 +60,24 @@ public class CordovaPluginRegistryTest {
 	
 	@Test
 	public void testCordovaRegistryMapper_toOld(){
-		String oldID = CordovaPluginRegistryMapper.toOld("cordova-plugin-console"); 
-		assertEquals("org.apache.cordova.console", oldID);
+		String oldID = CordovaPluginRegistryMapper.toOld(MAPPER_NEW_ID); 
+		assertEquals(MAPPER_OLD_ID, oldID);
 		assertNull("unkown new id should return null",CordovaPluginRegistryMapper.toOld("some-unknown-id"));
 	}
 
 	@Test
 	public void testCordovaRegistryMapper_toNew(){
-		String newId = CordovaPluginRegistryMapper.toNew("org.apache.cordova.console");
-		assertEquals("cordova-plugin-console", newId);
+		String newId = CordovaPluginRegistryMapper.toNew(MAPPER_OLD_ID);
+		assertEquals(MAPPER_NEW_ID, newId);
 		assertNull("unknow old  id should return null", CordovaPluginRegistryMapper.toNew("some.old.id"));
+	}
+	
+	@Test
+	public void testCordovaRegistryMapper_alternateId(){
+		String alternate = CordovaPluginRegistryMapper.alternateID(MAPPER_OLD_ID);
+		assertEquals(MAPPER_NEW_ID, alternate);
+		alternate = CordovaPluginRegistryMapper.alternateID(MAPPER_NEW_ID);
+		assertEquals(MAPPER_OLD_ID,alternate);
 	}
 	
 	@Test

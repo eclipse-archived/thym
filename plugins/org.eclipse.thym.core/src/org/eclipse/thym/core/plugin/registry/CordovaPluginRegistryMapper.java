@@ -127,4 +127,23 @@ public final class CordovaPluginRegistryMapper {
 		}
 		return null;
 	}
+	
+	/**
+	 * Returns the either the old or new id for the given id. 
+	 *  
+	 * @param id
+	 * @return null or alternate id.
+	 */
+	public static String alternateID(String id){
+		String oldId = toOld(id);
+		if(oldId != null ){
+			return oldId;
+		}
+		String newId = toNew(id);
+		if(newId != null ){
+			return newId;
+		}
+		return null;
+	}
+	
 }

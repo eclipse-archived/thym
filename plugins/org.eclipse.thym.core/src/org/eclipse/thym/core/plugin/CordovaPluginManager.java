@@ -70,6 +70,7 @@ import org.eclipse.thym.core.plugin.actions.CopyFileAction;
 import org.eclipse.thym.core.plugin.actions.DependencyInstallAction;
 import org.eclipse.thym.core.plugin.actions.PluginInstallRecordAction;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
+import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -268,7 +269,10 @@ public class CordovaPluginManager {
 	 * @throws CoreException
 	 */
 	public void fixInstalledPlugin(final CordovaPlugin plugin, final FileOverwriteCallback overwrite, IProgressMonitor monitor ) throws CoreException{
-		File directory = getPluginHomeDirectory(plugin);
+		IFolder pluginHome = getPluginHomeFolder(plugin);
+		if(pluginHome == null ) 
+			return;
+		File directory = pluginHome.getLocation().toFile();
 		Document doc = readPluginXML(directory);
 		List<IPluginInstallationAction> actions = collectInstallActions(doc, plugin.getId(), overwrite);
 		actions.add(getPluginInstallRecordAction(doc, null));
@@ -295,7 +299,7 @@ public class CordovaPluginManager {
 			HybridCore.log(IStatus.WARNING, "Cordova Plugin ("+id+") is already installed, skipping.",null);
 		}
 		
-		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
+		IFolder plugins = getPluginsFolder();
 		if( !plugins.exists() ){
 			plugins.create(true, true, monitor);
 		}
@@ -333,8 +337,8 @@ public class CordovaPluginManager {
 	}
 	
 	private void saveFetchMetadata(JsonObject source, String id, IProgressMonitor monitor )throws CoreException{
-		IFolder plugins = getPluginsFolder();
-		IFolder pluginHome = plugins.getFolder(id);
+		IFolder pluginHome = getPluginHomeFolder(id);
+		if(pluginHome == null ) return;
 		IFile file = pluginHome.getFile(".fetch.json");
 
 		JsonObject object = new JsonObject();
@@ -360,10 +364,7 @@ public class CordovaPluginManager {
 	public void unInstallPlugin(String id, IProgressMonitor monitor) throws CoreException{
 		if(id == null || !isPluginInstalled(id))
 			return;
-		IResource dir = this.project.getProject().findMember("/"+PlatformConstants.DIR_PLUGINS+"/"+id);
-		if(dir == null || !dir.exists() ){//No plugins folder abort
-			return;
-		}
+		IFolder dir =  getPluginHomeFolder(id);
 		File pluginFile = new File(dir.getLocation().toFile(), PlatformConstants.FILE_XML_PLUGIN);
 		if( !pluginFile.exists() ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
@@ -376,9 +377,8 @@ public class CordovaPluginManager {
 				return true;
 			}
 		};
-		IResource pluginsDir = getPluginsFolder();
 		List<IPluginInstallationAction> actions = new ArrayList<IPluginInstallationAction>();
-		File destination = new File(pluginsDir.getLocation().toFile(), id);
+		File destination = new File(getPluginsFolder().getLocation().toFile(), id);
 		CopyFileAction copy = new CopyFileAction(dir.getLocation().toFile(), destination);
 		actions.add(copy);
 		actions.addAll(collectInstallActions( doc, id, cb));
@@ -386,6 +386,7 @@ public class CordovaPluginManager {
 		runActions(actions,true,cb, monitor);
 		resetInstalledPlugins();
 	}
+
 	
 	private void resetInstalledPlugins() {
 		installedPlugins.clear();
@@ -433,17 +434,24 @@ public class CordovaPluginManager {
 	
 	/**
 	 * Checks if the given plug-in with pluginId is installed for the project.
+	 * Also uses {@link CordovaPluginRegistryMapper} to check alternate IDs 
+	 * for plugins.
 	 * 
 	 * @param pluginId
 	 * @return true if the plug-in is installed
 	 */
 	public boolean isPluginInstalled(String pluginId){
 		if(pluginId == null ) return false;
-		IFolder plugins = getPluginsFolder();
-		IPath pluginIDPath = new Path(pluginId);
-		pluginIDPath = pluginIDPath.append(PlatformConstants.FILE_XML_PLUGIN);
-		boolean result = plugins.exists(pluginIDPath);
-		return result;
+		try{
+			IFolder pluginHome = getPluginHomeFolder(pluginId);
+			if(pluginHome !=  null ){
+				IFile pluginxml = pluginHome.getFile(PlatformConstants.FILE_XML_PLUGIN);
+				return pluginxml.getLocation() != null && pluginHome.getLocation().toFile().exists();
+			}
+		}catch(CoreException e){
+			//ignore to return false
+		}
+		return false;
 	}
 	
 	/**
@@ -517,6 +525,12 @@ public class CordovaPluginManager {
 			for (Feature feature : features) {
 				Map<String, String> params = feature.getParams();
 				String id = params.get("id");
+				//Check if we can map the given id to a new ID. If the we can map a new id we use that to install.
+				String newId = CordovaPluginRegistryMapper.toNew(id);
+				if(newId != null){
+					id = newId;
+				}
+				
 				if (id != null && !isPluginInstalled(id)) {
 					RestorableCordovaPlugin rp = new RestorableCordovaPlugin();
 					rp.setId(id);
@@ -610,18 +624,54 @@ public class CordovaPluginManager {
 		}
 	}
 
-	private File getPluginHomeDirectory(CordovaPlugin plugin) throws CoreException{
-		IFolder plugins = getPluginsFolder();
-		if(plugins.exists()){
-			IFolder pluginHome = plugins.getFolder(plugin.getId());
-			if(pluginHome.exists() && pluginHome.getLocation() != null ){
-				File f = pluginHome.getLocation().toFile();
-				if(f.exists())
-					return f;
-			}
-		}
-		throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Plugin folder does not exist"));
+	/**
+	 * Returns the folder that the plugin with id is installed under the plugins folder.
+	 * It also uses {@link CordovaPluginRegistryMapper} to check for alternate ids.
+	 * 
+	 * <p>convenience method for passing {@link CordovaPlugin} instances</p>
+	 * 
+	 * @param plugin
+	 * @return null or folder
+	 * @throws CoreException - if <i>plugins</i> folder does not exist
+	 * 
+	 */
+	private IFolder getPluginHomeFolder(CordovaPlugin plugin) throws CoreException{
+		if(plugin == null ) return null;
+		return getPluginHomeFolder(plugin.getId());
 	}
+	
+	
+	/**
+	 * Returns the folder that the plugin with id is installed under the plugins folder.
+	 * It also uses {@link CordovaPluginRegistryMapper} to check for alternate ids.
+	 * 
+	 * @param id
+	 * @return null or a folder
+	 * throws CoreException - if <i>plugins</i> folder does not exist
+	 */
+	private IFolder getPluginHomeFolder(String id) throws CoreException{
+		if(id == null ) return null;
+		IFolder plugins = getPluginsFolder();
+		if(!plugins.exists()){
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Plugin folder does not exist"));
+		}
+		IFolder pluginHome = plugins.getFolder(id);
+		IPath location = pluginHome.getLocation();
+		if(pluginHome.exists() &&  location != null && location.toFile().isDirectory()){
+			return pluginHome;
+		}
+		// try the alternate ID 
+		String alternateId = CordovaPluginRegistryMapper.alternateID(id);
+		if(alternateId != null ){
+			 pluginHome = plugins.getFolder(alternateId);
+			 location = pluginHome.getLocation();
+			 if(pluginHome.exists() &&  location != null && location.toFile().isDirectory()){
+				 return pluginHome;
+			 }
+		}
+		return null;
+	}
+	
 
 	private IFolder getPluginsFolder() {
 		IFolder plugins = this.project.getProject().getFolder(PlatformConstants.DIR_PLUGINS);
@@ -644,8 +694,11 @@ public class CordovaPluginManager {
 			File platformProject, FileOverwriteCallback overwrite,
 			IProgressMonitor monitor) throws CoreException{
 		if(platform == null ) return;
+
+		IFolder pluginHomeFolder = getPluginHomeFolder(plugin);
+		if(pluginHomeFolder == null ) return;
 			
-		File pluginHome = getPluginHomeDirectory(plugin);
+		File pluginHome = pluginHomeFolder.getLocation().toFile();
 		File pluginFile = new File(pluginHome, PlatformConstants.FILE_XML_PLUGIN);
 		Document doc = XMLUtil.loadXML(pluginFile, false); 
 		//TODO: check  supported engines
