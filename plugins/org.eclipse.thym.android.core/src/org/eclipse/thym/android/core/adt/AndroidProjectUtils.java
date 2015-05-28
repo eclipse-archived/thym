@@ -69,7 +69,7 @@ public class AndroidProjectUtils {
 				AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
 				List<AndroidSDK> targets = sdkManager.listTargets();
 				for (AndroidSDK androidSDK : targets) {
-					if(alc.compare(targetValue, androidSDK.getApiLevel())<=0){
+					if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
 						return androidSDK;
 					}
 				}
