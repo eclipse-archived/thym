@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
-import org.eclipse.thym.core.internal.util.TextDetectingStreamListener;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.wp.core.WPCore;
 import org.eclipse.thym.wp.internal.core.Messages;
@@ -185,12 +184,10 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 					return;
 				}
 				monitor.worked(1);
-				TextDetectingStreamListener listener = new TextDetectingStreamListener(
-						"Build succeeded."); //$NON-NLS-1$
-				processUtility.execSync(cmdString.toString(), projectLocation,
-						listener, listener, monitor, null,
+				int ret = processUtility.execSync(cmdString.toString(), projectLocation,
+						null, null, monitor, null,
 						getLaunchConfiguration());
-				if (!listener.isTextDetected()) {
+				if (ret != 0) {
 					throw new CoreException(new Status(IStatus.ERROR,
 							WPCore.PLUGIN_ID, Messages.MSBuild_MSBuildError));
 				}

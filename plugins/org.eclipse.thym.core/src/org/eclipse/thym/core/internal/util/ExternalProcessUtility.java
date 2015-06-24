@@ -58,7 +58,7 @@ public class ExternalProcessUtility {
 		}
 	}
 	
-	public void execSync ( String commandLine, File workingDirectory, 
+	public int execSync ( String commandLine, File workingDirectory, 
 			IStreamListener outStreamListener, 
 			IStreamListener errorStreamListener, IProgressMonitor monitor, String[] envp, ILaunchConfiguration launchConfiguration) throws CoreException{
 		
@@ -101,6 +101,7 @@ public class ExternalProcessUtility {
 				HybridCore.log(IStatus.INFO, "Exception waiting for process to terminate", e);
 			}
 		}
+		return prcs.getExitValue();
 	}	
 	
 	
