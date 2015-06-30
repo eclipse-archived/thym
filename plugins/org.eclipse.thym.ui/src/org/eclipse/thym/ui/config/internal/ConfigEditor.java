@@ -132,7 +132,9 @@ public class ConfigEditor extends FormEditor {
 	@Override
 	public void dispose() {
 		super.dispose();
-		model.dispose();
+		if(model != null ){
+			model.dispose();
+		}
 	}
 
 	public WidgetModel getWidgetModel() {
