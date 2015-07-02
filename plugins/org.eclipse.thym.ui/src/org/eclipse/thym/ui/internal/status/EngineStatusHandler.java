@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,7 +22,10 @@ import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.properties.EnginePropertyPage;
 import org.eclipse.thym.ui.status.AbstractStatusHandler;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-
+/**
+ * Status handler for missing cordova engine cases. 
+ * 
+ */
 public class EngineStatusHandler extends AbstractStatusHandler implements IStatusHandler {
 
 	@Override
@@ -30,12 +33,13 @@ public class EngineStatusHandler extends AbstractStatusHandler implements IStatu
 			throws CoreException {
 		HybridMobileStatus  hs = (HybridMobileStatus) status;
 		
-		boolean open = MessageDialog.openQuestion(AbstractStatusHandler.getShell(), "Missing or incomplete Hybrid Mobile Engine", 
+		final boolean open = MessageDialog.openQuestion(AbstractStatusHandler.getShell(), "Missing or incomplete Hybrid Mobile Engine", 
 				NLS.bind("{0} \n\nWould you like to modify Hybrid Mobile Engine preferences to correct this issue?",hs.getMessage() ));
 		
 		if(open){
-			PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(getShell(), hs.getProject(), EnginePropertyPage.PAGE_ID, new String[]{EnginePropertyPage.PAGE_ID}, null);
-			return dialog.open() == Window.OK? Boolean.TRUE: Boolean.FALSE; 
+			PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(getShell(), hs.getProject(), 
+					EnginePropertyPage.PAGE_ID, new String[]{EnginePropertyPage.PAGE_ID}, null);
+			return (dialog != null && dialog.open() == Window.OK)? Boolean.TRUE: Boolean.FALSE; 
 		}
 		return Boolean.FALSE;
 	}
@@ -53,6 +57,5 @@ public class EngineStatusHandler extends AbstractStatusHandler implements IStatu
 	public void handle(CoreException e) {
 		handle(e.getStatus());
 	}
-	
 
 }
