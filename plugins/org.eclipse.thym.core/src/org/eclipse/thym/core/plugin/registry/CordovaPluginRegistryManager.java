@@ -209,23 +209,28 @@ public class CordovaPluginRegistryManager {
 				} catch (IOException e) { /*ignored*/ }
 			monitor.done();
 		}
-		
 	}
+	
 	private CordovaRegistryPluginInfo parseCordovaRegistryPluginInfo(JsonReader reader) throws IOException{
+		CordovaRegistryPluginInfo info = new CordovaRegistryPluginInfo();
 		reader.beginObject();
 		reader.skipValue(); // name
 		reader.beginArray();
-		reader.nextString();
-		String name = reader.nextString();
-		String desc = reader.nextString();
-		CordovaRegistryPluginInfo info = new CordovaRegistryPluginInfo();
-		info.setName(name);
-		info.setDescription(desc);
+		reader.nextString(); //ecosystem:cordova
+		info.setName(safeReadStringValue(reader));
+		info.setDescription(safeReadStringValue(reader));
 		reader.endArray();
 		reader.nextName();reader.nextInt();
 		reader.endObject();
 		return info;
-
+	}
+	
+	private String safeReadStringValue(JsonReader reader) throws IOException{
+		if(reader.peek() == JsonToken.STRING){
+			return reader.nextString();
+		}
+		reader.skipValue();
+		return "";
 	}
 
 	private void readVersionInfo(JsonReader reader, RegistryPluginVersion version)throws IOException{
