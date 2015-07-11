@@ -51,9 +51,9 @@ public abstract class HybridProjectLaunchShortcut implements ILaunchShortcut{
 			Object selected = ssel.getFirstElement();
 			if(selected instanceof IAdaptable){
 				IAdaptable adaptable = (IAdaptable) selected;
-				IProject project = adaptable.getAdapter(IProject.class);
+				IProject project = (IProject)adaptable.getAdapter(IProject.class);
 				if(project == null ){
-					IResource resource = adaptable.getAdapter(IResource.class);
+					IResource resource = (IResource) adaptable.getAdapter(IResource.class);
 					if(resource != null ){
 						project = resource.getProject();
 					}
