@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
@@ -26,6 +27,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.ILaunchShortcut;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.thym.core.HybridProject;
@@ -33,6 +35,7 @@ import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.ResourceUtil;
 /**
  * General hybrid mobile project launch shortcut.
@@ -46,8 +49,21 @@ public abstract class HybridProjectLaunchShortcut implements ILaunchShortcut{
 	public void launch(ISelection selection, String mode) {
 			IStructuredSelection ssel = (IStructuredSelection) selection;
 			Object selected = ssel.getFirstElement();
-			IResource res = (IResource) selected;
-			launch(res.getProject());
+			if(selected instanceof IAdaptable){
+				IAdaptable adaptable = (IAdaptable) selected;
+				IProject project = adaptable.getAdapter(IProject.class);
+				if(project == null ){
+					IResource resource = adaptable.getAdapter(IResource.class);
+					if(resource != null ){
+						project = resource.getProject();
+					}
+				}
+				if(project != null){
+					launch(project);
+				}else{
+					showEmptyError("Unable to determine a project to launch from selection.");
+				}
+			}
 	}
 
 	@Override
@@ -56,6 +72,9 @@ public abstract class HybridProjectLaunchShortcut implements ILaunchShortcut{
 		if (file != null) {
 			IProject project = file.getProject();
 			launch(project);
+		}
+		else{
+			showEmptyError("Unable to determine the project to launch for from the editor.");
 		}
 	}
 
@@ -82,6 +101,10 @@ public abstract class HybridProjectLaunchShortcut implements ILaunchShortcut{
 		}
 	}
 	
+	private void showEmptyError(String message){
+		MessageDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), 
+				"Launch Failed", message);
+	}
 	
 	
 	/**
