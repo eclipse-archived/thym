@@ -106,8 +106,15 @@ public final class FileUtils {
 		source = getFileURL(source);
 		destination = getFileURL(destination);
 		File dstFile = new File(destination.getFile());
-		if( !dstFile.exists() && !dstFile.createNewFile()){
-			return;
+		if( dstFile.exists()){
+			return; //already exists
+		}else{
+			if(!dstFile.getParentFile().exists() && !dstFile.getParentFile().mkdirs()){
+				return;// not able to create parent
+			}
+			if(!dstFile.createNewFile()){
+				return;// not able to create file
+			}
 		}
 
 		if("file".equals(source.getProtocol())){

@@ -103,6 +103,26 @@ public class FileUtilsTest {
 		assertTrue(resultFile.exists());
 		resultFile.delete();
 	}
+	
+	@Test
+	public void testNoParentFileCopy() throws IOException{
+		File resultFile = new File(tempDir, Long.toHexString(System.currentTimeMillis())+ "/fileCopy.file");
+		if(resultFile.exists()){
+			deleteDirRecursively(resultFile);
+			assertFalse("Leftover file: "+resultFile.toString()+" from earlier runs could not be deleted",resultFile.exists());
+		}
+		
+		URL url = new URL("jar:"+toURL(jarFile)+"!/dir/dummy2.file");
+		
+		fileCopy(url, toURL(resultFile) );
+		assertTrue(resultFile.exists());
+		resultFile.delete();
+		assertFalse(resultFile.exists());
+		fileCopy(toURL(plainFile), toURL(resultFile));
+		assertTrue(resultFile.exists());
+		resultFile.delete();
+	}
+	
 
 	@Test
 	public void testTemplateCopy() throws IOException{
