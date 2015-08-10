@@ -48,8 +48,8 @@ public class CordovaPluginRegistryTest {
 		assertNotNull(plugin);
 		assertNotNull(plugin.getName());
 		assertEquals(info.getName(), plugin.getName());
-		assertNotNull(plugin.getVersions());
 		List<RegistryPluginVersion> versions = plugin.getVersions();
+		assertNotNull(versions);
 		assertFalse(versions.isEmpty());
 		RegistryPluginVersion version = versions.get(0);
 		assertNotNull(version.getName());

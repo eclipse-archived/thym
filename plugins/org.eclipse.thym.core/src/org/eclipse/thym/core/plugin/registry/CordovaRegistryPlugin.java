@@ -11,6 +11,7 @@
 package org.eclipse.thym.core.plugin.registry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,9 @@ public class CordovaRegistryPlugin extends CordovaRegistryPluginInfo {
 	}
 	
 	public List<RegistryPluginVersion> getVersions() {
+		if(versions == null ){
+			return Collections.emptyList();
+		}
 		return versions;
 	}
 
