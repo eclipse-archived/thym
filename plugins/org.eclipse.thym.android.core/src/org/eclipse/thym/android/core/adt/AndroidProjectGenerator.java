@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -131,8 +131,17 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 			if( !xmldir.exists() ){//only config.xml uses xml 
 				xmldir.mkdirs();   //directory make sure it is created
 			}
+			
+			File platformConfigFile = xmlPath.append(PlatformConstants.FILE_XML_CONFIG).toFile();
+			
+			// Delete the config.xml that comes with the platform template first,
+			// to make sure that it is replaced by the project's config.xml.
+			// fileCopy method does not override existing files.
+			if(platformConfigFile.exists()){
+				FileUtils.forceDelete(platformConfigFile);
+			}
 			fileCopy(toURL(configFile.getLocation().toFile()), 
-					toURL(xmlPath.append(PlatformConstants.FILE_XML_CONFIG).toFile()));
+					toURL(platformConfigFile));
 			
 			handleIcons(widgetModel, hybridProject);
 			handleSplashScreens(widgetModel, hybridProject);
@@ -303,8 +312,6 @@ public class AndroidProjectGenerator extends AbstractProjectGeneratorDelegate{
 				toURL(cordovaJSPath.toFile()));
 	}
 
-
-	
 	@Override
 	protected File getPlatformWWWDirectory() {
 		return AndroidProjectUtils.getPlatformWWWDirectory(getDestination());

@@ -729,10 +729,11 @@ public class CordovaPluginManager {
 			allActions.addAll(collectLibFileActions(node, actionFactory)) ;
 			allActions.addAll(collectFrameworkActions(node, actionFactory,plugin ));
 			
-			//We do not need to create this file 
-			//with every plugin. TODO: find a better place
-			allActions.add(actionFactory.getCreatePluginJSAction(this.getCordovaPluginJSContent(platform.getPlatformId())));
 		}
+		//with every plugin. TODO: find a better place
+		//We do not need to create this file 
+		allActions.add(actionFactory.getCreatePluginJSAction(this.getCordovaPluginJSContent(platform.getPlatformId())));
+
 		runActions(allActions,false,overwrite,monitor);
 	}
 	
