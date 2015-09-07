@@ -102,7 +102,7 @@ public class HybridProjectCreatorTest {
     @Test
     public void essentialFilesTest(){
         IProject theProject = getTheProject();
-        IFile file = theProject.getFile("/www/config.xml");
+        IFile file = theProject.getFile("/config.xml");
         assertTrue(file.exists());
         file= theProject.getFile("/www/index.html");
         assertTrue(file.exists());
@@ -113,7 +113,7 @@ public class HybridProjectCreatorTest {
         DocumentBuilderFactory dbf =DocumentBuilderFactory.newInstance();
     
             db = dbf.newDocumentBuilder();
-            IFile file =  getTheProject().getFile("/www/config.xml");
+            IFile file =  getTheProject().getFile("/config.xml");
             if(file == null )
                 return null;
             return db.parse(file.getContents()); 

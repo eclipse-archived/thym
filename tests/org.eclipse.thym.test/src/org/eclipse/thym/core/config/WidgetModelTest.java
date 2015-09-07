@@ -137,7 +137,7 @@ public class WidgetModelTest {
 	private Document getConfigXMLDocument()
 			throws ParserConfigurationException, UnsupportedEncodingException,
 			SAXException, IOException, CoreException {
-		IFile file = project.getProject().getFile("/www/config.xml");
+		IFile file = project.getProject().getFile("/config.xml");
 		Document doc = loadXMLDocument(file.getContents());
 		return doc;
 	}
@@ -321,7 +321,7 @@ public class WidgetModelTest {
 		Document doc = getConfigXMLDocument();
 		doc.getDocumentElement().setAttribute(WidgetModelConstants.WIDGET_ATTR_ID, "rev.id");
 		doc.getDocumentElement().setAttribute(WidgetModelConstants.WIDGET_ATTR_VERSION, "rev.ver");
-		IFile file = project.getProject().getFile("/www/config.xml");
+		IFile file = project.getProject().getFile("/config.xml");
 		TransformerFactory transformerFactory = TransformerFactory
 				.newInstance();
 		Transformer xformer = transformerFactory.newTransformer();
