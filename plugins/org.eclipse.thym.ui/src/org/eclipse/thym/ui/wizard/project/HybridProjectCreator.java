@@ -211,14 +211,9 @@ public class HybridProjectCreator {
 
     private void addTemplateFiles(IProject project, IProgressMonitor monitor) throws CoreException{
         Bundle bundle = HybridUI.getDefault().getBundle();
-        URL source = bundle.getEntry("/templates/www");
-        IFolder folder = project.getFolder(DIR_WWW);
-        if (!folder.exists()){
-            folder.create(true, true, monitor);
-        }
-        
+        URL source = bundle.getEntry("/templates");
         try {
-            FileUtils.directoryCopy(source, FileUtils.toURL(folder.getLocation().toFile()));
+            FileUtils.directoryCopy(source, FileUtils.toURL(project.getLocation().toFile()));
             monitor.done();
         } catch (MalformedURLException e) {
             throw new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, "Error adding template files", e));
