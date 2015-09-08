@@ -9,6 +9,7 @@
 <unit id="com.google.gson" version="0.0.0"/>
 <unit id="org.junit" version="0.0.0"/>
 <unit id="com.ibm.icu.base" version="0.0.0"/>
+<unit id="org.apache.ant" version="0.0.0"/>
 <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.equinox.p2.discovery.feature.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>

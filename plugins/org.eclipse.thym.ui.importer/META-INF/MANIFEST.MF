@@ -4,7 +4,7 @@ Bundle-Name: Smart Import support for THyM
 Bundle-SymbolicName: org.eclipse.thym.ui.importer;singleton:=true
 Bundle-Version: 0.0.1.qualifier
 Bundle-Vendor: Eclipse.org
-Require-Bundle: org.eclipse.e4.ui.importer,
+Require-Bundle: org.eclipse.e4.ui.importer;bundle-version="0.2.0",
  org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -16,4 +16,5 @@ Require-Bundle: org.eclipse.e4.ui.importer,
  org.eclipse.thym.ui;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.eclipse.thym.ui.importer.ThymImporterActivator
+Bundle-Activator: org.eclipse.thym.internal.ui.importer.ThymImporterActivator
+Export-Package: org.eclipse.thym.internal.ui.importer

@@ -8,8 +8,13 @@
  * 	Contributors:
  * 	- Mickael Istria (Red Hat Inc.) - initial implementation
  *******************************************************************************/
-package org.eclipse.thym.ui.importer;
+package org.eclipse.thym.internal.ui.importer;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import org.eclipse.core.resources.IContainer;
@@ -71,5 +76,35 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 	@Override
 	public Set<IFolder> getDirectoriesToIgnore(IProject project, IProgressMonitor monitor) {
 		return null;
+	}
+
+	@Override
+	public Set<File> findConfigurableLocations(File root, IProgressMonitor monitor) {
+		Set<File> res = new HashSet<>();
+		LinkedList<File> directoriesToProcess = new LinkedList<>();
+		directoriesToProcess.addFirst(root);
+		while (!directoriesToProcess.isEmpty()) {
+			File current = directoriesToProcess.pop();
+			boolean configExist = false;
+	        for(IPath path: PlatformConstants.CONFIG_PATHS){
+	            File config = new File(current, path.toString());
+	            if(config.isFile()){
+	                configExist = true;
+	                break;
+	            }
+	        }
+	        File wwwFolder = new File(current, PlatformConstants.DIR_WWW);
+	        if (configExist && wwwFolder.isDirectory()) {
+	        	res.add(current);
+	        } else if (current.isDirectory()) {
+	        	directoriesToProcess.addAll(Arrays.asList(current.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						return pathname.isDirectory();
+					}
+				})));
+	        }
+		}
+		return res;
 	}
 }

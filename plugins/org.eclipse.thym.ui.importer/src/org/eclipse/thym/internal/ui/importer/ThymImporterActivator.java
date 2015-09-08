@@ -8,7 +8,7 @@
  * 	Contributors:
  * 	- Mickael Istria (Red Hat Inc.) - initial implementation
  *******************************************************************************/
-package org.eclipse.thym.ui.importer;
+package org.eclipse.thym.internal.ui.importer;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;

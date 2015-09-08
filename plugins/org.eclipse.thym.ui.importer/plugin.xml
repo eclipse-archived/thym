@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.e4.ui.importer.projectConfigurators">
       <projectConfigurator
-            class="org.eclipse.thym.ui.importer.CordovaProjectConfigurator"
+            class="org.eclipse.thym.internal.ui.importer.CordovaProjectConfigurator"
             label="Cordova">
          <activeWhen>
             <hasFileRecursively

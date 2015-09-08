@@ -13,5 +13,6 @@
 	
 	<modules>
 		<module>org.eclipse.thym.test</module>
+		<module>org.eclipse.thym.ui.importer.test</module>
 	</modules>
 </project>
