@@ -14,7 +14,7 @@
 		<!-- skip for local builds, set it to true on Eclipse.org infrastructure -->
 		<cbi.jarsigner.skip>true</cbi.jarsigner.skip>
 		<tycho.scmUrl>scm:git:https://github.com/eclipse/thym.git</tycho.scmUrl>
-		<target-platform>luna.R</target-platform>
+		<target-platform>mars.M</target-platform>
 	</properties>
 
 	<modules>
