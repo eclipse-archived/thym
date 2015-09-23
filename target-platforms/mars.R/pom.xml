@@ -3,17 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.eclipse.thym</groupId>
-		<artifactId>parent</artifactId>
+		<artifactId>target-platforms</artifactId>
 		<version>0.3.0-SNAPSHOT</version>
 	</parent>
-	<groupId>org.eclipse.thym</groupId>
-	<artifactId>target-platforms</artifactId>
-	<name>Eclipse THyM Target Platform definitions</name>
-	<packaging>pom</packaging>
-
-	<modules>
-		<module>luna.R</module>
-		<module>mars.R</module>
-		<module>neon.M</module>
-	</modules>
+	<groupId>org.eclipse.thym.target-platforms</groupId>
+	<artifactId>mars.R</artifactId>
+	<name>Eclipse THyM Target Platform for Mars release</name>
+	<packaging>eclipse-target-definition</packaging>
 </project>

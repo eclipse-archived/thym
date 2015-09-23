@@ -7,7 +7,7 @@
 		<version>0.3.0-SNAPSHOT</version>
 	</parent>
 	<groupId>org.eclipse.thym.target-platforms</groupId>
-	<artifactId>mars.M</artifactId>
-	<name>Eclipse THyM Target Platform for Mars milestones (mutable and volatile)</name>
+	<artifactId>neon.M</artifactId>
+	<name>Eclipse THyM Target Platform for Neon milestone (mutable and volatile)</name>
 	<packaging>eclipse-target-definition</packaging>
 </project>
