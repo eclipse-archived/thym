@@ -18,9 +18,12 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
@@ -63,6 +66,9 @@ public class IOSSimulator {
 					if (line.equals("== Devices ==")) {
 						parsingDevices = true;
 						continue;
+					} else if (line.startsWith("==")) {
+						parsingDevices = false;
+						continue;
 					}
 					if (parsingDevices) {
 						if (line.startsWith("--")) {
@@ -70,6 +76,12 @@ public class IOSSimulator {
 							iosVersion = line.trim();
 						} else {
 							String[] parts = line.split("[\\(\\)]");
+							if(parts.length<2) {
+								Status status = new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "error parsing device list (line: \"" +line + "\"):[\n" + buffer.toString() + "\n]");
+								ILog logger = Platform.getLog(IOSCore.getContext().getBundle());
+								logger.log(status);
+								break;
+							}
 							IOSDevice device = new IOSDevice();
 							device.setDeviceName(parts[0].trim());
 							device.setDeviceId(parts[1].trim());
