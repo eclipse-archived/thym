@@ -65,11 +65,17 @@ public class IOSSimulator {
 						continue;
 					}
 					if (parsingDevices) {
+						if (line.startsWith("==") ){
+							break;
+						}else
 						if (line.startsWith("--")) {
 							line = line.replace("--", "");
 							iosVersion = line.trim();
 						} else {
 							String[] parts = line.split("[\\(\\)]");
+							if ( parts.length<2 ){
+								continue;
+							}
 							IOSDevice device = new IOSDevice();
 							device.setDeviceName(parts[0].trim());
 							device.setDeviceId(parts[1].trim());
