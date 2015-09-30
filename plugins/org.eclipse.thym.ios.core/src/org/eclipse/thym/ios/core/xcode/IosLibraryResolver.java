@@ -71,6 +71,7 @@ public class IosLibraryResolver extends HybridMobileLibraryResolver {
 		else{
 			files.put(new Path("cordova"), getEngineFile(libraryRoot.append("bin/templates/scripts/cordova/")));
 		}
+		files.put(new Path("cordova/node_modules"), getEngineFile(libraryRoot.append("bin/node_modules/")));
 		files.put(new Path(VAR_APP_NAME), getEngineFile(templatePrjRoot.append(prjDirVar)));
 		files.put(new Path(VAR_APP_NAME+"/"+VAR_APP_NAME+"-Info.plist"), getEngineFile(templatePrjRoot.append(NLS.bind("{0}/{0}-Info.plist",prjDirVar))));
 		files.put(new Path(VAR_APP_NAME+"/"+VAR_APP_NAME+"-Prefix.pch") , getEngineFile(templatePrjRoot.append(NLS.bind("{0}/{0}-Prefix.pch",prjDirVar))));

@@ -97,6 +97,12 @@ public class XcodeProjectGenerator extends AbstractProjectGeneratorDelegate{
 			directoryCopy(resolver.getTemplateFile(cordovaScriptPath.makeRelativeTo(destinationPath)), 
 					toURL(cordovaScriptPath.toFile()));
 			
+			//Copy node_modules to cordova/node_modules.  cordova-ios >3.9.0 uses them during build
+			IPath nodeModules = cordovaScriptPath.append("node_modules");
+			directoryCopy(resolver.getTemplateFile(nodeModules.makeRelativeTo(destinationPath)), 
+					toURL(nodeModules.toFile()));
+
+			// cordova-ios >3.9.0 does not need need this anymore but uses node.js scripts.
 			File wwwwCopyScript = cordovaScriptPath.append("lib").append("copy-www-build-step.sh").toFile();
 			if(wwwwCopyScript.exists()){
 				wwwwCopyScript.setExecutable(true);
