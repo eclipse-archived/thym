@@ -56,7 +56,7 @@ public class IOSSimulatorLaunchDelegate implements
 		monitor.beginTask("Launch iOS Simulator", 10);
 		IProject kernelProject = getProject(configuration);
 		Assert.isNotNull(kernelProject, "Can not launch with a null project");
-		String deviceId = configuration.getAttribute(ATTR_DEVICE_IDENTIFIER, new String());
+		String deviceId = configuration.getAttribute(ATTR_DEVICE_IDENTIFIER, "");
 		List<IOSDevice> devices = IOSSimulator.listDevices(monitor);
 		if(devices == null || devices.isEmpty()){
 			throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID, "Failed to find an iOS simulator"));

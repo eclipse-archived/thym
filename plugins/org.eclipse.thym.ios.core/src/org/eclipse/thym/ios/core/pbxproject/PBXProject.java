@@ -272,21 +272,17 @@ public class PBXProject {
 	}
 	
 	public static String generateReference()
-	  {
-	    MessageDigest md = null;
-	    SecureRandom prng = null;
-	    try
-	    {
-	      md = MessageDigest.getInstance("SHA1");
-	      prng = SecureRandom.getInstance("SHA1PRNG");
+	{
+		try{
+	      MessageDigest md = MessageDigest.getInstance("SHA1");
+	      SecureRandom prng = SecureRandom.getInstance("SHA1PRNG");
+	      String randomNum = Integer.toString(prng.nextInt());
+	      String ref = new String(Hex.encodeHex(md.digest(randomNum.getBytes())));
+	      return ref.toUpperCase().substring(0, 24);
 	    }
-	    catch (NoSuchAlgorithmException e)
-	    {
+	    catch (NoSuchAlgorithmException e){
+	    	return null;
 	    }
-
-	    String randomNum = Integer.toString(prng.nextInt());
-	    String ref = new String(Hex.encodeHex(md.digest(randomNum.getBytes())));
-	    return ref.toUpperCase().substring(0, 24);
-	  }
+	}
 
 }

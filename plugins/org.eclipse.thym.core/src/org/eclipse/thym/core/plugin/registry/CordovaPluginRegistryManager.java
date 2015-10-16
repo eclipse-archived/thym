@@ -284,8 +284,8 @@ public class CordovaPluginRegistryManager {
 					parseLatestVersion(reader,plugin);
 					break;
 				}
-				if("versions".equals(name) && plugin instanceof CordovaRegistryPlugin) { 
-					parseVersions(reader, (CordovaRegistryPlugin)plugin);       
+				if("versions".equals(name) ){ 
+					parseVersions(reader, plugin);       
 					break;
 				}
 				if("license".equals(name)){

@@ -42,18 +42,15 @@ import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 
-import com.github.zafarkhaja.semver.Version;
-
 public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineSearchListener {
 	
-	private static final Version MIN_VERSION = Version.forIntegers(3, 0, 0);
 	/**
 	 * Engine id for the engine provided by the Apache cordova project.
 	 */
 	public static final String CORDOVA_ENGINE_ID = "cordova";
 	public static final String CUSTOM_CORDOVA_ENGINE_ID = "custom_cordova";
 	
-	private static ArrayList<HybridMobileEngine> engineList;
+	private volatile static ArrayList<HybridMobileEngine> engineList;
 
 	
 	/**

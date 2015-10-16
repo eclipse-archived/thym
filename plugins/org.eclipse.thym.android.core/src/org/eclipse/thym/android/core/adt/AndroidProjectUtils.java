@@ -62,22 +62,24 @@ public class AndroidProjectUtils {
 			Properties props = new Properties();
 			props.load(reader);
 			String targetValue = props.getProperty("target");
-			int splitIndex = targetValue.indexOf('-');
-			if(targetValue != null && splitIndex >-1){
-				AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
-				targetValue = targetValue.substring(splitIndex+1);
-				AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
-				List<AndroidSDK> targets = sdkManager.listTargets();
-				for (AndroidSDK androidSDK : targets) {
-					if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
-						return androidSDK;
+			if(targetValue != null ){
+				int splitIndex = targetValue.indexOf('-');
+				if(splitIndex >-1){
+					AndroidAPILevelComparator alc = new AndroidAPILevelComparator();
+					targetValue = targetValue.substring(splitIndex+1);
+					AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
+					List<AndroidSDK> targets = sdkManager.listTargets();
+					for (AndroidSDK androidSDK : targets) {
+						if(alc.compare(targetValue, androidSDK.getApiLevel())==0){
+							return androidSDK;
+						}
 					}
+					// if we are here we failed to find a target.
+					throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
+							NLS.bind("Please install Android API level {0}. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."
+									,targetValue)));
+					
 				}
-				// if we are here we failed to find a target.
-				throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
-						NLS.bind("Please install Android API level {0}. Use the Android SDK Manager to install or upgrade any missing SDKs to tools."
-								,targetValue)));
-
 			}
 		} catch (FileNotFoundException e) {
 			AndroidCore.log(IStatus.WARNING, "Missing project.properties for library", e);
@@ -114,6 +116,8 @@ public class AndroidProjectUtils {
 				case 144: density = "xxhdpi";
 					break;
 				case 192: density = "xxxhdpi";
+					break;
+				default: density = null;
 					break;
 				}
 			}

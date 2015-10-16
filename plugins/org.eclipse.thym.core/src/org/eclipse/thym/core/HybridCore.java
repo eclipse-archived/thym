@@ -61,7 +61,6 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 		inst =this;
 	}
 	
-	
 	public static HybridCore getDefault(){
 		return inst;
 	}
@@ -165,9 +164,12 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 
 	@Override
 	public void optionsChanged(DebugOptions options) {
-		if(TRACE==null)
-			TRACE = options.newDebugTrace(PLUGIN_ID);
-		DEBUG = options.getBooleanOption(PLUGIN_ID+"/debug", true);	
+		synchronized (this.getClass()) {
+			if(TRACE==null)
+				TRACE = options.newDebugTrace(PLUGIN_ID);
+			DEBUG = options.getBooleanOption(PLUGIN_ID+"/debug", true);	
+			
+		}
 	}
 	
 	public static void trace( String message){

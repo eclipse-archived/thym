@@ -311,37 +311,25 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 
     @Override
     protected void okPressed() {
-        final Object[] checked = platformList.getCheckedElements();
-        final DownloadableCordovaEngine[] downloads = new DownloadableCordovaEngine[checked.length];
-        for (int i = 0; i < checked.length; i++) {
-            DownloadableCordovaEngine dce = (DownloadableCordovaEngine) checked[i];
-            downloads[i] = dce;
-        }
-        run(new IRunnableWithProgress() {
-
+        final DownloadableCordovaEngine[] downloads = getDownloadsList();
+        IRunnableWithProgress runnable = new IRunnableWithProgress() {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException,
                     InterruptedException {
                 getShell().getDisplay().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        Button okButton = getButton(IDialogConstants.OK_ID);
-                        okButton.setEnabled(false);
+                    	toggleOKButton(false);
                     }
                 });
                 engineProvider.downloadEngine(downloads, monitor);
             }
-        });
-        super.okPressed();
-    }
+        };
 
-    private void run(IRunnableWithProgress runnable) {
-
-        progressMonitorPart.attachToCancelComponent(getButton(IDialogConstants.CANCEL_ID));
-
+        Button cancelBtn = getButton(IDialogConstants.CANCEL_ID);
+		progressMonitorPart.attachToCancelComponent(cancelBtn);
         try {
             ModalContext.run(runnable, true, progressMonitorPart, getShell().getDisplay());
-
         } catch (InvocationTargetException e) {
             if (e.getTargetException() != null) {
                 if(e.getTargetException() instanceof CoreException ){
@@ -354,8 +342,23 @@ public class EngineDownloadDialog extends TitleAreaDialog{
         } catch (InterruptedException e) {
             throw new OperationCanceledException();
         }
-        progressMonitorPart.removeFromCancelComponent(getButton(IDialogConstants.CANCEL_ID));
-
+        finally{
+        	if(getShell() != null && !getShell().isDisposed()){
+        		progressMonitorPart.removeFromCancelComponent(cancelBtn);        
+        	}
+        }
+        
+        
     }
+
+	private DownloadableCordovaEngine[] getDownloadsList() {
+		final Object[] checked = platformList.getCheckedElements();
+        final DownloadableCordovaEngine[] downloads = new DownloadableCordovaEngine[checked.length];
+        for (int i = 0; i < checked.length; i++) {
+            DownloadableCordovaEngine dce = (DownloadableCordovaEngine) checked[i];
+            downloads[i] = dce;
+        }
+		return downloads;
+	}
 
 }

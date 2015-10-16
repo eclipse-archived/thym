@@ -61,7 +61,7 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 				return file;
 			}
 			File[] children = parent.listFiles();
-			if(children.length>1){//count the empty dir as 1
+			if(children!= null && children.length>1){//count the empty dir as 1
 				return file;
 			}
 			return findHighestEmptyParent(parent);
