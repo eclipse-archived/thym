@@ -24,6 +24,13 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIHarness>true</useUIHarness>
+					<dependencies>
+  					<dependency>
+  						<!-- To resolve proxy settings -->
+  						<artifactId>org.eclipse.platform.feature.group</artifactId>
+  						<type>p2-installable-unit</type>
+  					</dependency>
+  				</dependencies>
 				</configuration>
 			</plugin>
 		</plugins>
