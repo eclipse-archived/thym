@@ -12,7 +12,6 @@ package org.eclipse.thym.hybrid.test;
 
 import org.eclipse.thym.core.config.WidgetModelTest;
 import org.eclipse.thym.core.plugin.test.CordovaPluginRegistryTest;
-import org.eclipse.thym.core.plugin.test.InstallActionsTest;
 import org.eclipse.thym.core.plugin.test.PluginInstallationTests;
 import org.eclipse.thym.core.test.ExternalProcessUtilityTest;
 import org.eclipse.thym.core.test.FileUtilsTest;
@@ -29,7 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class,HybridProjectConvertTest.class, 
 	WidgetModelTest.class, CordovaPluginRegistryTest.class,HybridProjectConventionsTest.class, HybridMobileEngineTests.class,
-	InstallActionsTest.class,PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class,
+	PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class,
 	TestBundleHttpStorage.class,PluginXMLHelperTests.class,ExternalProcessUtilityTest.class})
 public class AllHybridTests {
 

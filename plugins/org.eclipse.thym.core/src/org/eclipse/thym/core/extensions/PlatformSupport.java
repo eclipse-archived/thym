@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory;
 import org.eclipse.thym.core.platform.AbstractProjectGeneratorDelegate;
 import org.osgi.framework.Bundle;
 
@@ -43,7 +42,6 @@ public class PlatformSupport extends ExtensionPointProxy {
 	public static final String ATTR_PLATFORM = "platform";
 	public static final String ATTR_PROJECT_GENERATOR = "projectGenerator";
 	public static final String ATTR_LIBRARY_RESOLVER = "libraryResolver";
-	public static final String ATTR_PLUGIN_INSTALL_ACTION_FACTORY = "pluginInstallActionFactory";
 	public static final String ATTR_ID="id";
 	private static final String ATTR_PLATFORM_ID = "platformID";
 	private String platform;
@@ -122,26 +120,6 @@ public class PlatformSupport extends ExtensionPointProxy {
 		return (this.expression.evaluate(context) == EvaluationResult.TRUE);
 	}
 
-	public AbstractPluginInstallationActionsFactory getPluginInstallationActionsFactory(IProject project, File pluginHome, File targetDirectory) throws CoreException{
-		if(targetDirectory == null ){
-			targetDirectory = new File(getTempGenerationDirectory(),getPlatformId());
-		}
-		IExtension[] extensions = getContributorExtensions();
-		for (int i = 0; i < extensions.length; i++) {
-			if(extensions[i].getExtensionPointUniqueIdentifier().equals(EXTENSION_POINT_ID)){
-				IConfigurationElement[] configs = extensions[i].getConfigurationElements();
-				for (int j = 0; j < configs.length; j++) {
-					if(configs[j].getAttribute(ATTR_PLATFORM_ID).equals(getPlatformId())){
-						AbstractPluginInstallationActionsFactory factory= (AbstractPluginInstallationActionsFactory) configs[j].createExecutableExtension(ATTR_PLUGIN_INSTALL_ACTION_FACTORY);
-						factory.init(pluginHome, project, targetDirectory);
-						return factory;
-					}
-				}
-			}
-		}
-		throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"Contributing platform has changed"));
-	}
-	
 	public HybridMobileLibraryResolver getLibraryResolver() throws CoreException{
 		IExtension[] extensions = getContributorExtensions();
 		for (int i = 0; i < extensions.length; i++) {
