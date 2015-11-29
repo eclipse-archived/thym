@@ -32,17 +32,14 @@ import org.eclipse.thym.core.plugin.actions.XMLConfigFileAction;
 public class AndroidPluginInstallationActionsFactory extends AbstractPluginInstallationActionsFactory
 {
 	//same as copy only removes empty directories. 
-	public static class AndroidSourceFileAction extends CopyFileAction{
+	public static class AndroidSourceFileAction {
 		private File target;
 
 		public AndroidSourceFileAction(File source, File target) {
-			super(source, target);
 			this.target = target;
 		}
 		
-		@Override
 		public void unInstall() throws CoreException {
-			super.unInstall();
 			
 			//Remove the empty package directory structure
 			File dir = findHighestEmptyParent(target);
@@ -74,7 +71,7 @@ public class AndroidPluginInstallationActionsFactory extends AbstractPluginInsta
 			String targetDir, String framework, String pluginId, String compilerFlags) {
 		File source = new File(getPluginDirectory(), src);
 		File target = new File(getProjectDirectory(), targetDir);
-		return new AndroidSourceFileAction(source, target);
+		return null;
 	}
 
 	@Override

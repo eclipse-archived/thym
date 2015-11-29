@@ -28,8 +28,8 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.internal.preferences.HybridToolsPreferences;
+import org.eclipse.thym.ui.internal.project.RestoreProjectListener;
 import org.eclipse.thym.ui.internal.status.HybridMobileStatusExtension;
-import org.eclipse.thym.ui.plugins.internal.RestorePluginsListener;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -45,13 +45,13 @@ public class HybridUI extends AbstractUIPlugin {
 	
 	// The shared instance
 	private static HybridUI plugin;
-	private final RestorePluginsListener pluginRestoreListener;
+	private final RestoreProjectListener projectRestoreListener;
 	
 	/**
 	 * The constructor
 	 */
 	public HybridUI() {
-		pluginRestoreListener = new RestorePluginsListener();
+		projectRestoreListener = new RestoreProjectListener();
 	}
 	
 	/*
@@ -73,7 +73,7 @@ public class HybridUI extends AbstractUIPlugin {
 			}
 		});
 		HybridToolsPreferences.getPrefs().loadValues();
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(pluginRestoreListener, IResourceChangeEvent.POST_CHANGE);
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(projectRestoreListener, IResourceChangeEvent.POST_CHANGE);
 		
 	}
 
@@ -83,8 +83,8 @@ public class HybridUI extends AbstractUIPlugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		if(pluginRestoreListener != null){
-			ResourcesPlugin.getWorkspace().removeResourceChangeListener(pluginRestoreListener);
+		if(projectRestoreListener != null){
+			ResourcesPlugin.getWorkspace().removeResourceChangeListener(projectRestoreListener);
 		}
 		super.stop(context);
 	}

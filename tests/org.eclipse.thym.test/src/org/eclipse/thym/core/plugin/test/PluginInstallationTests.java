@@ -12,7 +12,6 @@ package org.eclipse.thym.core.plugin.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -37,7 +36,6 @@ import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.core.plugin.FileOverwriteCallback;
-import org.eclipse.thym.core.plugin.RestorableCordovaPlugin;
 import org.eclipse.thym.hybrid.test.Activator;
 import org.eclipse.thym.hybrid.test.TestProject;
 import org.eclipse.thym.hybrid.test.TestUtils;
@@ -111,21 +109,11 @@ public class PluginInstallationTests {
 	public void checkFetchJson() throws CoreException{
 		installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		IProject prj = project.getProject();
-		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS+"/"+PLUGIN_ID_TESTPLUGIN);
+		IFolder plgFolder = prj.getFolder("/"+PlatformConstants.DIR_PLUGINS);
 		assertNotNull(plgFolder);
-		IFile fetchJson = plgFolder.getFile(".fetch.json");
+		IFile fetchJson = plgFolder.getFile("fetch.json");
 		assertNotNull(fetchJson);
 		assertTrue(fetchJson.exists());
-		JsonParser parser = new JsonParser();
-		InputStreamReader reader = new InputStreamReader(fetchJson.getContents());
-		JsonElement element = parser.parse(reader);
-		JsonObject object = element.getAsJsonObject();
-		assertTrue(object.has("source"));
-		JsonObject source = object.getAsJsonObject("source");
-		assertTrue(source.has("type"));
-		assertTrue(source.has("path"));
-		String type = source.get("type").getAsString();
-		assertEquals("local",type);
 	}
 	
 	@Test
@@ -184,18 +172,7 @@ public class PluginInstallationTests {
 		assertTrue(pm.isPluginInstalled(PLUGIN_ID_TESTPLUGIN));
 	}
 
-	@Test
-	public void restorablePluginListTest() throws CoreException{
-		CordovaPluginManager pm = getCordovaPluginManager();
-		List<RestorableCordovaPlugin> restorables = pm.getRestorablePlugins(new NullProgressMonitor());
-		assertTrue("config.xml already contains restorables",restorables.isEmpty());
-		pm = installPlugin(PLUGIN_DIR_TESTPLUGIN);
- 		restorables = pm.getRestorablePlugins(new NullProgressMonitor());
-		assertNotNull( restorables);
-		for (RestorableCordovaPlugin plugin : restorables) {
-			assertNotEquals(plugin.getId(),PLUGIN_ID_TESTPLUGIN);
-		}
-	}
+
 	
 	@Test
 	public void installPluginToProjectWithoutPluginsFolder() throws CoreException{

@@ -25,8 +25,12 @@ public class DefaultStatusHandler extends AbstractStatusHandler {
 
 	@Override
 	public void handle(CoreException e) {
-		StatusManager platformStatusMgr = StatusManager.getManager();
-		platformStatusMgr.handle(e,e.getStatus().getPlugin());
+		if(e.getStatus() != null ){
+			handle(e.getStatus());
+		}else{
+			StatusManager platformStatusMgr = StatusManager.getManager();
+			platformStatusMgr.handle(e,e.getStatus().getPlugin());
+		}
 	}
 
 }

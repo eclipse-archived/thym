@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.wst.jsdt.core;bundle-version="[1.1.0,2.0.0)",
  org.apache.httpcomponents.httpclient;bundle-version="[4.2.6,4.4.0)",
  org.apache.httpcomponents.httpcore;bundle-version="[4.2.5,4.4.0)",
- org.eclipse.core.net;bundle-version="[1.2.0,2.0.0)"
+ org.eclipse.core.net;bundle-version="[1.2.0,2.0.0)",
+ org.eclipse.core.externaltools
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.github.zafarkhaja.semver;x-friends:="org.eclipse.thym.ui,org.eclipse.thym.ios.core",
@@ -32,6 +33,7 @@ Export-Package: com.github.zafarkhaja.semver;x-friends:="org.eclipse.thym.ui,org
  org.eclipse.thym.core.engine,
  org.eclipse.thym.core.engine.internal.cordova;x-friends:="org.eclipse.thym.ui",
  org.eclipse.thym.core.extensions,
+ org.eclipse.thym.core.internal.cordova,
  org.eclipse.thym.core.internal.libraries;x-friends:="org.eclipse.thym.ui",
  org.eclipse.thym.core.internal.util;
   x-friends:="org.eclipse.thym.ios.core,
@@ -41,7 +43,6 @@ Export-Package: com.github.zafarkhaja.semver;x-friends:="org.eclipse.thym.ui,org
  org.eclipse.thym.core.natures;x-friends:="org.eclipse.thym.ios.core,org.eclipse.thym.ui,org.eclipse.thym.android.core",
  org.eclipse.thym.core.platform;x-friends:="org.eclipse.thym.ios.core,org.eclipse.thym.ui,org.eclipse.thym.android.core",
  org.eclipse.thym.core.plugin,
- org.eclipse.thym.core.plugin.actions,
  org.eclipse.thym.core.plugin.registry
 Bundle-ClassPath: lib/java-semver-0.8.0-20131230.170230-3.jar,
  .

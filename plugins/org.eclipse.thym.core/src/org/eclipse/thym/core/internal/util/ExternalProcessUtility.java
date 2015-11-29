@@ -12,6 +12,9 @@ package org.eclipse.thym.core.internal.util;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -29,7 +32,6 @@ import org.eclipse.thym.core.HybridCore;
  *
  */
 public class ExternalProcessUtility {
-
 
 	/**
 	 * Executes the given commands asynchronously.
@@ -52,18 +54,9 @@ public class ExternalProcessUtility {
 	public void execAsync (String [] command, File workingDirectory, 
 			IStreamListener outStreamListener,
 			IStreamListener errorStreamListener, String[] envp) throws CoreException{
-	
-		checkCommands(command);
-		checkWorkingDirectory(workingDirectory);
 		HybridCore.trace("Async Execute command line: "+Arrays.toString(command));
-		Process process =DebugPlugin.exec(command, workingDirectory, envp);
-		
-		
-		Launch launch = new Launch(null, "run", null);
-		IProcess prcs = DebugPlugin.newProcess(launch, process, "Eclipse Thym:  "+ command[0]);
-		DebugPlugin.getDefault().getLaunchManager().addLaunch(launch);
+		IProcess prcs = exec(command, workingDirectory, new NullProgressMonitor(), envp, null);
 		setTracing(command, outStreamListener, errorStreamListener, prcs);
-		
 	}
 	
 	/**
@@ -94,22 +87,14 @@ public class ExternalProcessUtility {
 	 */
 	public int execSync ( String[] command, File workingDirectory, 
 			IStreamListener outStreamListener, 
-			IStreamListener errorStreamListener, IProgressMonitor monitor, String[] envp, ILaunchConfiguration launchConfiguration) throws CoreException{
+			IStreamListener errorStreamListener, IProgressMonitor monitor, 
+			String[] envp, ILaunchConfiguration launchConfiguration) throws CoreException{
 		
-		checkCommands(command);
-		checkWorkingDirectory(workingDirectory);
 		HybridCore.trace("Sync Execute command line: "+Arrays.toString(command));
-		if(monitor == null ){
-			monitor = new NullProgressMonitor();
+		IProcess prcs = exec(command, workingDirectory, monitor, envp, launchConfiguration);
+		if(prcs == null ){
+			return 0;
 		}
-		Process process =DebugPlugin.exec(command, workingDirectory, envp);
-		
-		Launch launch = new Launch(launchConfiguration, "run", null);
-		IProcess prcs = DebugPlugin.newProcess(launch, process, "Eclipse Thym:  "+ command[0]);
-		if(launchConfiguration != null){
-			DebugPlugin.getDefault().getLaunchManager().addLaunch(launch);
-		}
-		
 		setTracing(command, outStreamListener, errorStreamListener, prcs);
 		
 		while (!prcs.isTerminated()) {
@@ -125,9 +110,46 @@ public class ExternalProcessUtility {
 		}
 		return prcs.getExitValue();
 	}
-
+	
 	/**
-	 * Convenience method to specify comandline as a String 
+	 * Executes the given command and returns a handle to the 
+	 * process. Should only be used if access to {@link IProcess}
+	 * instance is desired. 
+	 * 
+	 * @param command
+	 * @param workingDirectory
+	 * @param monitor
+	 * @param envp
+	 * @param launchConfiguration
+	 * @return the process
+	 * @throws CoreException
+	 */
+	public IProcess exec(String[] command, File workingDirectory, 
+			IProgressMonitor monitor, String[] envp, 
+			ILaunchConfiguration launchConfiguration ) throws CoreException{
+		
+		checkCommands(command);
+		checkWorkingDirectory(workingDirectory);
+		if(monitor == null ){
+			monitor = new NullProgressMonitor();
+		}
+		if (envp == null && launchConfiguration != null ){
+			envp = DebugPlugin.getDefault().getLaunchManager().getEnvironment(launchConfiguration);
+		}
+		if (monitor.isCanceled()) {
+			return null;
+		}
+		Process process = DebugPlugin.exec(command, workingDirectory, envp);
+		
+		Map<String, String> processAttributes = generateProcessAttributes(command, launchConfiguration);
+		Launch launch = new Launch(launchConfiguration, "run", null);
+		IProcess prcs = DebugPlugin.newProcess(launch, process, command[0], processAttributes);
+		DebugPlugin.getDefault().getLaunchManager().addLaunch(launch);
+		return prcs;
+	}
+	
+	/**
+	 * Convenience method to specify command line as a String 
 	 * for {@link #execSync(String[], File, IStreamListener, IStreamListener, IProgressMonitor, String[], ILaunchConfiguration)} 
 	 */
 	public int execSync ( String commandLine, File workingDirectory, 
@@ -136,6 +158,19 @@ public class ExternalProcessUtility {
 		String[] cmd = DebugPlugin.parseArguments(commandLine);
 		return this.execSync(cmd, workingDirectory, outStreamListener, errorStreamListener, monitor, envp, launchConfiguration);
 	}	
+
+	private Map<String, String> generateProcessAttributes(String[] command, ILaunchConfiguration launchConfiguration)
+			throws CoreException {
+		Map<String, String> processAttributes = new HashMap<String, String>();
+		processAttributes.put(IProcess.ATTR_PROCESS_TYPE, command[0]);
+		processAttributes.put(IProcess.ATTR_CMDLINE, generateCommandLine(command));
+		if(launchConfiguration != null ){
+			processAttributes.put(IProcess.ATTR_PROCESS_LABEL,
+					launchConfiguration.getAttribute(IProcess.ATTR_PROCESS_LABEL, command[0]));
+		}
+		return processAttributes;
+	}
+
 	
 	private void checkWorkingDirectory(File workingDirectory) {
 		if(workingDirectory != null && !workingDirectory.isDirectory()){
@@ -171,4 +206,32 @@ public class ExternalProcessUtility {
 			throw new IllegalArgumentException("Empty commands array");
 		}
 	}
+	
+	private String generateCommandLine(final String[] commandLine) {
+		StringBuffer buf = new StringBuffer();
+		for (int i = 0; i < commandLine.length; i++) {
+			buf.append(' ');
+			char[] characters = commandLine[i].toCharArray();
+			StringBuffer command = new StringBuffer();
+			boolean containsSpace = false;
+			for (int j = 0; j < characters.length; j++) {
+				char character = characters[j];
+				if (character == '\"') {
+					command.append('\\');
+				} else if (character == ' ') {
+					containsSpace = true;
+				}
+				command.append(character);
+			}
+			if (containsSpace) {
+				buf.append('\"');
+				buf.append(command);
+				buf.append('\"');
+			} else {
+				buf.append(command);
+			}
+		}
+		return buf.toString();
+	}
+	
 }
