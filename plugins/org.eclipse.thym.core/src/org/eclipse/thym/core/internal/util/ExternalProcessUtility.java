@@ -89,7 +89,9 @@ public class ExternalProcessUtility {
 			IStreamListener outStreamListener, 
 			IStreamListener errorStreamListener, IProgressMonitor monitor, 
 			String[] envp, ILaunchConfiguration launchConfiguration) throws CoreException{
-		
+		if(monitor == null){
+			monitor = new NullProgressMonitor();
+		}
 		HybridCore.trace("Sync Execute command line: "+Arrays.toString(command));
 		IProcess prcs = exec(command, workingDirectory, monitor, envp, launchConfiguration);
 		if(prcs == null ){

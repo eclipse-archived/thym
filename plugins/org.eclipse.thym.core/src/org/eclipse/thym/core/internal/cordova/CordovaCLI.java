@@ -52,6 +52,8 @@ public class CordovaCLI {
 	private static final String P_COMMAND_PLUGIN = "plugin";
 	private static final String P_COMMAND_PLATFORM = "platform";
 	private static final String P_COMMAND_PREPARE = "prepare";
+	private static final String P_COMMAND_BUILD = "build";
+	
 	//Store locks for the projects.
 	private static Map<String, Lock> projectLock = Collections.synchronizedMap(new HashMap<String,Lock>());
 	private HybridProject project;
@@ -84,6 +86,18 @@ public class CordovaCLI {
 	
 	private CordovaCLI(HybridProject project){
 		this.project = project;
+	}
+	
+	public void build (final IProgressMonitor monitor, final String...options )throws CoreException{
+		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
+		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova build"));
+		String cordovaCommand = generateCordovaCommand(P_COMMAND_BUILD, null, options);
+		
+		sendCordovaCommand(process, cordovaCommand, monitor);
+		String error = streamListener.getErrorMessage();
+		if(!error.isEmpty()){
+			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID,500,error,null));
+		}
 	}
 	
 	public void prepare (final IProgressMonitor monitor, final String...options )throws CoreException{
