@@ -13,8 +13,9 @@ package org.eclipse.thym.core.config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.beans.PropertyChangeEvent;
@@ -265,30 +266,33 @@ public class WidgetModelTest {
 		Engine engine = model.createEngine(widget);
 		String name = "my_anroid";
 		String version = "1.2.3.4";
-		engine.setVersion(version);
+		engine.setSpec(version);
 		engine.setName(name);
 		assertEquals(name, engine.getName());
-		assertEquals(version, engine.getVersion());
+		assertEquals(version, engine.getSpec());
 		widget.addEngine(engine);
 		model.save();
 		
 		Document doc = getConfigXMLDocument();
 		boolean nameMatched = false;
-		boolean versionMatched = false;
+		boolean specMatched = false;
 		NodeList list = doc.getDocumentElement().getElementsByTagName("engine");
+		
 		for (int i = 0; i < list.getLength(); i++) {
 			Node curr = list.item(i);
 			String nameAtt = getAtrributeValue(curr, WidgetModelConstants.ENGINE_ATTR_NAME);
 			if(name.equals(nameAtt)){
 				nameMatched =true;
 			}
-			String versionAtt = getAtrributeValue(curr, WidgetModelConstants.ENGINE_ATTR_VERSION);
+			String versionAtt = getAtrributeValue(curr, WidgetModelConstants.ENGINE_ATTR_SPEC);
 			if(version.equals(versionAtt)){
-				versionMatched = true;
+				specMatched = true;
 			}
+			// Check that the old version attribute is not used
+			assertNull(curr.getAttributes().getNamedItem(WidgetModelConstants.ENGINE_ATTR_VERSION));
 		}
 		assertTrue("name for engine is not persisted correctly", nameMatched);
-		assertTrue("version for engine is not persisted correctly", versionMatched);
+		assertTrue("version for engine is not persisted correctly", specMatched);
 	}
 	
 	@Test

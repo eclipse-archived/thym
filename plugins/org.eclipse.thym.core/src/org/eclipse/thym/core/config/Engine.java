@@ -10,6 +10,7 @@
 package org.eclipse.thym.core.config;
 import static org.eclipse.thym.core.config.WidgetModelConstants.ENGINE_ATTR_NAME;
 import static org.eclipse.thym.core.config.WidgetModelConstants.ENGINE_ATTR_VERSION;
+import static org.eclipse.thym.core.config.WidgetModelConstants.ENGINE_ATTR_SPEC;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -23,12 +24,16 @@ import org.w3c.dom.Node;
 public class Engine extends AbstractConfigObject {
 	
 	private Property<String> name = new Property<String>(ENGINE_ATTR_NAME);
-	private Property<String> version = new Property<String>(ENGINE_ATTR_VERSION);
+	private Property<String> spec = new Property<String>(ENGINE_ATTR_SPEC);
 	
 	Engine(Node node){
 		itemNode = (Element)node;
 		name.setValue(getNodeAttribute(node, null, ENGINE_ATTR_NAME));
-		version.setValue(getNodeAttribute(node, null, ENGINE_ATTR_VERSION));
+		String specvalue = getNodeAttribute(node, null, ENGINE_ATTR_SPEC);
+		if(specvalue == null){
+			specvalue = getNodeAttribute(node, null, ENGINE_ATTR_VERSION);
+		}
+		spec.setValue(specvalue);
 	}
 	
 	public String getName() {
@@ -40,13 +45,13 @@ public class Engine extends AbstractConfigObject {
 		setAttributeValue(itemNode, null, ENGINE_ATTR_NAME, name);
 	}
 
-	public String getVersion() {
-		return version.getValue();
+	public String getSpec() {
+		return spec.getValue();
 	}
 
-	public void setVersion(String version) {
-		this.version.setValue(version);
-		setAttributeValue(itemNode, null, ENGINE_ATTR_VERSION, version);
+	public void setSpec(String version) {
+		this.spec.setValue(version);
+		setAttributeValue(itemNode, null, ENGINE_ATTR_SPEC, version);
 	}
 	
 	@Override
@@ -57,7 +62,7 @@ public class Engine extends AbstractConfigObject {
 			return true;
 		Engine that = (Engine) obj;
 		return equalField(that.getName(), this.getName()) &&
-				equalField(this.getVersion(), that.getVersion());
+				equalField(this.getSpec(), that.getSpec());
 	}
 	
 	@Override
@@ -66,8 +71,8 @@ public class Engine extends AbstractConfigObject {
 		if(getName() != null ){
 			hash *= getName().hashCode();
 		}
-		if(getVersion() != null ){
-			hash *= getVersion().hashCode();
+		if(getSpec() != null ){
+			hash *= getSpec().hashCode();
 		}
 		return hash;
 	}

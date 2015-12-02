@@ -82,7 +82,7 @@ public class HybridMobileEngineTests {
 			boolean enginePersisted =false;
 			for (Engine engine : persistedEngines) {
 				if(hybridMobileEngine.getId().equals(engine.getName()) &&
-						hybridMobileEngine.getVersion().equals(engine.getVersion())){
+						hybridMobileEngine.getVersion().equals(engine.getSpec())){
 					enginePersisted= true;
 					break;
 				}

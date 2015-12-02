@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -90,10 +89,10 @@ public class HybridMobileEngineManager {
 		//null checks needed: sometimes we encounter engines without a name or version attribute.
 		if(engine.isManaged()){
 			return configEngine.getName() != null && configEngine.getName().equals(engine.getId()) &&
-				configEngine.getVersion() != null && configEngine.getVersion().equals(engine.getVersion());
+				configEngine.getSpec() != null && configEngine.getSpec().equals(engine.getVersion());
 		}else{
-			return engine.getLocation().isValidPath(configEngine.getVersion()) 
-					&& engine.getLocation().equals(new Path(configEngine.getVersion()));
+			return engine.getLocation().isValidPath(configEngine.getSpec()) 
+					&& engine.getLocation().equals(new Path(configEngine.getSpec()));
 		}
 	}
 	
@@ -159,9 +158,9 @@ public class HybridMobileEngineManager {
 			Engine e = model.createEngine(w);
 			e.setName(engine.getId());
 			if(!engine.isManaged()){
-				e.setVersion(engine.getLocation().toString());
+				e.setSpec(engine.getLocation().toString());
 			}else{
-				e.setVersion(engine.getVersion());
+				e.setSpec(engine.getVersion());
 			}
 			w.addEngine(e);
 		}

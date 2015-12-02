@@ -198,7 +198,7 @@ public class HybridProjectCreator {
             		for (HybridMobileEngine hybridMobileEngine : engines) {
             			Engine e = model.createEngine(w);
             			e.setName(hybridMobileEngine.getId());
-            			e.setVersion(hybridMobileEngine.getVersion());
+            			e.setSpec(hybridMobileEngine.getVersion());
             			w.addEngine(e);
             		}
             	}
