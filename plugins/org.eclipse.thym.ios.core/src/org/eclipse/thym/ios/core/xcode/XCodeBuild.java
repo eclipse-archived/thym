@@ -93,7 +93,6 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		SubMonitor sm = SubMonitor.convert(monitor, "Build project for iOS", 100);
 
 		try {
-
 			HybridProject hybridProject = HybridProject.getHybridProject(this.getProject());
 			if (hybridProject == null) {
 				throw new CoreException(new Status(IStatus.ERROR, IOSCore.PLUGIN_ID,
@@ -103,10 +102,10 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			if(isRelease()){
 				buildType = "--device";
 			}
-			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "ios",buildType);
 			if (sm.isCanceled()) {
 				return;
 			}
+			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "ios",buildType);
 			String name = hybridProject.getAppName();
 			IFolder buildFolder = hybridProject.getProject().getFolder("platforms/ios/build");
 			IFolder artifactFolder = null;

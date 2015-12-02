@@ -103,17 +103,6 @@ public class AndroidLibraryResolver extends
 	}
 	
 	public void preCompile(IProgressMonitor monitor) throws CoreException{
-		File projectDir = libraryRoot.append("framework").toFile();
-		if(!projectDir.isDirectory()){
-			throw new CoreException(HybridMobileStatus.newMissingEngineStatus(null, "Library for the Active Hybrid Mobile Engine for Android is incomplete. No framework directory is present."));
-		}
-		AndroidSDK sdk = AndroidProjectUtils.selectBestValidTarget(this);
-		AndroidSDKManager sdkManager = AndroidSDKManager.getManager();
-		sdkManager.updateProject(sdk, null, true, projectDir,monitor);
-		BuildDelegate buildDelegate = new BuildDelegate();
-		if(monitor.isCanceled())
-			return;
-		buildDelegate.buildLibraryProject(projectDir, monitor);
 	}
 	
 	public boolean needsPreCompilation(){

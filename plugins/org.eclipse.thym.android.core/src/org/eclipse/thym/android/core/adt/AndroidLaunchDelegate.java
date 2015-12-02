@@ -34,7 +34,7 @@ import org.eclipse.thym.core.config.WidgetModel;
 
 public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
-	private File artifactsDir;
+	private File artifact;
 	private AndroidDevice device;
 	
 	@Override
@@ -52,7 +52,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		String packageName = widget.getId();
 		String name = project.getBuildArtifactAppName();
 		
-		sdk.installApk(new File(artifactsDir,name+"-debug.apk" ), device.getSerialNumber(),monitor);
+		sdk.installApk(artifact, device.getSerialNumber(),monitor);
 		
 		sdk.startApp(packageName+"/."+name, device.getSerialNumber(),monitor);
 		String logcatFilter = configuration.getAttribute(AndroidLaunchConstants.ATTR_LOGCAT_FILTER, AndroidLaunchConstants.VAL_DEFAULT_LOGCAT_FILTER);
@@ -75,7 +75,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		BuildDelegate buildDelegate = new BuildDelegate();
 		buildDelegate.init(getProject(configuration), null);
 		buildDelegate.buildNow(monitor);
-		artifactsDir = buildDelegate.getBinaryDirectory();
+		artifact = buildDelegate.getBuildArtifact();
 		return true;
 	}
 

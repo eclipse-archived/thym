@@ -144,9 +144,9 @@ public class CordovaCLI {
 		try {
 			final IStreamsProxy streamProxy = process.getStreamsProxy();
 			streamProxy.write(cordovaCommand.toString());
-			//exit the shell after sending the command
-			streamProxy.write("exit\n");
 			while (!process.isTerminated()) {
+				//exit the shell after sending the command
+				streamProxy.write("exit\n");
 				if (monitor.isCanceled()) {
 					process.terminate();
 					break;
