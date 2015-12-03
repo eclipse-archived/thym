@@ -34,6 +34,7 @@ import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;

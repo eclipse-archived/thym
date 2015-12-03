@@ -34,12 +34,12 @@ import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
 
 /**
- * A wrapper around Cordova CLI.
+ * Wrapper around Cordova CLI. Provides low level 
+ * access to Cordova CLI.
  *
  *@author Gorkem Ercan
  *
@@ -47,7 +47,6 @@ import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
 @SuppressWarnings("restriction")
 public class CordovaCLI {
 
-	
 	public static final String OPTION_SAVE = "--save";
 	private static final String P_COMMAND_PLUGIN = "plugin";
 	private static final String P_COMMAND_PLATFORM = "platform";
@@ -88,53 +87,44 @@ public class CordovaCLI {
 		this.project = project;
 	}
 	
-	public void build (final IProgressMonitor monitor, final String...options )throws CoreException{
+	public CordovaCLIResult build (final IProgressMonitor monitor, final String...options )throws CoreException{
 		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova build"));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_BUILD, null, options);
-		
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		String error = streamListener.getErrorMessage();
-		if(!error.isEmpty()){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID,500,error,null));
-		}
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
+		throwExceptionIfError(result);
+		return result;
 	}
 	
-	public void prepare (final IProgressMonitor monitor, final String...options )throws CoreException{
+	public CordovaCLIResult prepare (final IProgressMonitor monitor, final String...options )throws CoreException{
 		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova prepare "));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PREPARE, null, options);
-		
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		String error = streamListener.getErrorMessage();
-		if(!error.isEmpty()){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID,500,error,null));
-		}
+		CordovaCLIResult result =  new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
+		throwExceptionIfError(result);
+		return result;
 	}
 	
-	public void platform (final Command command, final IProgressMonitor monitor, final String... options ) throws CoreException{
+	public CordovaCLIResult platform (final Command command, final IProgressMonitor monitor, final String... options ) throws CoreException{
 		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova platform "+ command.getCliCommand()));
-		
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PLATFORM, command, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-
-		String error = streamListener.getErrorMessage();
-		if(!error.isEmpty()){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID,500,error,null));
-		}
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(),streamListener.getMessage());
+		throwExceptionIfError(result);
+		return result;
 	}
 	
-	public void plugin(final Command command, final IProgressMonitor monitor, final String... options) throws CoreException{
+	public CordovaCLIResult plugin(final Command command, final IProgressMonitor monitor, final String... options) throws CoreException{
 		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova plugin "+ command.getCliCommand()));
-		
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PLUGIN,command, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		String error = streamListener.getErrorMessage();
-		if(!error.isEmpty()){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID,500,error,null));
-		}
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
+		throwExceptionIfError(result);
+		return result;
 	}
 
 	private void sendCordovaCommand(final IProcess process, final String cordovaCommand,
@@ -181,7 +171,8 @@ public class CordovaCLI {
 		return builder.toString();
 	}
 	
-	private IProcess startShell(final IStreamListener listener, final IProgressMonitor monitor, 
+	//public visibility to support testing
+	public IProcess startShell(final IStreamListener listener, final IProgressMonitor monitor, 
 			final ILaunchConfiguration launchConfiguration) throws CoreException{
 		ArrayList<String> commandList = new ArrayList<String>();
 		//TODO: handle windows
@@ -229,6 +220,12 @@ public class CordovaCLI {
 			return null;
 		}
 		return wp.toFile();
+	}
+	
+	private void throwExceptionIfError(CordovaCLIResult result) throws CoreException {
+		if(result.hasError()){
+			throw result.asCoreException();
+		}
 	}
 	
 }

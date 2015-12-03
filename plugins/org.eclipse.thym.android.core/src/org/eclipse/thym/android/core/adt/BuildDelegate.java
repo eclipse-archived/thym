@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.thym.android.core.adt;
 
-import java.io.File;
-
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -25,6 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 /**
  * Build delegate for Android
@@ -52,8 +51,7 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}	
-			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "android",buildType);
-			
+			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90),"android",buildType);
 			
 			IFolder androidProject = hybridProject.getProject().getFolder("platforms/android");
 			androidProject.accept(new IResourceProxyVisitor() {

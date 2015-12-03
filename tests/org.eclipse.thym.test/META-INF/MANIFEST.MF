@@ -19,8 +19,10 @@ Require-Bundle: org.eclipse.ui,
  org.apache.httpcomponents.httpclient;bundle-version="[4.2.6,4.4.0)",
  org.eclipse.wst.sse.core,
  org.eclipse.wst.xml.core,
- org.apache.commons.io
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+ org.apache.commons.io,
+ org.jboss.tools.locus.mockito;bundle-version="1.9.5"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7,
+ JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.wst.jsdt.core
 Bundle-ClassPath: lib/dd-plist.jar,
