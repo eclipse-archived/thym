@@ -14,21 +14,19 @@ package org.eclipse.thym.wp.core.vstudio;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
+import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.wp.core.WPCore;
 import org.eclipse.thym.wp.internal.core.Messages;
 import org.eclipse.thym.wp.internal.core.Version;
 import org.eclipse.thym.wp.internal.core.WindowsRegistry;
-import org.eclipse.thym.wp.internal.core.vstudio.WPProjectGenerator;
 import org.eclipse.thym.wp.internal.core.vstudio.WPProjectUtils;
 
 /**
@@ -42,23 +40,12 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 
 	private static final String DEBUG_XAP_NAME = "CordovaAppProj_Debug_AnyCPU.xap"; //$NON-NLS-1$
 	private static final String RELEASE_XAP_NAME = "CordovaAppProj_Release_AnyCPU.xap"; //$NON-NLS-1$
-	private static final String WP_CORDOVA_CLASS_LIB_DLL = "WPCordovaClassLib.dll"; //$NON-NLS-1$
 	
 	private static final String INSTALL_ROOT = "InstallRoot"; //$NON-NLS-1$
 	private static final String DOT_NET = "HKLM\\Software\\Wow6432Node\\Microsoft\\.NETFramework"; //$NON-NLS-1$
 
 	private ILaunchConfiguration launchConfiguration;
 
-	public void buildLibraryProject(File projectLocation,
-			IProgressMonitor monitor) throws CoreException {
-		doBuildProject(projectLocation, monitor);
-		setBuildArtifact(new File(getBuildDir(projectLocation),
-				WP_CORDOVA_CLASS_LIB_DLL));
-		if (!getBuildArtifact().exists()) {
-			throw new CoreException(new Status(IStatus.ERROR, WPCore.PLUGIN_ID,
-					Messages.MSBuild_MSBuildFailedMessage));
-		}
-	}
 
 	@Override
 	public void buildNow(IProgressMonitor monitor) throws CoreException {
@@ -67,24 +54,23 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 		}
 		try {
 			monitor.beginTask(Messages.MSBuild_BuildProjectTask, 10);
-			// TODO: use extension point to create the generator.
-			WPProjectGenerator creator = new WPProjectGenerator(getProject(),
-					null, WPProjectUtils.WP8);
-			SubProgressMonitor generateMonitor = new SubProgressMonitor(
-					monitor, 1);
-			File vstudioProjectDir = creator.generateNow(generateMonitor);
-
-			monitor.worked(4);
+			SubMonitor generateMonitor =SubMonitor.convert(monitor,5);
 			if (monitor.isCanceled()) {
 				return;
 			}
-			doBuildProject(vstudioProjectDir, generateMonitor);
 			HybridProject hybridProject = HybridProject.getHybridProject(this
 					.getProject());
 			if (hybridProject == null) {
 				throw new CoreException(new Status(IStatus.ERROR,
 						WPCore.PLUGIN_ID, Messages.MSBuild_NoHybridError));
 			}
+			String buildType = "--debug";
+			if(isRelease()){
+				buildType = "--release";
+			}
+			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType);
+			
+			File vstudioProjectDir = hybridProject.getProject().getFolder("platforms/wp8").getLocation().toFile();
 			if (isRelease()) {
 				setBuildArtifact(new File(getBuildDir(vstudioProjectDir),
 						RELEASE_XAP_NAME));
@@ -160,49 +146,9 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 				: WPProjectUtils.DEBUG);
 	}
 
-	private void doBuildProject(File projectLocation, IProgressMonitor monitor)
-			throws CoreException {
-		if (monitor.isCanceled()) {
-			return;
-		}
-		try {
-			monitor.beginTask(Messages.MSBuild_BuildProjectTask, 10);
-			String msBuild = getMSBuildPath();
-			if (msBuild != null) {
-				File csprojFile = WPProjectUtils.getCsrojFile(projectLocation);
-				// on this stage it cannot be null
-				Assert.isNotNull(csprojFile);
-				StringBuilder cmdString = new StringBuilder(addQuotes(msBuild));
-				cmdString.append(" "); //$NON-NLS-1$
-				if (isRelease()) {
-					cmdString.append("/p:Configuration=Release "); //$NON-NLS-1$
-				}
-				cmdString.append(addQuotes(csprojFile.getAbsolutePath()));
-
-				ExternalProcessUtility processUtility = new ExternalProcessUtility();
-				if (monitor.isCanceled()) {
-					return;
-				}
-				monitor.worked(1);
-				int ret = processUtility.execSync(cmdString.toString(), projectLocation,
-						null, null, monitor, null,
-						getLaunchConfiguration());
-				if (ret != 0) {
-					throw new CoreException(new Status(IStatus.ERROR,
-							WPCore.PLUGIN_ID, Messages.MSBuild_MSBuildError));
-				}
-			}
-		} finally {
-			monitor.done();
-		}
-	}
-
 	private String getInstallationRoot() throws CoreException {
 		return WindowsRegistry.readRegistry(DOT_NET, INSTALL_ROOT);
 	}
 	
-	private String addQuotes(String path) {
-		return "\"" + path + "\""; //$NON-NLS-1$ //$NON-NLS-2$
-	}
 
 }

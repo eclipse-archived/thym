@@ -175,9 +175,12 @@ public class CordovaCLI {
 	public IProcess startShell(final IStreamListener listener, final IProgressMonitor monitor, 
 			final ILaunchConfiguration launchConfiguration) throws CoreException{
 		ArrayList<String> commandList = new ArrayList<String>();
-		//TODO: handle windows
-		commandList.add("/bin/bash");
-		commandList.add("-l");
+		if(isWindows()){
+			commandList.add("cmd");
+		}else{
+			commandList.add("/bin/bash");
+			commandList.add("-l");
+		}
 		ExternalProcessUtility ep = new ExternalProcessUtility();
 		IProcess process = ep.exec(commandList.toArray(new String[commandList.size()]), getWorkingDirectory(), 
 				monitor, null, launchConfiguration);
@@ -186,6 +189,11 @@ public class CordovaCLI {
 			 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
 		 }
 		 return process;
+	}
+	
+	private boolean isWindows(){
+		String OS = System.getProperty("os.name","unknown");
+		return OS.toLowerCase().indexOf("win")>-1;
 	}
 	
 	private ILaunchConfiguration getLaunchConfiguration(String label){
