@@ -14,16 +14,25 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
+import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.osgi.framework.Version;
 /**
@@ -140,31 +149,59 @@ public class HybridMobileEngineManager {
 	}
 
 	/**
-	 * Persists the engine information. 
+	 * Persists engine information to config.xml. 
+	 * Removes existing engines form the project.
+	 * Calls cordova prepare so that the new engines are restored.
 	 * 
 	 * @param engine
 	 * @throws CoreException
 	 */
-	public void updateEngines(HybridMobileEngine[] engines) throws CoreException{
-		WidgetModel model = WidgetModel.getModel(project);
-		Widget w = model.getWidgetForEdit();
-		List<Engine> existingEngines = w.getEngines();
-		if(existingEngines != null ){
-			for (Engine existingEngine : existingEngines) {
-				w.removeEngine(existingEngine);
+	public void updateEngines(final HybridMobileEngine[] engines) throws CoreException{
+		WorkspaceJob updateJob = new WorkspaceJob(NLS.bind("Update Cordova Engines for {0}",project.getProject().getName()) ) {
+			
+			@Override
+			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
+				WidgetModel model = WidgetModel.getModel(project);
+				Widget w = model.getWidgetForEdit();
+				List<Engine> existingEngines = w.getEngines();
+				CordovaCLI cordova = CordovaCLI.newCLIforProject(project);
+				SubMonitor sm = SubMonitor.convert(monitor,100);
+				if(existingEngines != null ){
+					for (Engine existingEngine : existingEngines) {
+						if(isEngineRemoved(existingEngine, engines)){
+							cordova.platform(Command.REMOVE, sm,existingEngine.getName());
+						}
+						w.removeEngine(existingEngine);
+					}
+				}
+				sm.worked(30);
+				for (HybridMobileEngine engine : engines) {
+					Engine e = model.createEngine(w);
+					e.setName(engine.getId());
+					if(!engine.isManaged()){
+						e.setSpec(engine.getLocation().toString());
+					}else{
+						e.setSpec(engine.getVersion());
+					}
+					w.addEngine(e);
+				}
+				model.save();
+				cordova.prepare(sm.newChild(40), "");
+				project.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
+				sm.done();
+				return Status.OK_STATUS;
+			}
+		};
+		updateJob.schedule();
+	}
+	
+	private boolean isEngineRemoved(final Engine engine, final HybridMobileEngine[] engines){
+		for (HybridMobileEngine hybridMobileEngine : engines) {
+			if(hybridMobileEngine.getId().equals(engine.getName()) && hybridMobileEngine.getVersion().equals(engine.getSpec())){
+				return false;
 			}
 		}
-		for (HybridMobileEngine engine : engines) {
-			Engine e = model.createEngine(w);
-			e.setName(engine.getId());
-			if(!engine.isManaged()){
-				e.setSpec(engine.getLocation().toString());
-			}else{
-				e.setSpec(engine.getVersion());
-			}
-			w.addEngine(e);
-		}
-		model.save();
+		return true;
 	}
 
 }
