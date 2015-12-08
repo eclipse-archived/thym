@@ -12,8 +12,14 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.IWorkspaceRunnable;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
@@ -64,13 +70,23 @@ public class HybridMobileEngineTests {
 		engines[1].setId("platform_1");
 		engines[1].setVersion("1.1.1");
 		manager.updateEngines(engines);
-		Widget w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
-		assertEquals(engines.length, w.getEngines().size());
-		checkEnginesPersistedCorrectly(engines);
-		manager.updateEngines(engines);
-		w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
-		assertEquals(engines.length, w.getEngines().size());
-		checkEnginesPersistedCorrectly(engines);
+		//Run on a IWorkspaceRunnable because it needs to sync with the udpateEngines call.
+		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+			
+			@Override
+			public void run(IProgressMonitor monitor) throws CoreException {
+				Widget w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
+				assertEquals(engines.length, w.getEngines().size());
+				checkEnginesPersistedCorrectly(engines);
+				manager.updateEngines(engines);
+				w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
+				assertEquals(engines.length, w.getEngines().size());
+				checkEnginesPersistedCorrectly(engines);
+			}
+		};
+		IWorkspace ws= ResourcesPlugin.getWorkspace();
+		ISchedulingRule rule = ws.getRuleFactory().modifyRule(testproject.getProject());
+		ResourcesPlugin.getWorkspace().run(runnable, rule, 0,new NullProgressMonitor());
 	}
 
 	//Check given set of engines are persisted to config.xml correctly
