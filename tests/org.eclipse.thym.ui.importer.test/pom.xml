@@ -24,6 +24,7 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<configuration>
 					<useUIHarness>true</useUIHarness>
+					<argLine>-XstartOnFirstThread</argLine>
 					<dependencies>
   					<dependency>
   						<!-- To resolve proxy settings -->
