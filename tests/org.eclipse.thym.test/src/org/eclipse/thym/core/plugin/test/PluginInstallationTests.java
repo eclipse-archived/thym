@@ -145,7 +145,9 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
+	@Category(value=RequiresCordovaCLICategory.class)
 	public void listPluginsTest() throws CoreException{
+	
 		CordovaPluginManager pm =installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		List<CordovaPlugin> plugins = pm.getInstalledPlugins();
 		boolean found = false;
@@ -159,6 +161,7 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
+	@Category(value=RequiresCordovaCLICategory.class)
 	public void pluginNotInstalledTest() throws CoreException{
 		CordovaPluginManager pm = installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		assertFalse(pm.isPluginInstalled("my.madeup.id"));

@@ -9,5 +9,11 @@
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
 package org.eclipse.thym.hybrid.test;
-
+/**
+ * Category for tests that require Cordova CLI to be installed locally
+ * to pass.
+ * 
+ * @author Gorkem Ercan
+ *
+ */
 public interface RequiresCordovaCLICategory { }
