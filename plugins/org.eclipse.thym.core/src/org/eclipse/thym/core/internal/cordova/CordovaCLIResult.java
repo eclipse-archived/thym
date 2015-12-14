@@ -10,11 +10,10 @@
  *******************************************************************************/
 package org.eclipse.thym.core.internal.cordova;
 
-import org.eclipse.core.runtime.CoreException;
+import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.HybridMobileStatus;
 
 /**
  * Generic execution result for Cordova CLI.
@@ -24,39 +23,27 @@ import org.eclipse.thym.core.HybridMobileStatus;
  */
 public class CordovaCLIResult {
 	
-	private final String errorMessage;
 	private final String message;
 	
-	public CordovaCLIResult(String error, String message){
-		this.errorMessage = error;
+	public CordovaCLIResult(String message){
 		this.message = message;
 	}
-
+	
 	public String getMessage() {
 		return message;
 	}
 
-	String getErrorMessage() {
-		return errorMessage;
-	}
-
-
-	boolean hasError() {
-		return errorMessage != null && !errorMessage.isEmpty();
-	}
-	
-	IStatus asStatus(){
-		if(hasError()){
-			return new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID, 500, getErrorMessage(), null);
-		}
+	public IStatus asStatus(){
 		return Status.OK_STATUS;
 	}
 	
-	CoreException asCoreException(){
-		if(hasError()){
-			return new CoreException(asStatus());
+	public <T extends CordovaCLIResult> T convertTo(Class<T> resultType){
+		try {
+			return resultType.getConstructor(String.class).newInstance(this.message);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			throw new IllegalArgumentException("Result type is not valid");
 		}
-		return null;
 	}
 
 }

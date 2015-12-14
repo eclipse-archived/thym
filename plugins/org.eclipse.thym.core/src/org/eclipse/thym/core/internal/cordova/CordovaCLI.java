@@ -92,8 +92,7 @@ public class CordovaCLI {
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova build"));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_BUILD, null, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
-		throwExceptionIfError(result);
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getMessage());
 		return result;
 	}
 	
@@ -102,8 +101,7 @@ public class CordovaCLI {
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova prepare "));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PREPARE, null, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		CordovaCLIResult result =  new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
-		throwExceptionIfError(result);
+		CordovaCLIResult result =  new CordovaCLIResult(streamListener.getMessage());
 		return result;
 	}
 	
@@ -112,8 +110,7 @@ public class CordovaCLI {
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova platform "+ command.getCliCommand()));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PLATFORM, command, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(),streamListener.getMessage());
-		throwExceptionIfError(result);
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getMessage());
 		return result;
 	}
 	
@@ -122,8 +119,7 @@ public class CordovaCLI {
 		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova plugin "+ command.getCliCommand()));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_PLUGIN,command, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
-		CordovaCLIResult result = new CordovaCLIResult(streamListener.getErrorMessage(), streamListener.getMessage());
-		throwExceptionIfError(result);
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getMessage());
 		return result;
 	}
 
@@ -229,11 +225,4 @@ public class CordovaCLI {
 		}
 		return wp.toFile();
 	}
-	
-	private void throwExceptionIfError(CordovaCLIResult result) throws CoreException {
-		if(result.hasError()){
-			throw result.asCoreException();
-		}
-	}
-	
 }

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.core.internal.cordova;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
@@ -124,6 +125,33 @@ public class CordovaCLITest {
     	mockCLI.build(new NullProgressMonitor(), "ios");
     	verify(mockStreams).write("cordova build ios\n");
     }    
+    
+    @Test
+    public void testCordovaCLIResult(){
+    	String resultText = "Failed to fetch platform ios@7.0.1 \n"+
+    			"Probably this is either a connection problem, or platform spec is incorrect. \n"+
+    			"Check your connection and platform name/version/URL. \n"+
+    			"Error: version not found: cordova-ios@7.0.1 \n";    	
+    	CordovaCLIResult result = new CordovaCLIResult(resultText);
+    	assertEquals(IStatus.OK, result.asStatus().getSeverity());
+    	assertEquals(resultText, result.getMessage());
+    }
+    
+    @Test
+    public void testErrorDetectingCLIResult(){
+    	String resultText = "Failed to fetch platform ios@7.0.1 \n"+
+    			"Probably this is either a connection problem, or platform spec is incorrect.\n"+
+    			"Check your connection and platform name/version/URL.\n"+
+    			"Error: version not found: cordova-ios@7.0.1 \n";
+    			
+    	CordovaCLIResult result = new CordovaCLIResult(resultText);
+    	ErrorDetectingCLIResult err = result.convertTo(ErrorDetectingCLIResult.class);
+    	IStatus status = err.asStatus();
+    	assertEquals("expected error status but failed",IStatus.ERROR,status.getSeverity());
+    	assertEquals(ErrorDetectingCLIResult.ERROR_GENERAL, status.getCode());
+    	assertEquals("version not found: cordova-ios@7.0.1", status.getMessage());
+    }
+    
     
 	private void setupMocks(CordovaCLI mockCLI, IProcess mockProcess, IStreamsProxy2 mockStreams) throws CoreException {
 		when(mockCLI.startShell(any(IStreamListener.class), any(IProgressMonitor.class),any(ILaunchConfiguration.class))).thenReturn(mockProcess);

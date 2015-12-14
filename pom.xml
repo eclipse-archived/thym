@@ -9,7 +9,7 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<tycho-version>0.22.0</tycho-version>
+		<tycho-version>0.24.0</tycho-version>
 		<tycho-extras-version>${tycho-version}</tycho-extras-version>
 		<!-- skip for local builds, set it to true on Eclipse.org infrastructure -->
 		<cbi.jarsigner.skip>true</cbi.jarsigner.skip>

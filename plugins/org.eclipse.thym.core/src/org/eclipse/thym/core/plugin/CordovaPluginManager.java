@@ -34,7 +34,6 @@ import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
-import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
@@ -84,8 +83,14 @@ public class CordovaPluginManager {
 		if(monitor.isCanceled()) return;
 		// read plugin.xml to verify the plugin
 		readPluginXML(directory);
-		CordovaCLI.newCLIforProject(project).plugin(Command.ADD, monitor, directory.toString(), CordovaCLI.OPTION_SAVE);
+		IStatus status = CordovaCLI.newCLIforProject(project)
+			.plugin(Command.ADD, monitor, directory.toString(), CordovaCLI.OPTION_SAVE)
+			.convertTo(PluginMessagesCLIResult.class)
+			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
 	}
 	
 	/**
@@ -107,11 +112,15 @@ public class CordovaPluginManager {
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled()) return;
 		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
-		CordovaCLI.newCLIforProject(this.project).plugin(Command.ADD, monitor, pluginCoords, CordovaCLI.OPTION_SAVE );
+		IStatus status = CordovaCLI.newCLIforProject(this.project)
+				.plugin(Command.ADD, monitor, pluginCoords, CordovaCLI.OPTION_SAVE )
+				.convertTo(PluginMessagesCLIResult.class)
+				.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
 	}
-
-
 
 	/**
 	 * Installs a Cordova plug-in from a git repository. 
@@ -137,8 +146,14 @@ public class CordovaPluginManager {
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled()) return;	
-		CordovaCLI.newCLIforProject(project).plugin(Command.ADD, monitor, uri.toString(), CordovaCLI.OPTION_SAVE);
+		IStatus status = CordovaCLI.newCLIforProject(project)
+			.plugin(Command.ADD, monitor, uri.toString(), CordovaCLI.OPTION_SAVE)
+			.convertTo(PluginMessagesCLIResult.class)
+			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
 	}
 	
 	private Document readPluginXML(File directory) throws CoreException {
@@ -183,9 +198,15 @@ public class CordovaPluginManager {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
 		}
 		if(monitor.isCanceled()) return;
-		CordovaCLI.newCLIforProject(project).plugin(Command.REMOVE, monitor, id, CordovaCLI.OPTION_SAVE);
+		IStatus status = CordovaCLI.newCLIforProject(project)
+			.plugin(Command.REMOVE, monitor, id, CordovaCLI.OPTION_SAVE)
+			.convertTo(PluginMessagesCLIResult.class)
+			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 		resetInstalledPlugins();
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
 	}
 
 	
@@ -208,7 +229,14 @@ public class CordovaPluginManager {
 	 */
 	public void completePluginInstallationsForPlatform(File platformProjectLocation, String platform, FileOverwriteCallback overwrite, IProgressMonitor monitor) throws CoreException{
 		if(monitor.isCanceled()) return;
-		CordovaCLI.newCLIforProject(project).prepare(monitor, platform);
+		IStatus status = CordovaCLI.newCLIforProject(project)
+			.prepare(monitor, platform)
+			.convertTo(PluginMessagesCLIResult.class)
+			.asStatus();
+		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
 	}
 	
 	/**

@@ -15,5 +15,21 @@
 	<properties>
 		<testSuite>${project.artifactId}</testSuite>
 		<testClass>org.eclipse.thym.hybrid.test.AllHybridTests</testClass>
-	</properties>
+		<excluded-test-categories> </excluded-test-categories>
+    </properties>
+    <build>
+	<plugins>
+		<plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>tycho-surefire-plugin</artifactId>
+			<version>${tycho-version}</version>
+			<configuration>
+				<providerHint>junit47</providerHint>
+				<providerProperties>
+					<excludegroups>${excluded-test-categories}</excludegroups>
+				</providerProperties>
+			</configuration>
+		</plugin>
+	</plugins>
+    </build>
 </project>
