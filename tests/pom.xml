@@ -11,8 +11,40 @@
 	<name>Eclipse THyM tests</name>
 	<packaging>pom</packaging>
 	
+	<properties>
+		<!-- To handle OSX-specific settings -->
+		<os.testArgs></os.testArgs>
+	</properties>
+
 	<modules>
 		<module>org.eclipse.thym.test</module>
 		<module>org.eclipse.thym.ui.importer.test</module>
 	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-surefire-plugin</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<argLine>${os.testArgs}</argLine>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<profiles>
+		<profile>
+			<id>macosx-jvm-flags</id>
+			<activation>
+				<os><family>mac</family></os>
+			</activation>
+			<properties>
+				<os.testArgs>-XstartOnFirstThread</os.testArgs>
+			</properties>
+		</profile>
+	</profiles>	
 </project>
