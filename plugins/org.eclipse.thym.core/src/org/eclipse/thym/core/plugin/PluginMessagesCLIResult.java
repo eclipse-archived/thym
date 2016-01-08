@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. 
+ * Copyright (c) 2015, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridMobileStatus;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIErrors;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 
 public class PluginMessagesCLIResult extends ErrorDetectingCLIResult {
@@ -29,10 +30,6 @@ public class PluginMessagesCLIResult extends ErrorDetectingCLIResult {
 	
 	@Override
 	public IStatus asStatus() {
-		IStatus status = super.asStatus();
-		if(status.getSeverity() == IStatus.ERROR){
-			return status;
-		}
 		if(pluginStatus != null){
 			return pluginStatus;
 		}
@@ -54,7 +51,7 @@ public class PluginMessagesCLIResult extends ErrorDetectingCLIResult {
 					}
 					missingVars.append(mr.group());
 				}
-				pluginStatus = new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID, ERROR_MISSING_PLUGIN_VARIABLE,
+				pluginStatus = new HybridMobileStatus(IStatus.ERROR, HybridCore.PLUGIN_ID, CordovaCLIErrors.ERROR_MISSING_PLUGIN_VARIABLE,
 						NLS.bind("This plugin requires {0} to be defined",missingVars), null);
 			
 			}

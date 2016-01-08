@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. 
+ * Copyright (c) 2015, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -122,6 +122,24 @@ public class CordovaCLI {
 		CordovaCLIResult result = new CordovaCLIResult(streamListener.getMessage());
 		return result;
 	}
+	
+	public CordovaCLIResult version(final IProgressMonitor monitor) throws CoreException{
+		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
+		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova -version"));
+		String cordovaCommand = generateCordovaCommand(null, null, "-version");
+		sendCordovaCommand(process, cordovaCommand, monitor);
+		CordovaCLIResult result = new CordovaCLIResult(streamListener.getMessage());
+		return result;		
+	}
+	
+	public CordovaCLIResult nodeVersion(final IProgressMonitor monitor) throws CoreException{
+		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
+		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("node -v"));
+		String command = "node -v\n";
+		sendCordovaCommand(process, command, monitor);
+		CordovaCLIResult result= new CordovaCLIResult(streamListener.getMessage());
+		return result;
+	}
 
 	private void sendCordovaCommand(final IProcess process, final String cordovaCommand,
 			final IProgressMonitor monitor) throws CoreException {
@@ -149,10 +167,13 @@ public class CordovaCLI {
 		}
 	}
 	
-	private String generateCordovaCommand(final String command,final Command subCommand, final String... options) {
+	private String generateCordovaCommand(final String command, final Command subCommand, final String... options) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("cordova ");
-		builder.append(command);
+		builder.append("cordova");
+		if(command != null){
+			builder.append(" ");
+			builder.append(command);
+		}
 		if(subCommand != null){
 			builder.append(" ");
 			builder.append(subCommand.getCliCommand() );

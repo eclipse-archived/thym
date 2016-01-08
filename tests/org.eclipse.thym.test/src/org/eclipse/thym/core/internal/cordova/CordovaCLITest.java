@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. 
+ * Copyright (c) 2015, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -124,7 +124,27 @@ public class CordovaCLITest {
     	setupMocks(mockCLI, mockProcess, mockStreams);   	
     	mockCLI.build(new NullProgressMonitor(), "ios");
     	verify(mockStreams).write("cordova build ios\n");
-    }    
+    }
+    
+    @Test
+    public void testGeneratedVersionCommandCorrectly() throws CoreException,IOException{
+    	CordovaCLI mockCLI = getMockCLI();
+    	IProcess mockProcess = mock(IProcess.class);
+    	IStreamsProxy2 mockStreams  = mock(IStreamsProxy2.class);
+    	setupMocks(mockCLI, mockProcess, mockStreams);   	
+    	mockCLI.version(new NullProgressMonitor());
+    	verify(mockStreams).write("cordova -version\n");
+    } 
+    
+    @Test
+    public void testGeneratedNodeVersionCommandCorrectly() throws CoreException,IOException{
+    	CordovaCLI mockCLI = getMockCLI();
+    	IProcess mockProcess = mock(IProcess.class);
+    	IStreamsProxy2 mockStreams  = mock(IStreamsProxy2.class);
+    	setupMocks(mockCLI, mockProcess, mockStreams);   	
+    	mockCLI.nodeVersion(new NullProgressMonitor());
+    	verify(mockStreams).write("node -v\n");
+    } 
     
     @Test
     public void testCordovaCLIResult(){
@@ -148,10 +168,32 @@ public class CordovaCLITest {
     	ErrorDetectingCLIResult err = result.convertTo(ErrorDetectingCLIResult.class);
     	IStatus status = err.asStatus();
     	assertEquals("expected error status but failed",IStatus.ERROR,status.getSeverity());
-    	assertEquals(ErrorDetectingCLIResult.ERROR_GENERAL, status.getCode());
+    	assertEquals(CordovaCLIErrors.ERROR_GENERAL, status.getCode());
     	assertEquals("version not found: cordova-ios@7.0.1", status.getMessage());
     }
     
+    @Test
+    public void testErrorDetectingCLIResult_missingCommand_WIN(){
+    	String resultText = "'cordova' is not recognized as an internal or external command,\n"+
+    						"operable program or batch file.";
+    			
+    	CordovaCLIResult result = new CordovaCLIResult(resultText);
+    	ErrorDetectingCLIResult err = result.convertTo(ErrorDetectingCLIResult.class);
+    	IStatus status = err.asStatus();
+    	assertEquals("expected error status but failed",IStatus.ERROR,status.getSeverity());
+    	assertEquals(CordovaCLIErrors.ERROR_COMMAND_MISSING, status.getCode());
+    }
+    
+    @Test
+    public void testErrorDetectingCLIResult_missingCommand_MAC(){
+    	String resultText = "-bash: cordova: command not found";
+    	
+    	CordovaCLIResult result = new CordovaCLIResult(resultText);
+    	ErrorDetectingCLIResult err = result.convertTo(ErrorDetectingCLIResult.class);
+    	IStatus status = err.asStatus();
+    	assertEquals("expected error status but failed",IStatus.ERROR,status.getSeverity());
+    	assertEquals(CordovaCLIErrors.ERROR_COMMAND_MISSING, status.getCode());
+    }   
     
 	private void setupMocks(CordovaCLI mockCLI, IProcess mockProcess, IStreamsProxy2 mockStreams) throws CoreException {
 		when(mockCLI.startShell(any(IStreamListener.class), any(IProgressMonitor.class),any(ILaunchConfiguration.class))).thenReturn(mockProcess);

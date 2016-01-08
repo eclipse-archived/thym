@@ -28,7 +28,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIErrors;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
@@ -131,7 +131,7 @@ public class PluginInstallationTests {
 		}catch(CoreException e){
 			IStatus status = e.getStatus();
 			assertNotNull(status);
-			assertEquals(ErrorDetectingCLIResult.ERROR_MISSING_PLUGIN_VARIABLE, status.getCode());
+			assertEquals(CordovaCLIErrors.ERROR_MISSING_PLUGIN_VARIABLE, status.getCode());
 			return;
 		}
 		fail("No CoreException generated");
