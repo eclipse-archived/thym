@@ -29,6 +29,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.thym.ui.internal.cordova.RequirementsUtility;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
@@ -67,6 +68,11 @@ public class PluginUninstallAction extends Action{
 			return;
 		}
 		
+		HybridProject project = HybridProject.getHybridProject(pluginsToRemove.get(0).getFolder().getProject());
+		if(!RequirementsUtility.checkCordovaRequirements(project)){
+			return;
+		}
+	
 		String message =null;
 		if(pluginsToRemove.size() == 1){
 			message = NLS.bind("Are you sure you want to uninstall {0} plug-in?",

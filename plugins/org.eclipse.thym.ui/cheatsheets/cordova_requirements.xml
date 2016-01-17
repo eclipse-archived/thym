@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<cheatsheet title="Installing Apache Cordova tools">
+    <intro>
+        <description>
+            Eclipse Hybrid Mobile tools uses Apache Cordova command line tools to build and manage 
+            cordova projects. This will guide you through the installation and configuration of the Cordova tools.
+        </description>
+    </intro>
+    <item
+        href="https://nodejs.org/en/"
+        title="Install Node.js">
+        <description>
+         Cordova command line tools require node.js to run. Download and install Node.js.
+         Following installation, you should be able to invoke "node" and "npm" on your command line.
+        </description>
+    </item>
+    <item
+        href="http://cordova.apache.org/docs/en/latest/guide/cli/index.html#link-2"
+          title="Install Cordova">
+       <description>
+        Install the cordova module using npm utility of Node.js. 
+        The cordova module will automatically be downloaded by the npm utility.
+        Install cordova using npm command "npm install -g cordova"
+      </description>
+    </item>
+</cheatsheet>

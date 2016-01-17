@@ -149,6 +149,11 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 		return false;
 	}
 	
+	/**
+	 * Returns all the {@link HybridProject}s on the 
+	 * project. 
+	 * @return hybrid project or empty list
+	 */
 	public static List<HybridProject> getHybridProjects(){
 		ArrayList<HybridProject> hybrids = new ArrayList<HybridProject>();
 		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
