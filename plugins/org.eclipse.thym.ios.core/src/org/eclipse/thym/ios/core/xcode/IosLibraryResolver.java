@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,7 @@ import com.github.zafarkhaja.semver.Version;
 
 /**
  * Resolves iOS cordova distros to files used by the tool.
- * @author gercan
+ * @author Gorkem Ercan
  *
  */
 public class IosLibraryResolver extends HybridMobileLibraryResolver {

@@ -208,6 +208,12 @@
            plugin="org.eclipse.thym.core">
      </statusHandler>
      <statusHandler
+           class="org.eclipse.thym.ui.internal.cordova.MissingCordovaStatusHandler"
+           code="501"
+           id="org.eclipse.thym.ui.missingCordovaRequirementStatusHandler"
+           plugin="org.eclipse.thym.core">
+     </statusHandler>
+     <statusHandler
            class="org.eclipse.thym.ui.internal.status.ConfigXMLStatusHandler"
            code="423"
            id="org.eclipse.thym.ui.configxmStatusandler"
@@ -298,5 +304,14 @@
             properties="canConvertToThym"
             type="org.eclipse.core.resources.IProject">
       </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.cheatsheets.cheatSheetContent">
+      <cheatsheet
+            composite="false"
+            contentFile="cheatsheets/cordova_requirements.xml"
+            id="org.eclipse.thym.ui.requirements.cordova"
+            name="Install Cordova Requirements">
+      </cheatsheet>
    </extension>
 </plugin>

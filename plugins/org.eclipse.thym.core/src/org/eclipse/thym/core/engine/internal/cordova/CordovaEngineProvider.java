@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2015 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -264,8 +264,13 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		});
 		if(dirs != null ){
 			for (int i = 0; i < dirs.length; i++) {
-				if(!monitor.isCanceled())
+				if(!monitor.isCanceled()){
+					String name = dirs[i].getName();
+					if(name.equals("npm_cache") || name.equals("tmp")){
+						continue;
+					}
 					searchDir(dirs[i], listener, monitor);
+				}
 			}
 		}	
 	}

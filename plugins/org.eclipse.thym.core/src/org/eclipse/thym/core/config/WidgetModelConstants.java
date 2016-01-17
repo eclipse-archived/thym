@@ -63,5 +63,9 @@ interface WidgetModelConstants {
     static final String NAME_ATTR_SHORT = "short";
     static final String PLATFORM_ATTR_NAME = "name";
     static final String ENGINE_ATTR_NAME = "name";
+    /**
+     * @deprecated use {@link #ENGINE_ATTR_SPEC}
+     */
     static final String ENGINE_ATTR_VERSION = "version";
+    static final String ENGINE_ATTR_SPEC = "spec";
 }

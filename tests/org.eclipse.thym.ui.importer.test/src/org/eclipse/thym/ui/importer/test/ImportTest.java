@@ -83,10 +83,10 @@ public class ImportTest {
 			newProjects.removeAll(beforeImport);
 			Assert.assertEquals("Expected only 1 new project", 1, newProjects.size()); //$NON-NLS-1$
 			IProject newProject = newProjects.iterator().next();
-			Assert.assertTrue(newProject.getLocation().toFile().getAbsolutePath().startsWith(outputDirectory.getAbsolutePath()));
+			boolean startsWith = newProject.getLocation().toFile().getAbsolutePath().startsWith(outputDirectory.toPath().toRealPath().toAbsolutePath().toString());
+			Assert.assertTrue(startsWith);
 			HybridProject hybridProject = HybridProject.getHybridProject(newProject);
 			Assert.assertNotNull("Project not configured as hybrid", hybridProject); //$NON-NLS-1$
-
 		} finally {
 			if (newProjects != null) {
 				for (IProject project : newProjects) {

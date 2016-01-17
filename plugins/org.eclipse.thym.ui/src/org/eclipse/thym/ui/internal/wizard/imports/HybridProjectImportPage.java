@@ -532,14 +532,8 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 						ProjectCandidate pc = (ProjectCandidate) selectedCandidates[i];
 						IProject prj = doCreateProject(pc, new SubProgressMonitor(monitor, 1));
 						HybridProject project = HybridProject.getHybridProject(prj);
-						CordovaPluginManager pman = project.getPluginManager();
 						
-						//Create a copy of the installed plugins since the original list will change 
-						//as we iterate
-						List<CordovaPlugin> plugins = new ArrayList<CordovaPlugin>(pman.getInstalledPlugins());
-						for (CordovaPlugin cordovaPlugin : plugins) {
-							pman.fixInstalledPlugin(cordovaPlugin, cb,monitor);
-						}
+						
 					}
 				}
 				catch(CoreException e){

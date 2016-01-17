@@ -67,6 +67,7 @@ public class HybridProjectCreatorTest {
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);
+	
     }
 
     @Test

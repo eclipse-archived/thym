@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target includeMode="feature" name="THyM Target" sequenceNumber="0">
+<?pde version="3.8"?><target includeMode="feature" name="THyM Target" sequenceNumber="13">
 <locations>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.e4.ui.importer" version="0.0.0"/>
+<repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.ui/"/>
+</location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.commons.codec" version="0.0.0"/>
 <unit id="org.apache.commons.io" version="0.0.0"/>
@@ -27,12 +31,18 @@
 <unit id="org.eclipse.emf.ecore.feature.group" version="0.0.0"/>
 <repository location="http://download.eclipse.org/releases/staging/"/>
 </location>
-
-	<location includeAllPlatforms="false" includeMode="slicer" type="InstallableUnit" includeSource="true">
-      <repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.ui/"/>
-      <unit id="org.eclipse.e4.ui.importer" version="0.0.0"/>
-    </location>
-
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
+<unit id="org.hamcrest.text" version="1.1.0.v20090501071000"/>
+<unit id="org.hamcrest.integration" version="1.3.0.v201305210900"/>
+<unit id="org.hamcrest.generator" version="1.3.0.v201305210900"/>
+<unit id="org.hamcrest.library" version="1.3.0.v201505072020"/>
+<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/S20151204220443/repository/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+<unit id="org.mockito.mockito-all" version="1.9.5"/>
+<repository location="http://download.eclipse.org/scout/releases/4.0/testing"/>
+</location>
 </locations>
 <targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 </target>
