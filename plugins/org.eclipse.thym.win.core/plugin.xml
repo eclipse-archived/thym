@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.thym.core.platformSupport">
+      <platform
+            id="org.eclipse.thym.win.core.platformSupport"
+            libraryResolver="org.eclipse.thym.win.core.WPLibraryResolver"
+            platform="Windows Universal"
+            platformID="windows"
+            pluginInstallActionFactory="org.eclipse.thym.win.internal.core.vstudio.WPPluginInstallationActionsFactory"
+            projectGenerator="org.eclipse.thym.win.internal.core.vstudio.WPProjectGenerator">
+      </platform>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.projectBuilder">
+      <builder
+            delegate="org.eclipse.thym.win.core.vstudio.MSBuild"
+            id="org.eclipse.thym.win.core.projectBuilder"
+            platform="Windows Universal">
+      </builder>
+   </extension>
+<extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="org.eclipse.thym.win.internal.core.WPLaunchDelegate"
+            id="org.eclipse.thym.win.core.WPLaunchConfigurationType"
+            modes="run"
+            name="Windows Universal">
+      </launchConfigurationType>
+   </extension>
+</plugin>
