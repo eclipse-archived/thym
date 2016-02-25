@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -30,10 +31,14 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
+import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.win.core.WPCore;
 import org.eclipse.thym.win.core.vstudio.MSBuild;
 import org.eclipse.thym.win.core.vstudio.WPConstants;
 import org.eclipse.thym.win.core.vstudio.WPEmulator;
+
+import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
 
 /**
  * Launch delegate for Windows Phone 8 applications.
@@ -55,6 +60,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 				Messages.WPLaunchDelegate_NoProjectError);
 		int deviceId = configuration.getAttribute(
 				WPConstants.ATTR_DEVICE_IDENTIFIER, -1);
+		
 		WPEmulator emulator = new WPEmulator(WPCore.getSDKLocation());
 		HybridProject project = HybridProject.getHybridProject(kernelProject);
 		if (project == null) {
@@ -64,10 +70,20 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		}
 		String[] envp = DebugPlugin.getDefault().getLaunchManager()
 				.getEnvironment(configuration);
-		emulator.setProcessEnvironmentVariables(envp).emulate(buildArtifact,
-				deviceId);
+		//emulator.setProcessEnvironmentVariables(envp).emulate(buildArtifact,
+		//		deviceId);
+		
+		
+
+		
+		SubMonitor sm = SubMonitor.convert(monitor,100);
+
+		
+		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90));
+		sm.worked(30);
 		monitor.worked(2);
 		monitor.done();
+		
 	}
 
 	@Override

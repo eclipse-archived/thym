@@ -15,7 +15,7 @@
             class="org.eclipse.thym.win.internal.ui.launch.WPEmulatorLaunchShortcut"
             icon="icons/elcl16/wp8_icon.png"
             id="org.eclipse.thym.win.ui.launch.emulator"
-            label="Run on Windows Phone 8 Emulator"
+            label="Run on Windows Universal Emulator"
             modes="run">
         <contextualLaunch>
             <enablement>
