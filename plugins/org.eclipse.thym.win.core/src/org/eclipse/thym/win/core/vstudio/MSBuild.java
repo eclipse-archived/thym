@@ -25,8 +25,6 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.win.core.WPCore;
 import org.eclipse.thym.win.internal.core.Messages;
-//import org.eclipse.thym.win.internal.core.Version;
-import org.eclipse.thym.win.internal.core.WindowsRegistry;
 import org.eclipse.thym.win.internal.core.vstudio.WPProjectUtils;
 
 /**
@@ -147,7 +145,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 	}
 
 	private String getInstallationRoot() throws CoreException {
-		return WindowsRegistry.readRegistry(DOT_NET, INSTALL_ROOT);
+		return null;//WindowsRegistry.readRegistry(DOT_NET, INSTALL_ROOT);
 	}
 	
 

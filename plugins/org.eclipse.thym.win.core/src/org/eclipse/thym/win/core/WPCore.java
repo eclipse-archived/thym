@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.thym.win.core.vstudio.WPConstants;
-import org.eclipse.thym.win.internal.core.WindowsRegistry;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -100,7 +99,7 @@ public class WPCore implements BundleActivator {
 	}
 
 	private static File detectSDK() throws CoreException {
-		String[] versions = WindowsRegistry.getChildren(WINDOWS_PHONE_REG);
+		/*String[] versions = WindowsRegistry.getChildren(WINDOWS_PHONE_REG);
 		if (versions.length > 0) {
 			Arrays.sort(versions);
 			String installPath = null;
@@ -115,7 +114,7 @@ public class WPCore implements BundleActivator {
 			if (installPath != null) {
 				return new File(installPath);
 			}
-		}
+		}*/
 		return null;
 	}
 
