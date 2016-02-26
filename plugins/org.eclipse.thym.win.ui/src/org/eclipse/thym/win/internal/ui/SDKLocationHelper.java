@@ -34,33 +34,33 @@ public class SDKLocationHelper {
 	 *         otherwise return <code>false</code>
 	 * @throws CoreException
 	 */
-	public static boolean defineSDKLocationIfNecessary() throws CoreException {
+	/*public static boolean defineSDKLocationIfNecessary() throws CoreException {
 		if (isSDKLocationDefined()) {
 			return true;
 		}
 		SDKStatusHandler handler = new SDKStatusHandler();
 		handler.handle(makeMissingSDKLocationStatus());
 		return isSDKLocationDefined();
-	}
+	}*/
 
 	/**
 	 * @return path to Windows Phone SDK location or <code>null</code> if not
 	 *         defined
 	 * @throws CoreException
 	 */
-	public static String getSDKLocation() throws CoreException {
+	/*public static String getSDKLocation() throws CoreException {
 		return isSDKLocationDefined() ? WPCore.getSDKLocation() : null;
-	}
+	}*/
 
 	/**
 	 * @return <code>true</code> if Windows Phone 8 SDK location is defined in
 	 *         preferences; otherwise return <code>false</code>
 	 * @throws CoreException
 	 */
-	public static boolean isSDKLocationDefined() throws CoreException {
+	/*public static boolean isSDKLocationDefined() throws CoreException {
 		String sdkLocation = WPCore.getSDKLocation();
 		return sdkLocation != null && sdkLocation.length() > 0;
-	}
+	}*/
 
 	/**
 	 * Create status for missing SDK location.

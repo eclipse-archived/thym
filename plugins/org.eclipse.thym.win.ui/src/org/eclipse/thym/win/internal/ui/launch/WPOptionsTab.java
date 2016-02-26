@@ -41,7 +41,6 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.win.core.WPCore;
 import org.eclipse.thym.win.core.vstudio.WPConstants;
-import org.eclipse.thym.win.core.vstudio.WPEmulator;
 import org.eclipse.thym.win.internal.ui.Messages;
 import org.eclipse.thym.win.internal.ui.SDKLocationHelper;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
@@ -133,7 +132,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 				false, 1, 1));
 		devicesCombo.addListener(SWT.Selection, dirtyListener);
 
-		try {
+		/*try {
 			if (SDKLocationHelper.isSDKLocationDefined()) {
 				WPEmulator emulator = new WPEmulator(WPCore.getSDKLocation());
 				devices = emulator.getDevices();
@@ -147,7 +146,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 		} catch (CoreException e) {
 			// let it fall back to default
 			devicesCombo.removeAll();
-		}
+		}*/
 		if (devices != null && !devices.isEmpty()) {
 			devicesCombo.add(DEFAULT_EMULATOR);
 		}
@@ -161,9 +160,9 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
-			if (SDKLocationHelper.defineSDKLocationIfNecessary()) {
+			/*if (SDKLocationHelper.defineSDKLocationIfNecessary()) {
 				setErrorMessage(Messages.WPOptionsTab_SDKNotDefinedError);
-			}
+			}*/
 
 			String projectName = null;
 			projectName = configuration.getAttribute(
@@ -173,7 +172,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 				projectText.setText(projectName);
 			}
 
-			if (SDKLocationHelper.isSDKLocationDefined()) {
+			/*if (SDKLocationHelper.isSDKLocationDefined()) {
 				try {
 					int deviceId = configuration.getAttribute(
 							WPConstants.ATTR_DEVICE_IDENTIFIER, 0);
@@ -193,7 +192,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 					}
 				} catch (CoreException e) {
 				}
-			}
+			}*/
 			setDirty(false);
 		} catch (CoreException e) {
 			WPCore.log(
@@ -227,13 +226,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
-		try {
-			return isTabValid() && WPCore.getSDKLocation() != null
-					&& super.isValid(launchConfig);
-		} catch (CoreException e) {
-			WPCore.log(IStatus.ERROR, "Error during SDK location validation", e); //$NON-NLS-1$
-		}
-		return false;
+		return isTabValid() && super.isValid(launchConfig);
 	}
 
 	@Override

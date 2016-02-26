@@ -41,7 +41,7 @@ import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
  * Wrapper around Cordova CLI. Provides low level 
  * access to Cordova CLI.
  *
- *@author Gorkem Ercan
+ *@author Gorkem Ercan, James Dubee
  *
  */
 @SuppressWarnings("restriction")

@@ -31,7 +31,6 @@ import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.win.internal.core.Messages;
-import org.eclipse.thym.win.internal.core.vstudio.WPProjectUtils;
 
 /**
  * Implementation of {@link HybridMobileLibraryResolver} for Windows Phone 8
@@ -50,8 +49,6 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 	public static final String MAIN_PAGE_XAML = "MainPage.xaml"; //$NON-NLS-1$
 	public static final String MAIN_PAGE_XAML_CS = "MainPage.xaml.cs"; //$NON-NLS-1$
 	public static final String DEFAULT_APP_NAME = "CordovaWP8AppProj"; //$NON-NLS-1$
-	public static final String DEFAULT_APP_NAME_CSPROJ = DEFAULT_APP_NAME
-			+ WPProjectUtils.CSPROJ_EXTENSION;
 	public static final String DEFAULT_SLN_NAME = "CordovaWP8Solution.sln"; //$NON-NLS-1$
 
 	private static final String TEMPLATE = "template"; //$NON-NLS-1$
@@ -61,8 +58,6 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 
 	@Override
 	public URL getTemplateFile(IPath destination) {
-		if (files.isEmpty())
-			initFiles();
 		Assert.isNotNull(destination);
 		Assert.isTrue(!destination.isAbsolute());
 		return files.get(destination);
@@ -114,29 +109,6 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 					versionFile.toString()), null);
 		}
 		return null;
-	}
-
-	private void initFiles() {
-		IPath templatePrjRoot = libraryRoot.append(TEMPLATE);
-		files.put(PATH_CORDOVA_JS,
-				getEngineFile(templatePrjRoot.append(PlatformConstants.DIR_WWW)
-						.append(PlatformConstants.FILE_JS_CORDOVA)));
-		files.put(new Path(VAR_APP_NAME), getEngineFile(templatePrjRoot));
-		files.put(new Path(VERSION), getEngineFile(libraryRoot.append(VERSION)));
-		files.put(new Path(WP_APP_MANIFEST_XML), getEngineFile(templatePrjRoot
-				.append(PROPERTIES).append(WP_APP_MANIFEST_XML)));
-		files.put(new Path(APP_XAML),
-				getEngineFile(templatePrjRoot.append(APP_XAML)));
-		files.put(new Path(APP_XAML_CS),
-				getEngineFile(templatePrjRoot.append(APP_XAML_CS)));
-		files.put(new Path(MAIN_PAGE_XAML),
-				getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML)));
-		files.put(new Path(MAIN_PAGE_XAML_CS),
-				getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML_CS)));
-		files.put(new Path(DEFAULT_APP_NAME_CSPROJ),
-				getEngineFile(templatePrjRoot.append(DEFAULT_APP_NAME_CSPROJ)));
-		files.put(new Path(DEFAULT_SLN_NAME),
-				getEngineFile(templatePrjRoot.append(DEFAULT_SLN_NAME)));
 	}
 
 	private URL getEngineFile(IPath path) {

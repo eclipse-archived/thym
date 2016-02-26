@@ -86,7 +86,6 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	public boolean buildForLaunch(ILaunchConfiguration configuration,
 			String mode, IProgressMonitor monitor) throws CoreException {
 		MSBuild build = new MSBuild();
-		build.setLaunchConfiguration(configuration);
 		build.init(getProject(configuration), null);
 		build.buildNow(monitor);
 		buildArtifact = build.getBuildArtifact();
@@ -102,23 +101,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
 	@Override
 	public boolean preLaunchCheck(ILaunchConfiguration configuration,
-			String mode, IProgressMonitor monitor) throws CoreException {
-		// check if SDK is still available
-		/*String sdkLocation = WPCore.getSDKLocation();
-		if (sdkLocation == null) {
-			throw new CoreException(new Status(IStatus.ERROR, WPCore.PLUGIN_ID,
-					Messages.WPLaunchDelegate_SDKMissingMessage));
-		}
-		WPEmulator emluator = new WPEmulator(sdkLocation);
-		Map<String, Integer> devices = emluator.getDevices();
-		if (devices == null || devices.isEmpty()) {
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR,
-					WPCore.PLUGIN_ID,
-					WPConstants.MISSING_EMULATORS_STATUS_CODE,
-					MessageFormat.format(
-							Messages.WPLaunchDelegate_NoEmulatorsError,
-							WPConstants.SDK_DOWNLOAD_URL), null));
-		}*/
+			String mode, IProgressMonitor monitor) {
 		return true;
 	}
 
