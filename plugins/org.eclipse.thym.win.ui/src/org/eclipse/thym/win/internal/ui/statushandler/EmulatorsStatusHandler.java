@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.thym.ui.status.AbstractStatusHandler;
-import org.eclipse.thym.win.core.vstudio.WPConstants;
+import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
 /**
@@ -50,7 +50,7 @@ public class EmulatorsStatusHandler extends AbstractStatusHandler {
 			desc.setText(Messages.EmulatorsStatusHandler_Message);
 			desc.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
-					Program.launch(WPConstants.SDK_DOWNLOAD_URL);
+					Program.launch(WinConstants.SDK_DOWNLOAD_URL);
 				}
 			});
 			getShell().setText(Messages.EmulatorsStatusHandler_Title);

@@ -20,15 +20,15 @@ import org.osgi.framework.BundleContext;
  * @author Wojciech Galanciak, 2014
  * 
  */
-public class WPThymUI extends AbstractUIPlugin {
+public class WinThymUI extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.thym.win.ui"; //$NON-NLS-1$
 
 	// The shared instance
-	private static WPThymUI plugin;
+	private static WinThymUI plugin;
 
-	public WPThymUI() {
+	public WinThymUI() {
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class WPThymUI extends AbstractUIPlugin {
 	 * 
 	 * @return the shared instance
 	 */
-	public static WPThymUI getDefault() {
+	public static WinThymUI getDefault() {
 		return plugin;
 	}
 

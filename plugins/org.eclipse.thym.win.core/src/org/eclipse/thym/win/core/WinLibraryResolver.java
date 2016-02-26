@@ -33,13 +33,13 @@ import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.win.internal.core.Messages;
 
 /**
- * Implementation of {@link HybridMobileLibraryResolver} for Windows Phone 8
+ * Implementation of {@link HybridMobileLibraryResolver} for Windows Universal
  * platform.
  * 
- * @author Wojciech Galanciak, 2014
+ * @author Wojciech Galanciak, James Dubee 2014, 2016
  * 
  */
-public class WPLibraryResolver extends HybridMobileLibraryResolver {
+public class WinLibraryResolver extends HybridMobileLibraryResolver {
 
 	private static final String WP8 = "windows"; //$NON-NLS-1$
 	public static final String VERSION = "VERSION"; //$NON-NLS-1$
@@ -100,25 +100,14 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 						reader.close();
 				}
 			} catch (IOException e) {
-				WPCore.log(IStatus.ERROR,
+				WinCore.log(IStatus.ERROR,
 						Messages.WPLibraryResolver_CannotDetectError, e);
 			}
 		} else {
-			WPCore.log(IStatus.ERROR, NLS.bind(
+			WinCore.log(IStatus.ERROR, NLS.bind(
 					Messages.WPLibraryResolver_NoVersionError,
 					versionFile.toString()), null);
 		}
 		return null;
 	}
-
-	private URL getEngineFile(IPath path) {
-		File file = path.toFile();
-		if (!file.exists()) {
-			WPCore.log(IStatus.WARNING, NLS.bind(
-					Messages.WPLibraryResolver_MissingEngineError,
-					file.toString()), null);
-		}
-		return FileUtils.toURL(file);
-	}
-
 }

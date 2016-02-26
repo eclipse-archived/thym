@@ -21,12 +21,12 @@ import org.eclipse.debug.ui.ILaunchConfigurationTab;
  * @author Wojciech Galanciak, 2014
  * 
  */
-public class WPLaunchConfigurationTabGroup extends
+public class WinLaunchConfigurationTabGroup extends
 		AbstractLaunchConfigurationTabGroup {
 
 	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-		WPOptionsTab wpTab = new WPOptionsTab();
+		WinOptionsTab wpTab = new WinOptionsTab();
 		EnvironmentTab env = new EnvironmentTab();
 		CommonTab common = new CommonTab();
 		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { wpTab,

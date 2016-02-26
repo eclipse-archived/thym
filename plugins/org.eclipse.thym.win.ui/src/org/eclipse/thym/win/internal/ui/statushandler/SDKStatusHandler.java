@@ -17,7 +17,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.thym.ui.status.AbstractStatusHandler;
 import org.eclipse.thym.win.internal.ui.Messages;
-import org.eclipse.thym.win.internal.ui.preferences.WPPreferencePage;
+import org.eclipse.thym.win.internal.ui.preferences.WinPreferencePage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 /**
@@ -36,7 +36,7 @@ public class SDKStatusHandler extends AbstractStatusHandler {
 						Messages.SDKStatusHandler_Message);
 		if (define) {
 			PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
-					getShell(), WPPreferencePage.PAGE_ID, null, null);
+					getShell(), WinPreferencePage.PAGE_ID, null, null);
 			dialog.open();
 		}
 	}

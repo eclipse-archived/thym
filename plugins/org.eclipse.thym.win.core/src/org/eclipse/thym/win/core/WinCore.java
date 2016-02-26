@@ -11,36 +11,21 @@
  *******************************************************************************/
 package org.eclipse.thym.win.core;
 
-import java.io.File;
-import java.util.Arrays;
-
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.thym.win.core.vstudio.WPConstants;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
- * @author Wojciech Galanciak, 2014
+ * @author Wojciech Galanciak, James Dubee 2014, 2016
  *
  */
-public class WPCore implements BundleActivator {
-
-	public static final String WP_LAUNCH_ID = "org.eclipse.thym.win.core.WPLaunchConfigurationType"; //$NON-NLS-1$
+public class WinCore implements BundleActivator {
 
 	public static final String PLUGIN_ID = "org.eclipse.thym.win.core"; //$NON-NLS-1$
-
-	private static final String THYM_UI_ID = "org.eclipse.thym.ui"; //$NON-NLS-1$
-
-	private static final String WINDOWS_PHONE_REG = "HKLM\\Software\\Wow6432Node\\Microsoft\\Microsoft SDKs\\WindowsPhone"; //$NON-NLS-1$
-	private static final String INSTALL_PATH = "Install Path"; //$NON-NLS-1$
 	
 	private static BundleContext context;
-
 	private static ILog logger;
 
 	static BundleContext getContext() {
@@ -50,23 +35,21 @@ public class WPCore implements BundleActivator {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext
+	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext
 	 * )
 	 */
 	public void start(BundleContext bundleContext) throws Exception {
-		WPCore.context = bundleContext;
+		WinCore.context = bundleContext;
 		logger = Platform.getLog(getContext().getBundle());
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
 	 */
 	public void stop(BundleContext bundleContext) throws Exception {
-		WPCore.context = null;
+		WinCore.context = null;
 	}
 
 	public static void log(int status, String message, Throwable throwable) {

@@ -39,10 +39,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
-import org.eclipse.thym.win.core.WPCore;
-import org.eclipse.thym.win.core.vstudio.WPConstants;
+import org.eclipse.thym.win.core.WinCore;
+import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
-import org.eclipse.thym.win.internal.ui.SDKLocationHelper;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
@@ -52,7 +51,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
  * @author Wojciech Galanciak, 2014
  * 
  */
-public class WPOptionsTab extends AbstractLaunchConfigurationTab {
+public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
 	private static final String DEFAULT_EMULATOR = Messages.WPOptionsTab_DefaultEmulator;
 
@@ -70,7 +69,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 
-	public WPOptionsTab() {
+	public WinOptionsTab() {
 		this.dirtyListener = new DirtyListener();
 		this.devices = new TreeMap<String, Integer>();
 	}
@@ -195,7 +194,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 			}*/
 			setDirty(false);
 		} catch (CoreException e) {
-			WPCore.log(
+			WinCore.log(
 					IStatus.ERROR,
 					"Could not initialize launch configuration for Windows Phone 8 Emulator", //$NON-NLS-1$
 					e);
@@ -213,7 +212,7 @@ public class WPOptionsTab extends AbstractLaunchConfigurationTab {
 			if (!DEFAULT_EMULATOR.equals(device)) {
 				id = devices.get(device);
 			}
-			configuration.setAttribute(WPConstants.ATTR_DEVICE_IDENTIFIER, id);
+			configuration.setAttribute(WinConstants.ATTR_DEVICE_IDENTIFIER, id);
 		}
 	}
 

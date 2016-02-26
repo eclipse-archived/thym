@@ -11,19 +11,19 @@
  *******************************************************************************/
 package org.eclipse.thym.win.core.vstudio;
 
-import org.eclipse.thym.win.core.WPCore;
+import org.eclipse.thym.win.core.WinCore;
 
 
 /**
  * @author Wojciech Galanciak, 2014
  * 
  */
-public interface WPConstants {
+public interface WinConstants {
 
 	/**
 	 * Id for the Windows Phone 8 launch configuration type.
 	 */
-	public static final String ID_LAUNCH_CONFIG_TYPE = "org.eclipse.thym.win.core.WPLaunchConfigurationType"; //$NON-NLS-1$
+	public static final String ID_LAUNCH_CONFIG_TYPE = "org.eclipse.thym.win.core.WinLaunchConfigurationType"; //$NON-NLS-1$
 
 	public static final String MS_BUILD = "MSBuild.exe"; //$NON-NLS-1$
 
@@ -32,7 +32,7 @@ public interface WPConstants {
 	 */
 	public static final String WINDOWS_PHONE_SDK_LOCATION_PREF = "windowsPhoneSDKLocation"; //$NON-NLS-1$
 	
-	public static final String ATTR_DEVICE_IDENTIFIER = WPCore.PLUGIN_ID + ".ATTR_DEVICE_IDENTIFIER"; //$NON-NLS-1$
+	public static final String ATTR_DEVICE_IDENTIFIER = WinCore.PLUGIN_ID + ".ATTR_DEVICE_IDENTIFIER"; //$NON-NLS-1$
 	
 	public static final String SDK_DOWNLOAD_URL = "http://dev.windows.com/en-us/develop/download-phone-sdk"; //$NON-NLS-1$
 	

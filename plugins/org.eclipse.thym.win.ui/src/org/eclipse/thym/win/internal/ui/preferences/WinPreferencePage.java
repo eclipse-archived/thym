@@ -18,7 +18,7 @@ import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.ui.HybridUI;
-import org.eclipse.thym.win.core.vstudio.WPConstants;
+import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -29,7 +29,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  * @author Wojciech Galanciak, 2014
  * 
  */
-public class WPPreferencePage extends FieldEditorPreferencePage implements
+public class WinPreferencePage extends FieldEditorPreferencePage implements
 		IWorkbenchPreferencePage {
 
 	public static final String PAGE_ID = "org.eclipse.thym.win.ui.WPPreferencePages"; //$NON-NLS-1$
@@ -104,7 +104,7 @@ public class WPPreferencePage extends FieldEditorPreferencePage implements
 
 	}
 
-	public WPPreferencePage() {
+	public WinPreferencePage() {
 		super(GRID);
 		setPreferenceStore(HybridUI.getDefault().getPreferenceStore());
 		setDescription(Messages.WPPreferencePage_Description);
@@ -117,7 +117,7 @@ public class WPPreferencePage extends FieldEditorPreferencePage implements
 	 */
 	public void createFieldEditors() {
 		WindowsPhoneSDKDirectoryFieldEditor editor = new WindowsPhoneSDKDirectoryFieldEditor(
-				WPConstants.WINDOWS_PHONE_SDK_LOCATION_PREF,
+				WinConstants.WINDOWS_PHONE_SDK_LOCATION_PREF,
 				Messages.WPPreferencePage_LocationLabel, getFieldEditorParent());
 		addField(editor);
 	}

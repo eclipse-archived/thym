@@ -31,9 +31,9 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
-import org.eclipse.thym.win.core.WPCore;
-import org.eclipse.thym.win.core.vstudio.MSBuild;
-import org.eclipse.thym.win.core.vstudio.WPConstants;
+import org.eclipse.thym.win.core.WinCore;
+import org.eclipse.thym.win.core.vstudio.WinBuild;
+import org.eclipse.thym.win.core.vstudio.WinConstants;
 
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
@@ -45,7 +45,7 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
  *
  */
 
-public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
+public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
 	private File buildArtifact;
 
@@ -58,12 +58,12 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		Assert.isNotNull(kernelProject,
 				Messages.WPLaunchDelegate_NoProjectError);
 		int deviceId = configuration.getAttribute(
-				WPConstants.ATTR_DEVICE_IDENTIFIER, -1);
+				WinConstants.ATTR_DEVICE_IDENTIFIER, -1);
 		
 
 		HybridProject project = HybridProject.getHybridProject(kernelProject);
 		if (project == null) {
-			throw new CoreException(new Status(IStatus.ERROR, WPCore.PLUGIN_ID,
+			throw new CoreException(new Status(IStatus.ERROR, WinCore.PLUGIN_ID,
 					NLS.bind(Messages.WPLaunchDelegate_NotHybridError,
 							kernelProject.getName())));
 		}
@@ -85,7 +85,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	@Override
 	public boolean buildForLaunch(ILaunchConfiguration configuration,
 			String mode, IProgressMonitor monitor) throws CoreException {
-		MSBuild build = new MSBuild();
+		WinBuild build = new WinBuild();
 		build.init(getProject(configuration), null);
 		build.buildNow(monitor);
 		buildArtifact = build.getBuildArtifact();

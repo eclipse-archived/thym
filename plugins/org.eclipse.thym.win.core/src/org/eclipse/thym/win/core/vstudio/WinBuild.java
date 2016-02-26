@@ -18,7 +18,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
-import org.eclipse.thym.win.core.WPCore;
+import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.internal.core.Messages;
 
 /**
@@ -29,7 +29,7 @@ import org.eclipse.thym.win.internal.core.Messages;
  */
 
 @SuppressWarnings("restriction")
-public class MSBuild extends AbstractNativeBinaryBuildDelegate {
+public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 	
 	public static final String WIN = "windows";
 	
@@ -48,7 +48,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 					.getProject());
 			if (hybridProject == null) {
 				throw new CoreException(new Status(IStatus.ERROR,
-						WPCore.PLUGIN_ID, Messages.MSBuild_NoHybridError));
+						WinCore.PLUGIN_ID, Messages.MSBuild_NoHybridError));
 			}
 			String buildType = "--debug";
 			if(isRelease()){
