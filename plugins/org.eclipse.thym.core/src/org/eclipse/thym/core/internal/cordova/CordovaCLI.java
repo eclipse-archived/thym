@@ -51,7 +51,7 @@ public class CordovaCLI {
 	private static final String P_COMMAND_PLUGIN = "plugin";
 	private static final String P_COMMAND_PLATFORM = "platform";
 	private static final String P_COMMAND_PREPARE = "prepare";
-	private static final String P_COMMAND_EMULATE = "run windows --emulator --archs=\"x86\" -- -phone";
+	private static final String P_COMMAND_EMULATE = "run windows --emulator --archs=\"x86\" -- -win";
 	private static final String P_COMMAND_BUILD = "build";
 	
 	//Store locks for the projects.

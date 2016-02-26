@@ -70,7 +70,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 			}
 			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType);
 			
-			File vstudioProjectDir = hybridProject.getProject().getFolder("platforms/wp8").getLocation().toFile();
+			File vstudioProjectDir = hybridProject.getProject().getFolder("platforms/windows").getLocation().toFile();
 			if (isRelease()) {
 				setBuildArtifact(new File(getBuildDir(vstudioProjectDir),
 						RELEASE_XAP_NAME));

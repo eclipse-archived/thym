@@ -31,19 +31,17 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
-import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.win.core.WPCore;
 import org.eclipse.thym.win.core.vstudio.MSBuild;
 import org.eclipse.thym.win.core.vstudio.WPConstants;
-import org.eclipse.thym.win.core.vstudio.WPEmulator;
 
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
 
 /**
- * Launch delegate for Windows Phone 8 applications.
+ * Launch delegate for Windows Universal applications.
  * 
- * @author Wojciech Galanciak, 2014
+ * @author Wojciech Galanciak, James Dubee 2014, 2016
  *
  */
 
@@ -54,6 +52,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
+		
 		monitor.beginTask(Messages.WPLaunchDelegate_LaunchTask, 10);
 		IProject kernelProject = getProject(configuration);
 		Assert.isNotNull(kernelProject,
@@ -61,29 +60,19 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		int deviceId = configuration.getAttribute(
 				WPConstants.ATTR_DEVICE_IDENTIFIER, -1);
 		
-		WPEmulator emulator = new WPEmulator(WPCore.getSDKLocation());
+
 		HybridProject project = HybridProject.getHybridProject(kernelProject);
 		if (project == null) {
 			throw new CoreException(new Status(IStatus.ERROR, WPCore.PLUGIN_ID,
 					NLS.bind(Messages.WPLaunchDelegate_NotHybridError,
 							kernelProject.getName())));
 		}
-		String[] envp = DebugPlugin.getDefault().getLaunchManager()
-				.getEnvironment(configuration);
-		//emulator.setProcessEnvironmentVariables(envp).emulate(buildArtifact,
-		//		deviceId);
-		
-		
 
-		
 		SubMonitor sm = SubMonitor.convert(monitor,100);
-
-		
 		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90));
 		sm.worked(30);
 		monitor.worked(2);
 		monitor.done();
-		
 	}
 
 	@Override
@@ -115,7 +104,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	public boolean preLaunchCheck(ILaunchConfiguration configuration,
 			String mode, IProgressMonitor monitor) throws CoreException {
 		// check if SDK is still available
-		String sdkLocation = WPCore.getSDKLocation();
+		/*String sdkLocation = WPCore.getSDKLocation();
 		if (sdkLocation == null) {
 			throw new CoreException(new Status(IStatus.ERROR, WPCore.PLUGIN_ID,
 					Messages.WPLaunchDelegate_SDKMissingMessage));
@@ -129,7 +118,7 @@ public class WPLaunchDelegate implements ILaunchConfigurationDelegate2 {
 					MessageFormat.format(
 							Messages.WPLaunchDelegate_NoEmulatorsError,
 							WPConstants.SDK_DOWNLOAD_URL), null));
-		}
+		}*/
 		return true;
 	}
 
