@@ -25,7 +25,7 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.win.core.WPCore;
 import org.eclipse.thym.win.internal.core.Messages;
-import org.eclipse.thym.win.internal.core.Version;
+//import org.eclipse.thym.win.internal.core.Version;
 import org.eclipse.thym.win.internal.core.WindowsRegistry;
 import org.eclipse.thym.win.internal.core.vstudio.WPProjectUtils;
 
@@ -99,7 +99,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 	 * @throws CoreException 
 	 */
 	public String getMSBuildPath() throws CoreException {
-		String installationRoot = getInstallationRoot();
+		/*String installationRoot = getInstallationRoot();
 		if (installationRoot != null) {
 			File installationFile = new File(installationRoot);
 			if (installationFile.exists()) {
@@ -129,7 +129,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 							WPConstants.MS_BUILD).getAbsolutePath();
 				}
 			}
-		}
+		}*/
 		return null;
 	}
 
