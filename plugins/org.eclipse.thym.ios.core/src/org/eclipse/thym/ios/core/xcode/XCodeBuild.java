@@ -26,6 +26,7 @@ import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.ios.core.IOSCore;
@@ -105,7 +106,10 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			if (sm.isCanceled()) {
 				return;
 			}
-			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "ios",buildType);
+			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "ios",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			if(status.getSeverity() == IStatus.ERROR){
+				throw new CoreException(status);
+			}
 			String name = hybridProject.getAppName();
 			IFolder buildFolder = hybridProject.getProject().getFolder("platforms/ios/build");
 			IFolder artifactFolder = null;

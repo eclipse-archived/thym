@@ -33,6 +33,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.thym.ui.internal.cordova.RequirementsUtility;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
@@ -80,9 +81,12 @@ public abstract class HybridProjectLaunchShortcut implements ILaunchShortcut{
 
 	private void launch(IProject project) {
 		try {
-			if( !validateBuildToolsReady() ||
-					!shouldProceedWithLaunch(HybridProject.getHybridProject(project)))
+			HybridProject hp = HybridProject.getHybridProject(project);
+			if(!validateBuildToolsReady() 
+					|| !shouldProceedWithLaunch(hp)
+					|| !RequirementsUtility.checkCordovaRequirements(hp) ){
 				return;
+			}
 			ILaunchConfiguration launchConfig = findOrCreateLaunchConfiguration(project);
 			ILaunchConfigurationWorkingCopy wc = launchConfig.getWorkingCopy();
 			updateLaunchConfiguration(wc);

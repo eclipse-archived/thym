@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.ui.HybridUI;
 /**
@@ -47,14 +48,18 @@ public class RestoreProjectListener implements IResourceChangeListener {
 		protected IStatus run(IProgressMonitor monitor) {
 			HybridProject hybridProject  = HybridProject.getHybridProject(project);
 			if(hybridProject == null ) return Status.OK_STATUS;
+			IStatus status = Status.OK_STATUS;
 			try{
-				CordovaCLI.newCLIforProject(hybridProject).prepare( monitor, "");
+				status = CordovaCLI.newCLIforProject(hybridProject)
+						.prepare( monitor, "")
+						.convertTo(ErrorDetectingCLIResult.class)
+						.asStatus();
 				hybridProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
 			}catch(CoreException e){
 				return e.getStatus();
 			}
-			return Status.OK_STATUS;
-		}
+			return status;
+		}	
 	}
 	
 	@Override
