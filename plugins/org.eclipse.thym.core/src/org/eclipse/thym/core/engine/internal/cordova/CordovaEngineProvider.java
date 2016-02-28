@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.ecf.filetransfer.IncomingFileTransferException;
 import org.eclipse.ecf.filetransfer.identity.FileCreateException;
 import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
@@ -159,24 +159,23 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 			monitor = new NullProgressMonitor();
 		}
 		
-		
 		IRetrieveFileTransfer transfer = HybridCore.getDefault().getFileTransferService();
 		IFileID remoteFileID;
 
 		int platformSize = engines.length;
 		Object lock = new Object();
 		int incompleteCount = platformSize;
-		monitor.worked(1);
+		SubMonitor sm = SubMonitor.convert(monitor,platformSize );
 		for (int i = 0; i < platformSize; i++) {
-			monitor.beginTask("Download Cordova Engine "+engines[i].getVersion(), platformSize *100 +1);
+			sm.setTaskName("Download Cordova Engine "+engines[i].getVersion());
 			try {
 				URI uri = URI.create(engines[i].getDownloadURL());
 				remoteFileID = FileIDFactory.getDefault().createFileID(transfer.getRetrieveNamespace(), uri);
-				SubProgressMonitor sm = new SubProgressMonitor(monitor, 100);
-				if(monitor.isCanceled()){
+				if(sm.isCanceled()){
 					return;
 				}
 				transfer.sendRetrieveRequest(remoteFileID, new EngineDownloadReceiver(engines[i].getVersion(), engines[i].getPlatformId(), lock, sm), null);
+			
 			} catch (FileCreateException e) {
 				HybridCore.log(IStatus.ERROR, "Engine download file create error", e);
 			} catch (IncomingFileTransferException e) {
@@ -191,9 +190,9 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 					HybridCore.log(IStatus.INFO, "interrupted while waiting for all engines to download", e);
 				}
 				incompleteCount--;
+				sm.worked(1);
 			}
 		}
-		monitor.done();
 		resetEngineList();
 	}
 	
