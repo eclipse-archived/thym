@@ -40,13 +40,6 @@ import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
 
-/**
- * Launch delegate for Windows Universal applications.
- * 
- * @author Wojciech Galanciak, James Dubee 2014, 2016
- *
- */
-
 public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
 	private File buildArtifact;

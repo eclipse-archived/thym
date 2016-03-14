@@ -24,12 +24,6 @@ import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
-/**
- * Launch shortcut for Windows Phone 8 applications.
- * 
- * @author Wojciech Galanciak, 2014
- * 
- */
 public class WinEmulatorLaunchShortcut extends HybridProjectLaunchShortcut {
 
 	@Override

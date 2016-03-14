@@ -15,11 +15,6 @@ package org.eclipse.thym.win.core.vstudio;
 
 import org.eclipse.thym.win.core.WinCore;
 
-
-/**
- * @author Wojciech Galanciak, 2014
- * 
- */
 public interface WinConstants {
 
 	

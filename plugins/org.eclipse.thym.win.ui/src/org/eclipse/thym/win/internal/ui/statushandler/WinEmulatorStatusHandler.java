@@ -30,13 +30,7 @@ import org.eclipse.thym.ui.status.AbstractStatusHandler;
 import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
-/**
- * Status handler for missing Windows Phone emulators.
- * 
- * @author Wojciech Galanciak, 2014
- *
- */
-public class EmulatorsStatusHandler extends AbstractStatusHandler {
+public class WinEmulatorStatusHandler extends AbstractStatusHandler {
 
 	private class MissingEmulatorsDialog extends Dialog {
 

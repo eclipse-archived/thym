@@ -50,18 +50,6 @@
       </launchConfigurationTypeImage>
    </extension>
    <extension
-         point="org.eclipse.ui.preferencePages">
-         <page
-            category="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
-            class="org.eclipse.thym.win.internal.ui.preferences.WinPreferencePage"
-            id="org.eclipse.thym.win.ui.WinPreferencePages"
-            name="Windows Phone 8">
-         <keywordReference
-               id="org.eclipse.thym.ui.keyword">
-         </keywordReference>
-      </page>
-   </extension>
-   <extension
          point="org.eclipse.thym.ui.hybridMobileStatusHandler">
       <statusHandler
             class="org.eclipse.thym.win.internal.ui.statushandler.WinBuildStatusHandler"
@@ -76,7 +64,7 @@
             plugin="org.eclipse.thym.win.core">
       </statusHandler>
       <statusHandler
-            class="org.eclipse.thym.win.internal.ui.statushandler.EmulatorsStatusHandler"
+            class="org.eclipse.thym.win.internal.ui.statushandler.WinEmulatorStatusHandler"
             code="330"
             id="org.eclipse.thym.win.ui.missingEmulatorsStatusHandler"
             plugin="org.eclipse.thym.win.core">

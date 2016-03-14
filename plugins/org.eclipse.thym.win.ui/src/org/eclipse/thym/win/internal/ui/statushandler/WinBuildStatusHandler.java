@@ -30,12 +30,6 @@ import org.eclipse.thym.ui.status.AbstractStatusHandler;
 import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
-/**
- * Status handler for missing MSBuild.
- * 
- * @author Wojciech Galanciak, 2014
- *
- */
 public class WinBuildStatusHandler extends AbstractStatusHandler {
 
 	private class MSBuildMissingDialog extends Dialog {

@@ -19,19 +19,15 @@ import org.eclipse.debug.ui.EnvironmentTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 
-/**
- * @author Wojciech Galanciak, 2014
- * 
- */
 public class WinLaunchConfigurationTabGroup extends
 		AbstractLaunchConfigurationTabGroup {
 
 	@Override
 	public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-		WinOptionsTab wpTab = new WinOptionsTab();
+		WinOptionsTab winTab = new WinOptionsTab();
 		EnvironmentTab env = new EnvironmentTab();
 		CommonTab common = new CommonTab();
-		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { wpTab,
+		ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { winTab,
 				env, common };
 		setTabs(tabs);
 	}

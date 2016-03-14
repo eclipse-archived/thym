@@ -34,13 +34,6 @@ import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.win.internal.core.Messages;
 
-/**
- * Implementation of {@link HybridMobileLibraryResolver} for Windows Universal
- * platform.
- * 
- * @author Wojciech Galanciak, James Dubee 2014, 2016
- * 
- */
 public class WinLibraryResolver extends HybridMobileLibraryResolver {
 
 	private static final String WP8 = "windows"; //$NON-NLS-1$

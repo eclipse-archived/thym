@@ -23,13 +23,6 @@ import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.internal.core.Messages;
 
-/**
- * Wrapper for MSBuild tool on Windows.
- * 
- * @author Wojciech Galanciak, 2014
- * 
- */
-
 @SuppressWarnings("restriction")
 public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 	

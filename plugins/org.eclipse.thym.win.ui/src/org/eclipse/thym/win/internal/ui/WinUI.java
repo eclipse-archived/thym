@@ -16,12 +16,6 @@ package org.eclipse.thym.win.internal.ui;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-/**
- * The activator class controls the plug-in life cycle.
- * 
- * @author Wojciech Galanciak, 2014
- * 
- */
 public class WinUI extends AbstractUIPlugin {
 
 	// The plug-in ID

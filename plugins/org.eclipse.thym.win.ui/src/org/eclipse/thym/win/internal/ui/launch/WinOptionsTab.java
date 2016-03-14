@@ -14,9 +14,7 @@
 package org.eclipse.thym.win.internal.ui.launch;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -47,12 +45,6 @@ import org.eclipse.thym.win.internal.ui.Messages;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-/**
- * Launch configuration page for Windows Phone related settings.
- * 
- * @author Wojciech Galanciak, 2014
- * 
- */
 public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
 	private static final String DEFAULT_EMULATOR = Messages.WPOptionsTab_DefaultEmulator;
@@ -133,21 +125,6 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 				false, 1, 1));
 		devicesCombo.addListener(SWT.Selection, dirtyListener);
 
-		/*try {
-			if (SDKLocationHelper.isSDKLocationDefined()) {
-				WPEmulator emulator = new WPEmulator(WPCore.getSDKLocation());
-				devices = emulator.getDevices();
-				if (devices != null) {
-					Set<String> names = devices.keySet();
-					for (String name : names) {
-						devicesCombo.add(name);
-					}
-				}
-			}
-		} catch (CoreException e) {
-			// let it fall back to default
-			devicesCombo.removeAll();
-		}*/
 		if (devices != null && !devices.isEmpty()) {
 			devicesCombo.add(DEFAULT_EMULATOR);
 		}
@@ -161,10 +138,6 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public void initializeFrom(ILaunchConfiguration configuration) {
 		try {
-			/*if (SDKLocationHelper.defineSDKLocationIfNecessary()) {
-				setErrorMessage(Messages.WPOptionsTab_SDKNotDefinedError);
-			}*/
-
 			String projectName = null;
 			projectName = configuration.getAttribute(
 					HybridProjectLaunchConfigConstants.ATTR_BUILD_SCOPE,
@@ -173,27 +146,6 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 				projectText.setText(projectName);
 			}
 
-			/*if (SDKLocationHelper.isSDKLocationDefined()) {
-				try {
-					int deviceId = configuration.getAttribute(
-							WPConstants.ATTR_DEVICE_IDENTIFIER, 0);
-					if (deviceId != -1) {
-						Set<String> names = devices.keySet();
-						int index = 0;
-						for (String name : names) {
-							if (devices.get(name) == deviceId) {
-								break;
-							}
-							index++;
-						}
-						devicesCombo.select(index);
-					} else {
-						devicesCombo.select(devicesCombo
-								.indexOf(DEFAULT_EMULATOR));
-					}
-				} catch (CoreException e) {
-				}
-			}*/
 			setDirty(false);
 		} catch (CoreException e) {
 			WinCore.log(

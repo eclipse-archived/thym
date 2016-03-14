@@ -19,10 +19,6 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-/**
- * @author Wojciech Galanciak, James Dubee 2014, 2016
- *
- */
 public class WinCore implements BundleActivator {
 
 	public static final String PLUGIN_ID = "org.eclipse.thym.win.core"; //$NON-NLS-1$
