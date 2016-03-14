@@ -36,7 +36,7 @@ import org.eclipse.thym.win.internal.core.Messages;
 
 public class WinLibraryResolver extends HybridMobileLibraryResolver {
 
-	private static final String WP8 = "windows"; //$NON-NLS-1$
+	private static final String WIN = "windows"; //$NON-NLS-1$
 	public static final String VERSION = "VERSION"; //$NON-NLS-1$
 	public static final String WP_APP_MANIFEST_XML = "WMAppManifest.xml"; //$NON-NLS-1$
 	public static final String APP_XAML = "App.xaml"; //$NON-NLS-1$
@@ -65,7 +65,8 @@ public class WinLibraryResolver extends HybridMobileLibraryResolver {
 					Messages.WPLibraryResolver_NotCompatibleError);
 		}
 
-		return libraryRoot.lastSegment().equals(version) ? Status.OK_STATUS
+		return (libraryRoot.toString().indexOf(WIN) > -1 && 
+				libraryRoot.lastSegment().equals(version)) ? Status.OK_STATUS
 				: Status.CANCEL_STATUS;
 	}
 
