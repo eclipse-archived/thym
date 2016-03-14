@@ -34,6 +34,7 @@ import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.osgi.framework.Version;
 /**
@@ -187,10 +188,11 @@ public class HybridMobileEngineManager {
 					w.addEngine(e);
 				}
 				model.save();
-				cordova.prepare(sm.newChild(40), "");
+				IStatus status = Status.OK_STATUS;
+				status = cordova.prepare(sm.newChild(40), "").convertTo(ErrorDetectingCLIResult.class).asStatus();
 				project.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
 				sm.done();
-				return Status.OK_STATUS;
+				return status;
 			}
 		};
 		ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(this.project.getProject());

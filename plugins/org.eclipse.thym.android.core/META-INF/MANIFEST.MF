@@ -15,6 +15,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.thym.android.core,
  org.eclipse.thym.android.core.adt;x-friends:="org.eclipse.thym.android.ui"
-Import-Package: org.eclipse.ant.launching,
- org.eclipse.core.externaltools.internal
 Bundle-Localization: plugin

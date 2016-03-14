@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 /**
  * Build delegate for Android
@@ -51,8 +51,10 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}	
-			CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90),"android",buildType);
-			
+			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90),"android",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			if(status.getSeverity() == IStatus.ERROR){
+				throw new CoreException(status);
+			}
 			IFolder androidProject = hybridProject.getProject().getFolder("platforms/android");
 			androidProject.accept(new IResourceProxyVisitor() {
 				

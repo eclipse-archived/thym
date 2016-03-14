@@ -38,12 +38,14 @@ import com.github.zafarkhaja.semver.Version;
  *
  */
 public class IosLibraryResolver extends HybridMobileLibraryResolver {
+	private static final Version VERSION_4_0_1 = Version.valueOf("4.0.1");
 	private static final Version VERSION_3_3_0 = Version.valueOf("3.3.0");
 	private static final Version VERSION_3_0_0 = Version.valueOf("3.0.0");
 	private static final String TEMPLATEVAR_PRJ_DIR_3_0 = "__TESTING__";
 	private static final String TEMPLATEVAR_PRJ_DIR_3_4 = "__PROJECT_NAME__";
 	private static final String TEMPLATEVAR_PBXPROJ_3_0 = TEMPLATEVAR_PRJ_DIR_3_0;
 	private static final String TEMPLATEVAR_PBXPROJ_3_4 = "__NON-CLI__";
+	private static final String TEMPLATEVAR_PBXPROJ_4_1 = "__TEMP__";
 	
 	
 	private HashMap<IPath, URL> files = new HashMap<IPath, URL>();
@@ -59,7 +61,11 @@ public class IosLibraryResolver extends HybridMobileLibraryResolver {
 		 */
 		String prjDirVar = TEMPLATEVAR_PRJ_DIR_3_0;
 		String pbxProjVar = TEMPLATEVAR_PBXPROJ_3_0;
-		if(v.compareWithBuildsTo(VERSION_3_3_0) >0){
+		if (v.compareWithBuildsTo(VERSION_4_0_1) > 0) {
+			prjDirVar = TEMPLATEVAR_PRJ_DIR_3_4;
+			pbxProjVar = TEMPLATEVAR_PBXPROJ_4_1;
+		}
+		else if (v.compareWithBuildsTo(VERSION_3_3_0) > 0) {
 			prjDirVar = TEMPLATEVAR_PRJ_DIR_3_4;
 			pbxProjVar = TEMPLATEVAR_PBXPROJ_3_4;
 		}
@@ -71,7 +77,12 @@ public class IosLibraryResolver extends HybridMobileLibraryResolver {
 		else{
 			files.put(new Path("cordova"), getEngineFile(libraryRoot.append("bin/templates/scripts/cordova/")));
 		}
-		files.put(new Path("cordova/node_modules"), getEngineFile(libraryRoot.append("bin/node_modules/")));
+		if (v.compareWithBuildsTo(VERSION_4_0_1) > 0) {
+			files.put(new Path("cordova/node_modules"), getEngineFile(libraryRoot.append("node_modules/")));
+		}
+		else {
+			files.put(new Path("cordova/node_modules"), getEngineFile(libraryRoot.append("bin/node_modules/")));
+		}
 		files.put(new Path(VAR_APP_NAME), getEngineFile(templatePrjRoot.append(prjDirVar)));
 		files.put(new Path(VAR_APP_NAME+"/"+VAR_APP_NAME+"-Info.plist"), getEngineFile(templatePrjRoot.append(NLS.bind("{0}/{0}-Info.plist",prjDirVar))));
 		files.put(new Path(VAR_APP_NAME+"/"+VAR_APP_NAME+"-Prefix.pch") , getEngineFile(templatePrjRoot.append(NLS.bind("{0}/{0}-Prefix.pch",prjDirVar))));

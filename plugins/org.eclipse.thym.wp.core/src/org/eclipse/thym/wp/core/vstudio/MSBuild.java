@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.wp.core.WPCore;
 import org.eclipse.thym.wp.internal.core.Messages;
@@ -68,7 +69,11 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}
-			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType);
+			IStatus status = 
+			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			if(status.getSeverity() == IStatus.ERROR){
+				throw new CoreException(status);
+			}
 			
 			File vstudioProjectDir = hybridProject.getProject().getFolder("platforms/wp8").getLocation().toFile();
 			if (isRelease()) {
