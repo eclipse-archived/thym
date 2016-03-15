@@ -34,8 +34,8 @@ public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 			return;
 		}
 		try {
-			monitor.beginTask(Messages.MSBuild_BuildProjectTask, 10);
-			SubMonitor generateMonitor = SubMonitor.convert(monitor,5);
+			monitor.beginTask(Messages.WinBuild_BuildProjectTask, 10);
+			SubMonitor generateMonitor = SubMonitor.convert(monitor, 5);
 			if (monitor.isCanceled()) {
 				return;
 			}
@@ -43,7 +43,7 @@ public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 					.getProject());
 			if (hybridProject == null) {
 				throw new CoreException(new Status(IStatus.ERROR,
-						WinCore.PLUGIN_ID, Messages.MSBuild_NoHybridError));
+						WinCore.PLUGIN_ID, Messages.WinBuild_NoHybridError));
 			}
 			String buildType = "--debug";
 			if(isRelease()){

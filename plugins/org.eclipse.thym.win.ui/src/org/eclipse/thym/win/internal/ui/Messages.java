@@ -17,7 +17,10 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.thym.win.internal.ui.messages"; //$NON-NLS-1$
-	public static String EmulatorsStatusHandler_Title;
+	public static String WinEmulatorsStatusHandler_Message;
+	public static String WinEmulatorsStatusHandler_Title;
+	public static String WinBuildStatusHandler_Message;
+	public static String WinBuildStatusHandler_Title;
 	public static String WinEmulatorLaunchShortcut_DefaultName;
 	public static String WinOptionsTab_BrowseLabel;
 	public static String WinOptionsTab_DefaultEmulator;

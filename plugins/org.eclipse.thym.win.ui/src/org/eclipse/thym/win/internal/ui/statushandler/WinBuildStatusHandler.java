@@ -43,13 +43,13 @@ public class WinBuildStatusHandler extends AbstractStatusHandler {
 			GridLayout layout = (GridLayout) composite.getLayout();
 			layout.numColumns = 1;
 			Link desc = new Link(composite, SWT.NONE);
-			desc.setText(Messages.MSBuildStatusHandler_Message);
+			desc.setText(Messages.WinBuildStatusHandler_Message);
 			desc.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					Program.launch(WinConstants.SDK_DOWNLOAD_URL);
 				}
 			});
-			getShell().setText(Messages.MSBuildStatusHandler_Title);
+			getShell().setText(Messages.WinBuildStatusHandler_Title);
 			return composite;
 		}
 
