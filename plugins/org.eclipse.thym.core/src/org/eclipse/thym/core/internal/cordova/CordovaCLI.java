@@ -52,7 +52,7 @@ public class CordovaCLI {
 	private static final String P_COMMAND_PLUGIN = "plugin";
 	private static final String P_COMMAND_PLATFORM = "platform";
 	private static final String P_COMMAND_PREPARE = "prepare";
-	private static final String P_COMMAND_EMULATE = "run windows --emulator --archs=\"x86\" -- -phone";
+	private static final String P_COMMAND_EMULATE = "run --emulator";
 	private static final String P_COMMAND_BUILD = "build";
 	
 	//Store locks for the projects.
@@ -109,7 +109,7 @@ public class CordovaCLI {
 	
 	public CordovaCLIResult emulate (final IProgressMonitor monitor, final String...options )throws CoreException{
 		final CordovaCLIStreamListener streamListener = new CordovaCLIStreamListener();
-		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova run windows --emulator --archs=\"x86\" -- -phone"));
+		IProcess process = startShell(streamListener, monitor, getLaunchConfiguration("cordova run --emulator"));
 		String cordovaCommand = generateCordovaCommand(P_COMMAND_EMULATE, null, options);
 		sendCordovaCommand(process, cordovaCommand, monitor);
 		CordovaCLIResult result =  new CordovaCLIResult(streamListener.getMessage());

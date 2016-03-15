@@ -33,6 +33,8 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 
 public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
+	private static String EMULATE_ARGS = "windows --archs=\"x86\" -- -phone";
+	
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
@@ -50,7 +52,7 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		}
 
 		SubMonitor sm = SubMonitor.convert(monitor,100);
-		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90));
+		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), EMULATE_ARGS);
 		sm.worked(30);
 		monitor.worked(2);
 		monitor.done();
