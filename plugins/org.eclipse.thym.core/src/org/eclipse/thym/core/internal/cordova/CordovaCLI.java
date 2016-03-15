@@ -7,6 +7,7 @@
  *
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
+ * 		 IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.thym.core.internal.cordova;
 
@@ -41,7 +42,7 @@ import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
  * Wrapper around Cordova CLI. Provides low level 
  * access to Cordova CLI.
  *
- *@author Gorkem Ercan, James Dubee
+ *@author Gorkem Ercan
  *
  */
 @SuppressWarnings("restriction")
