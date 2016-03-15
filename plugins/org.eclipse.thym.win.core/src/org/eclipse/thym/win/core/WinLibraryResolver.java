@@ -36,8 +36,6 @@ import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.win.internal.core.Messages;
 import org.eclipse.thym.win.core.WinCore;
 
-import com.github.zafarkhaja.semver.Version;
-
 public class WinLibraryResolver extends HybridMobileLibraryResolver {
 
 	private static final String WIN = "windows"; //$NON-NLS-1$
