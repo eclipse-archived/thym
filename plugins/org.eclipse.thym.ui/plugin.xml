@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="platformImages" name="Platform mages" schema="schema/platformImage.exsd"/>
+   <extension-point id="platformImages" name="Platform Images" schema="schema/platformImage.exsd"/>
    <extension-point id="hybridMobileStatusHandler" name="Hybrid Mobile Status Handler" schema="schema/hybridMobileStatusHandler.exsd"/>
 
    <extension
