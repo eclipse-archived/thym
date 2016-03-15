@@ -21,23 +21,18 @@ public class Messages extends NLS {
 	public static String MSBuild_MSBuildError;
 	public static String MSBuild_MSBuildFailedMessage;
 	public static String MSBuild_NoHybridError;
-	public static String MSBuild_NoMSBuildError;
-	public static String WPEmulator_NoDeployCmdError;
-	public static String WPEngineRepoProvider_CannotReadError;
-	public static String WPLaunchDelegate_LaunchTask;
-	public static String WPLaunchDelegate_NoEmulatorsError;
-	public static String WPLaunchDelegate_NoProjectError;
-	public static String WPLaunchDelegate_NotHybridError;
-	public static String WPLaunchDelegate_SDKMissingMessage;
-	public static String WPLibraryResolver_CannotDetectError;
-	public static String WPLibraryResolver_MissingEngineError;
-	public static String WPLibraryResolver_NotCompatibleError;
-	public static String WPLibraryResolver_NoVersionError;
-	public static String WPPluginInstallationActionsFactory_NotImplementMessage;
-	public static String WPProjectGenerator_GenerationError;
-	public static String WPProjectGenerator_NotHybridError;
+	public static String WinEngineRepoProvider_CannotReadError;
+	public static String WinLaunchDelegate_LaunchTask;
+	public static String WinLaunchDelegate_NoProjectError;
+	public static String WinLaunchDelegate_NotHybridError;
+	public static String WinLibraryResolver_CannotDetectError;
+	public static String WinLibraryResolver_MissingEngineError;
+	public static String WinLibraryResolver_NotCompatibleError;
+	public static String WinLibraryResolver_NoVersionError;
+	public static String WinPluginInstallationActionsFactory_NotImplementMessage;
+	public static String WinProjectGenerator_GenerationError;
+	public static String WinProjectGenerator_NotHybridError;
 	static {
-		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
 	}
 

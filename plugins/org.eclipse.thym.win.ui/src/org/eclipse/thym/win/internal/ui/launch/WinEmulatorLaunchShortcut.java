@@ -17,10 +17,7 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.ui.launch.HybridProjectLaunchShortcut;
-import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
@@ -39,7 +36,7 @@ public class WinEmulatorLaunchShortcut extends HybridProjectLaunchShortcut {
 	@Override
 	protected String getLaunchConfigurationNamePrefix(IProject project) {
 		return MessageFormat.format(
-				Messages.WPEmulatorLaunchShortcut_DefaultName,
+				Messages.WinEmulatorLaunchShortcut_DefaultName,
 				project.getName());
 	}
 

@@ -21,28 +21,19 @@ public class Messages extends NLS {
 	public static String EmulatorsStatusHandler_Title;
 	public static String MSBuildStatusHandler_Message;
 	public static String MSBuildStatusHandler_Title;
-	public static String SDKLocationHelper_Message;
-	public static String SDKStatusHandler_Message;
-	public static String SDKStatusHandler_Title;
-	public static String WPEmulatorLaunchShortcut_DefaultName;
-	public static String WPEmulatorLaunchShortcut_MSBuildMissingMessage;
-	public static String WPOptionsTab_BrowseLabel;
-	public static String WPOptionsTab_DefaultEmulator;
-	public static String WPOptionsTab_Description;
-	public static String WPOptionsTab_DeviceName;
-	public static String WPOptionsTab_EmulatorGroup;
-	public static String WPOptionsTab_NoEmulatorsError;
-	public static String WPOptionsTab_ProjectGroup;
-	public static String WPOptionsTab_ProjectLabel;
-	public static String WPOptionsTab_ProjectSelection;
-	public static String WPOptionsTab_SDKNotDefinedError;
-	public static String WPOptionsTab_SelectonDesc;
-	public static String WPOptionsTab_TabName;
-	public static String WPPreferencePage_Description;
-	public static String WPPreferencePage_LocationLabel;
-	public static String WPPreferencePage_NotDirectoryError;
-	public static String WPPreferencePage_NotSpecifiedWarning;
-	public static String WPPreferencePage_NotValidError;
+	public static String WinEmulatorLaunchShortcut_DefaultName;
+	public static String WinOptionsTab_BrowseLabel;
+	public static String WinOptionsTab_DefaultEmulator;
+	public static String WinOptionsTab_DeviceName;
+	public static String WinOptionsTab_EmulatorGroup;
+	public static String WinOptionsTab_ProjectGroup;
+	public static String WinOptionsTab_ProjectLabel;
+	public static String WinOptionsTab_ProjectSelection;
+	public static String WinOptionsTab_SelectonDesc;
+	public static String WinOptionsTab_TabName;
+	public static String WinOptionsTab_Description;
+	public static String WinPreferencePage_Description;
+	
 	static {
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);
 	}

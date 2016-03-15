@@ -48,10 +48,10 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		
-		monitor.beginTask(Messages.WPLaunchDelegate_LaunchTask, 10);
+		monitor.beginTask(Messages.WinLaunchDelegate_LaunchTask, 10);
 		IProject kernelProject = getProject(configuration);
 		Assert.isNotNull(kernelProject,
-				Messages.WPLaunchDelegate_NoProjectError);
+				Messages.WinLaunchDelegate_NoProjectError);
 		int deviceId = configuration.getAttribute(
 				WinConstants.ATTR_DEVICE_IDENTIFIER, -1);
 		
@@ -59,7 +59,7 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		HybridProject project = HybridProject.getHybridProject(kernelProject);
 		if (project == null) {
 			throw new CoreException(new Status(IStatus.ERROR, WinCore.PLUGIN_ID,
-					NLS.bind(Messages.WPLaunchDelegate_NotHybridError,
+					NLS.bind(Messages.WinLaunchDelegate_NotHybridError,
 							kernelProject.getName())));
 		}
 

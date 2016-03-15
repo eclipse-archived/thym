@@ -47,7 +47,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
-	private static final String DEFAULT_EMULATOR = Messages.WPOptionsTab_DefaultEmulator;
+	private static final String DEFAULT_EMULATOR = Messages.WinOptionsTab_DefaultEmulator;
 
 	private Text projectText;
 	private Listener dirtyListener;
@@ -77,13 +77,13 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 		Group projectGroup = new Group(comp, SWT.NONE);
 		projectGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 1, 1));
-		projectGroup.setText(Messages.WPOptionsTab_ProjectGroup);
+		projectGroup.setText(Messages.WinOptionsTab_ProjectGroup);
 		projectGroup.setLayout(new GridLayout(3, false));
 
 		Label projectLabel = new Label(projectGroup, SWT.NONE);
 		projectLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
 				false, 1, 1));
-		projectLabel.setText(Messages.WPOptionsTab_ProjectLabel);
+		projectLabel.setText(Messages.WinOptionsTab_ProjectLabel);
 
 		projectText = new Text(projectGroup, SWT.BORDER);
 		projectText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
@@ -97,8 +97,8 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 				ElementListSelectionDialog dialog = new ElementListSelectionDialog(
 						getShell(), WorkbenchLabelProvider
 								.getDecoratingWorkbenchLabelProvider());
-				dialog.setTitle(Messages.WPOptionsTab_ProjectSelection);
-				dialog.setMessage(Messages.WPOptionsTab_SelectonDesc);
+				dialog.setTitle(Messages.WinOptionsTab_ProjectSelection);
+				dialog.setMessage(Messages.WinOptionsTab_SelectonDesc);
 				dialog.setElements(HybridCore.getHybridProjects().toArray());
 				if (dialog.open() == Window.OK) {
 					HybridProject project = (HybridProject) dialog
@@ -107,18 +107,18 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 				}
 			}
 		});
-		browseButton.setText(Messages.WPOptionsTab_BrowseLabel);
+		browseButton.setText(Messages.WinOptionsTab_BrowseLabel);
 
 		Group emulatorGroup = new Group(comp, SWT.NONE);
 		emulatorGroup.setLayout(new GridLayout(2, false));
 		emulatorGroup.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
 				false, 1, 1));
-		emulatorGroup.setText(Messages.WPOptionsTab_EmulatorGroup);
+		emulatorGroup.setText(Messages.WinOptionsTab_EmulatorGroup);
 
 		Label deviceLabel = new Label(emulatorGroup, SWT.NONE);
 		deviceLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false,
 				false, 1, 1));
-		deviceLabel.setText(Messages.WPOptionsTab_DeviceName);
+		deviceLabel.setText(Messages.WinOptionsTab_DeviceName);
 
 		devicesCombo = new Combo(emulatorGroup, SWT.READ_ONLY);
 		devicesCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true,
@@ -132,7 +132,7 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public String getName() {
-		return Messages.WPOptionsTab_TabName;
+		return Messages.WinOptionsTab_TabName;
 	}
 
 	@Override
@@ -194,11 +194,11 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 	 *         return <code>false</code>
 	 */
 	private boolean isTabValid() {
-		setMessage(Messages.WPOptionsTab_Description);
+		setMessage(Messages.WinOptionsTab_Description);
 		setErrorMessage(null);
 		// firstly check if there are emulators in the SDK
 		if (devices.isEmpty()) {
-			setErrorMessage(Messages.WPOptionsTab_NoEmulatorsError);
+			setErrorMessage(Messages.WinOptionsTab_NoEmulatorsError);
 			return false;
 		}
 		String projectName = projectText.getText();
