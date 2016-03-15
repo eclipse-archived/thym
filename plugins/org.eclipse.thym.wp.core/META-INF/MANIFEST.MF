@@ -14,4 +14,3 @@ Bundle-ClassPath: .
 Export-Package: org.eclipse.thym.wp.core,
  org.eclipse.thym.wp.core.vstudio
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Eclipse-PlatformFilter: (osgi.os=win32)
