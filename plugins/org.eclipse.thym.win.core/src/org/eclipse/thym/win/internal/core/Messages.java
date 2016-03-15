@@ -17,10 +17,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.thym.win.internal.core.messages"; //$NON-NLS-1$
-	public static String MSBuild_BuildProjectTask;
-	public static String MSBuild_MSBuildError;
-	public static String MSBuild_MSBuildFailedMessage;
-	public static String MSBuild_NoHybridError;
+	public static String WinBuild_BuildProjectTask;
+	public static String WinBuild_NoHybridError;
 	public static String WinEngineRepoProvider_CannotReadError;
 	public static String WinLaunchDelegate_LaunchTask;
 	public static String WinLaunchDelegate_NoProjectError;

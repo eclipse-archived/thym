@@ -43,13 +43,13 @@ public class WinEmulatorStatusHandler extends AbstractStatusHandler {
 			GridLayout layout = (GridLayout) composite.getLayout();
 			layout.numColumns = 1;
 			Link desc = new Link(composite, SWT.NONE);
-			desc.setText(Messages.EmulatorsStatusHandler_Message);
+			desc.setText(Messages.WinEmulatorsStatusHandler_Message);
 			desc.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(SelectionEvent e) {
 					Program.launch(WinConstants.SDK_DOWNLOAD_URL);
 				}
 			});
-			getShell().setText(Messages.EmulatorsStatusHandler_Title);
+			getShell().setText(Messages.WinEmulatorsStatusHandler_Title);
 			return composite;
 		}
 
