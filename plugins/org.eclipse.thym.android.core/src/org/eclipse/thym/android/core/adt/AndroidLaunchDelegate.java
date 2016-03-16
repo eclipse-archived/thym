@@ -50,9 +50,9 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		WidgetModel model = WidgetModel.getModel(project);
 		Widget widget = model.getWidgetForRead();
 		String packageName = widget.getId();
-		//String name = project.getBuildArtifactAppName();
-		String name = "MainActivity";
 		
+		String name = "MainActivity";
+
 		sdk.installApk(artifact, device.getSerialNumber(),monitor);
 
 		sdk.startApp(packageName+"/."+name, device.getSerialNumber(),monitor);
