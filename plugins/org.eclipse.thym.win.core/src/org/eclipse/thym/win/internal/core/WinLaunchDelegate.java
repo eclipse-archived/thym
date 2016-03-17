@@ -34,6 +34,7 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
 	private static String EMULATE_ARGS = "windows --archs=\"x86\" -- -phone";
+	private static String RUN_ARGS = "windows --device --archs=\"arm\" -- -phone";
 	
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
@@ -52,7 +53,7 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		}
 
 		SubMonitor sm = SubMonitor.convert(monitor,100);
-		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), EMULATE_ARGS);
+		CordovaCLI.newCLIforProject(project).run(sm.newChild(90), RUN_ARGS);
 		sm.worked(30);
 		monitor.worked(2);
 		monitor.done();
