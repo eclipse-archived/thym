@@ -20,7 +20,9 @@ public class Messages extends NLS {
 	public static String WinBuild_BuildProjectTask;
 	public static String WinBuild_NoHybridError;
 	public static String WinEngineRepoProvider_CannotReadError;
-	public static String WinLaunchDelegate_LaunchTask;
+	public static String WinLaunchDelegate_LaunchEmulator;
+	public static String WinLaunchDelegate_LaunchSimulator;
+	public static String WinLaunchDelegate_LaunchDevice;
 	public static String WinLaunchDelegate_NoProjectError;
 	public static String WinLaunchDelegate_NotHybridError;
 	public static String WinLibraryResolver_CannotDetectError;

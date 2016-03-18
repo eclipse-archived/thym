@@ -19,14 +19,24 @@ public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "org.eclipse.thym.win.internal.ui.messages"; //$NON-NLS-1$
 	public static String WinEmulatorsStatusHandler_Message;
 	public static String WinEmulatorsStatusHandler_Title;
+	public static String WinSimulatorsStatusHandler_Message;
+	public static String WinSimulatorsStatusHandler_Title;
+	public static String WinDevicesStatusHandler_Message;
+	public static String WinDevicesStatusHandler_Title;
 	public static String WinBuildStatusHandler_Message;
 	public static String WinBuildStatusHandler_Title;
 	public static String WinEmulatorLaunchShortcut_DefaultName;
+	public static String WinSimulatorLaunchShortcut_DefaultName;
+	public static String WinDeviceLaunchShortcut_DefaultName;
 	public static String WinOptionsTab_BrowseLabel;
 	public static String WinOptionsTab_DefaultEmulator;
+	public static String WinOptionsTab_DefaultSimulator;
+	public static String WinOptionsTab_DefaultDevice;
 	public static String WinOptionsTab_DeviceName;
 	public static String WinOptionsTab_EmulatorGroup;
+	public static String WinOptionsTab_SimulatorGroup;
 	public static String WinOptionsTab_NoEmulatorsError;
+	public static String WinOptionsTab_NoSimulatorsError;
 	public static String WinOptionsTab_ProjectGroup;
 	public static String WinOptionsTab_ProjectLabel;
 	public static String WinOptionsTab_ProjectSelection;

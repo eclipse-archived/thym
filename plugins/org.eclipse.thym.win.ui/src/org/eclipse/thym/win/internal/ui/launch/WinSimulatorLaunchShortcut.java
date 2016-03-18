@@ -22,7 +22,7 @@ import org.eclipse.thym.ui.launch.HybridProjectLaunchShortcut;
 import org.eclipse.thym.win.core.vstudio.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
-public class WinEmulatorLaunchShortcut extends HybridProjectLaunchShortcut {
+public class WinSimulatorLaunchShortcut extends HybridProjectLaunchShortcut {
 
 	@Override
 	protected boolean validateBuildToolsReady() throws CoreException {
@@ -31,7 +31,7 @@ public class WinEmulatorLaunchShortcut extends HybridProjectLaunchShortcut {
 
 	@Override
 	protected void updateLaunchConfiguration(ILaunchConfigurationWorkingCopy wc) {
-		wc.setAttribute(WinConstants.ATTR_LAUNCH_TYPE, WinConstants.ATTR_LAUNCH_TYPE_EMULATOR);
+		wc.setAttribute(WinConstants.ATTR_LAUNCH_TYPE, WinConstants.ATTR_LAUNCH_TYPE_SIMULATOR);
 		super.updateLaunchConfiguration(wc);
 	}
 
@@ -43,7 +43,7 @@ public class WinEmulatorLaunchShortcut extends HybridProjectLaunchShortcut {
 	@Override
 	protected String getLaunchConfigurationNamePrefix(IProject project) {
 		return MessageFormat.format(
-				Messages.WinEmulatorLaunchShortcut_DefaultName,
+				Messages.WinSimulatorLaunchShortcut_DefaultName,
 				project.getName());
 	}
 
