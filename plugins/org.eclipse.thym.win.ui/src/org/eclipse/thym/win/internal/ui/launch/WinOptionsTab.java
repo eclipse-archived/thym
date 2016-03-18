@@ -48,6 +48,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
 	private static final String DEFAULT_EMULATOR = Messages.WinOptionsTab_DefaultEmulator;
+	private static final String DEFAULT_SIMULATOR = Messages.WinOptionsTab_DefaultSimulator;
 
 	private Text projectText;
 	private Listener dirtyListener;
