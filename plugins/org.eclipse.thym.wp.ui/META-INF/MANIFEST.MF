@@ -13,3 +13,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.thym.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
+Eclipse-PlatformFilter: (osgi.os=win32)
