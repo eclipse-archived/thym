@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,11 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
@@ -41,15 +42,14 @@ public class NativeBinaryExportOperation extends WorkspaceModifyOperation {
 	@Override
 	protected void execute(IProgressMonitor monitor) throws CoreException,
 			InvocationTargetException, InterruptedException {
-		monitor.beginTask("Build native binaries", delegates.size()*2);
+		SubMonitor sm = SubMonitor.convert(monitor);
+		sm.setWorkRemaining(delegates.size()*10);
 		for (AbstractNativeBinaryBuildDelegate delegate : delegates) {
 			if(monitor.isCanceled()){ 
 				break; 
 			}
-			SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, 1);
-			subMonitor.setTaskName("Building "+ delegate.getProject().getName());
 			delegate.setRelease(true);
-			delegate.buildNow(subMonitor);
+			delegate.buildNow(sm.newChild(10));
 			try {
 				File buildArtifact = delegate.getBuildArtifact();
 				File destinationFile = new File(destinationDir, buildArtifact.getName());
@@ -68,15 +68,11 @@ public class NativeBinaryExportOperation extends WorkspaceModifyOperation {
 				}else{
 					FileUtils.copyFileToDirectory(artifact, destinationDir);
 				}
-				monitor.worked(1);
+				sm.done();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				HybridCore.log(IStatus.ERROR, "Error on NativeBinaryExportOperation", e);
 			}
-			
 		}
 		monitor.done(); 
-
 	}
-
 }

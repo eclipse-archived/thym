@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -51,7 +51,8 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}	
-			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90),"android",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(70),"android",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(20));
 			if(status.getSeverity() == IStatus.ERROR){
 				throw new CoreException(status);
 			}

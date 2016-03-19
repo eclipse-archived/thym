@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -106,7 +107,8 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			if (sm.isCanceled()) {
 				return;
 			}
-			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(90), "ios",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(70), "ios",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(20));
 			if(status.getSeverity() == IStatus.ERROR){
 				throw new CoreException(status);
 			}

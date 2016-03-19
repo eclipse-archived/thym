@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 Zend Technologies Ltd. 
+ * Copyright (c) 2014, 2016 Zend Technologies Ltd. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ package org.eclipse.thym.wp.core.vstudio;
 import java.io.File;
 import java.io.FileFilter;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -71,6 +72,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 			}
 			IStatus status = 
 			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, generateMonitor);
 			if(status.getSeverity() == IStatus.ERROR){
 				throw new CoreException(status);
 			}
