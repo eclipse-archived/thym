@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,6 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
-import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.core.runtime.Assert;
@@ -30,7 +29,6 @@ import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -41,8 +39,6 @@ import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.thym.ui.wizard.export.NativeArtifactExportAction;
-import org.eclipse.thym.ui.wizard.export.NativeArtifactExportAction.ExportType;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
@@ -66,7 +62,6 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 			+ "</form>";
 
 	private static final String EXPORT_SECTION_CONTENT = "<form><p>Options available to export this application to supported platforms:</p>"
-			+ "<li style=\"image\" value=\"export\" bindent=\"5\">Export <a href=\"export.project\">Native Platform Project(s)</a> and continue with native tools</li>"
 			+ "<li style=\"image\" value=\"export\" bindent=\"5\">Export <a href=\"export.app\">Mobile application(s)</a> to distribute</li>"
 			+ "</form>";
 
@@ -415,11 +410,8 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 	public void linkActivated(HyperlinkEvent e) {
 		String href = (String) e.getHref();
 		Action action = null;
-		if("export.project".equals(href)){
-			action = new NativeArtifactExportAction(getConfigEditor(),ExportType.PROJECT);
-		}else
 		if("export.app".equals(href)){
-			action = new NativeArtifactExportAction(getConfigEditor(),ExportType.APPLICATION);
+			action = new NativeArtifactExportAction(getConfigEditor());
 		}
 		else
 		if("plugin.folder".equals(href)){

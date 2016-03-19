@@ -66,16 +66,6 @@
         point="org.eclipse.ui.exportWizards">
      <wizard
            category="org.eclipse.thym.ui.category"
-           class="org.eclipse.thym.ui.wizard.export.NativeProjectExportWizard"
-           icon="icons/etool16/exportnativeprj_wiz.png"
-           id="org.eclipse.thym.ui.exportNativeProjectWizard"
-           name="Export Native Platform Project">
-        <keywordReference
-              id="org.eclipse.thym.ui.keyword">
-        </keywordReference>
-     </wizard>
-     <wizard
-           category="org.eclipse.thym.ui.category"
            class="org.eclipse.thym.ui.wizard.export.NativeBinaryExportWizard"
            icon="icons/etool16/exportnativeprj_wiz.png"
            id="org.eclipse.thym.ui.exportNativeBinaryWizard"

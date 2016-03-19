@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,18 +23,13 @@ import org.eclipse.ui.PlatformUI;
 
 public class NativeArtifactExportAction extends Action {
 	
-	public static enum ExportType { PROJECT, APPLICATION};
 	
-	private ExportType type;
 	private ConfigEditor editor;
 	
-	public NativeArtifactExportAction(ExportType exportType) {
-		this.type = exportType; 
-	}
 
 	
-	public NativeArtifactExportAction(ConfigEditor editor, ExportType exportType) {
-		this(exportType);
+	public NativeArtifactExportAction(ConfigEditor editor ) {
+		super();
 		this.editor = editor;
 	}
 
@@ -53,16 +48,9 @@ public class NativeArtifactExportAction extends Action {
 		}
 		
 		Wizard wizard = null;
-		if(type == ExportType.PROJECT) {
-			NativeProjectExportWizard wiz = new NativeProjectExportWizard();
-			wiz.init(workbench,selection );
-			wizard = wiz;
-			
-		}else{
-			NativeBinaryExportWizard wiz = new NativeBinaryExportWizard();
-			wiz.init(workbench, selection);
-			wizard = wiz;
-		}
+		NativeBinaryExportWizard wiz = new NativeBinaryExportWizard();
+		wiz.init(workbench, selection);
+		wizard = wiz;
 		
 		WizardDialog dialog = new WizardDialog(workbench.getActiveWorkbenchWindow().getShell(), wizard);
 		dialog.open();
