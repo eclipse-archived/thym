@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2014 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,28 +36,29 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
 	private File artifact;
 	private AndroidDevice device;
-	
+
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		if(device == null ){
-			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, 
+			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID,
 					"Failed to connect with the device or emulator. We will attempt to reconnect, please try running your application again."));
 		}
 		AndroidSDKManager sdk = AndroidSDKManager.getManager();
-	
+
 		HybridProject project = HybridProject.getHybridProject(getProject(configuration));
 		WidgetModel model = WidgetModel.getModel(project);
 		Widget widget = model.getWidgetForRead();
 		String packageName = widget.getId();
-		String name = project.getBuildArtifactAppName();
 		
+		String name = "MainActivity";
+
 		sdk.installApk(artifact, device.getSerialNumber(),monitor);
-		
+
 		sdk.startApp(packageName+"/."+name, device.getSerialNumber(),monitor);
 		String logcatFilter = configuration.getAttribute(AndroidLaunchConstants.ATTR_LOGCAT_FILTER, AndroidLaunchConstants.VAL_DEFAULT_LOGCAT_FILTER);
 		sdk.logcat(logcatFilter,null,null, device.getSerialNumber());
-		
+
 	}
 
 	@Override
@@ -96,7 +97,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 			sdk.killADBServer();
 		}
 		sdk.startADBServer();
-		
+
 		if(runOnDevice){
 			String  serial = configuration.getAttribute(AndroidLaunchConstants.ATTR_DEVICE_SERIAL, (String)null);
 			Assert.isNotNull(serial);
@@ -106,10 +107,10 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 					this.device = androidDevice;
 				}
 				//Prefer the device with given serial if available.
-				//This is probably important if there are multiple devices that are 
+				//This is probably important if there are multiple devices that are
 				//connected.
 				if(serial.equals(androidDevice.getSerialNumber()))
-				{                                                 
+				{
 					this.device = androidDevice;
 					break;
 				}
@@ -122,7 +123,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 				throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Could not establish connection with the device. Please try again."));
 			}
 		}
-		
+
 		//Run emulator
 		AndroidDevice emulator = getEmulator();
 		// Do we have any emulators to run on?
@@ -135,7 +136,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 			}
 			//start the emulator.
 			sdk.startEmulator(avdName);
-			// wait for it to come online 
+			// wait for it to come online
 			sdk.waitForEmulator();
 		}
 		this.device = getEmulator();
@@ -147,11 +148,11 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		monitor.done();
 		return true;
 	}
-	
+
 	private String selectAVD(ILaunchConfiguration configuration, AndroidSDKManager sdk) throws CoreException{
 		List<AndroidAVD> avds = sdk.listAVDs();
 		if (avds == null || avds.isEmpty()){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE, 
+			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE,
 					"No Android AVDs are available",null));
 		}
 		String avdName = configuration.getAttribute(AndroidLaunchConstants.ATTR_AVD_NAME, (String)null);
@@ -165,19 +166,19 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 			}
 			else if(androidAVD.getName().equals(avdName)){
 					if(alc.compare(androidAVD.getApiLevel(),AndroidConstants.REQUIRED_MIN_API_LEVEL) <0){
-						throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE, 
+						throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE,
 								NLS.bind("Selected Android AVD {0} does not satisfy the satisfy the minimum API level({1})",
 									new String[]{avdName, AndroidConstants.REQUIRED_MIN_API_LEVEL}),null));
-						
+
 					}
 				}
-			
+
 			}
 		if(avdName == null ){
-			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE, 
+			throw new CoreException(new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_AVD_ISSUE,
 					NLS.bind("Defined Android AVDs do not satisfy the minimum API level({0})",AndroidConstants.REQUIRED_MIN_API_LEVEL),null));
 		}
-		return avdName; 
+		return avdName;
 	}
 
 	private AndroidDevice getEmulator() throws CoreException{
@@ -189,7 +190,7 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 		}
 		return null;
 	}
-	
+
 	//TODO: duplicated form IOSLaunchDelegate... move both to a common utility.
 	private IProject getProject(ILaunchConfiguration configuration){
 		try{
