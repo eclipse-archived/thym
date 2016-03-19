@@ -41,7 +41,7 @@ import org.eclipse.thym.ios.core.IOSCore;
 public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 	public static final String MIN_REQUIRED_VERSION = "6.0.0";
 	
-	private class SDKListParser implements IStreamListener{
+	private static class SDKListParser implements IStreamListener{
 		private StringBuffer buffer = new StringBuffer();
 		@Override
 		public void streamAppended(String text, IStreamMonitor monitor) {
@@ -68,7 +68,8 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 	}
 
 	
-	private class XCodeVersionParser implements IStreamListener{
+	private static class XCodeVersionParser implements IStreamListener{
+		private static final int START_LOC = "XCode".length()+1;
 		private StringBuffer buffer = new StringBuffer();
 		
 		@Override
@@ -77,10 +78,11 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 		}
 		
 		public String getVersion(){
-			return buffer.substring("XCode".length()+1, buffer.indexOf("\n"));
+			if(buffer.length()<START_LOC){
+				return "";
+			}
+			return buffer.substring(START_LOC, buffer.indexOf("\n"));
 		}
-		
-		
 	}
 
 	
