@@ -4,8 +4,8 @@
    <extension
          point="org.eclipse.thym.ui.platformImages">
       <platformImage
-            icon="icons/elcl16/wp8_icon.png"
-            id="org.eclipse.thym.win.ui.wpPlatformImage"
+            icon="icons/menu/winUni.png"
+            id="org.eclipse.thym.win.ui.winPlatformImage"
             platformSupport="org.eclipse.thym.win.core.platformSupport"
             projectBuilder="org.eclipse.thym.win.core.projectBuilder">
       </platformImage>
@@ -13,7 +13,7 @@
 <extension point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
             class="org.eclipse.thym.win.internal.ui.launch.WinEmulatorLaunchShortcut"
-            icon="icons/elcl16/wp8_icon.png"
+            icon="icons/menu/winUni.png"
             id="org.eclipse.thym.win.ui.launch.emulator"
             label="Run on Windows Universal Emulator"
             modes="run">
@@ -33,7 +33,7 @@
       </shortcut>
       <shortcut
             class="org.eclipse.thym.win.internal.ui.launch.WinSimulatorLaunchShortcut"
-            icon="icons/elcl16/wp8_icon.png"
+            icon="icons/menu/winUni.png"
             id="org.eclipse.thym.win.ui.launch.simulator"
             label="Run on Windows Universal Simulator"
             modes="run">
@@ -53,7 +53,7 @@
       </shortcut>
       <shortcut
             class="org.eclipse.thym.win.internal.ui.launch.WinDeviceLaunchShortcut"
-            icon="icons/elcl16/wp8_icon.png"
+            icon="icons/menu/winUni.png"
             id="org.eclipse.thym.win.ui.launch.device"
             label="Run on Windows Universal Device"
             modes="run">
@@ -77,14 +77,14 @@
       <launchConfigurationTabGroup
             class="org.eclipse.thym.win.internal.ui.launch.WinLaunchConfigurationTabGroup"
             description="Windows Phone 8 Emulator"
-            id="org.eclipse.thym.win.uiWPLaunchConfigurationTabGroup"
+            id="org.eclipse.thym.win.uiWinLaunchConfigurationTabGroup"
             type="org.eclipse.thym.win.core.WinLaunchConfigurationType">
       </launchConfigurationTabGroup>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
-            icon="icons/elcl16/wp8_icon.png"
+            icon="icons/menu/winUni.png"
             configTypeID="org.eclipse.thym.win.core.WinLaunchConfigurationType"
             id="org.eclipse.thym.win.ui.WinLaunchConfigurationTypeImage">
       </launchConfigurationTypeImage>

@@ -19,7 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.thym.ui.launch.HybridProjectLaunchShortcut;
-import org.eclipse.thym.win.core.vstudio.WinConstants;
+import org.eclipse.thym.win.core.build.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
 public class WinSimulatorLaunchShortcut extends HybridProjectLaunchShortcut {

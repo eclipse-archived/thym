@@ -15,7 +15,7 @@
    <extension
          point="org.eclipse.thym.core.projectBuilder">
       <builder
-            delegate="org.eclipse.thym.win.core.vstudio.WinBuild"
+            delegate="org.eclipse.thym.win.core.build.WinBuild"
             id="org.eclipse.thym.win.core.projectBuilder"
             platform="Windows Universal">
       </builder>

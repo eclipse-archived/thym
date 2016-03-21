@@ -28,8 +28,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.win.core.WinCore;
-import org.eclipse.thym.win.core.vstudio.WinBuild;
-import org.eclipse.thym.win.core.vstudio.WinConstants;
+import org.eclipse.thym.win.core.build.WinBuild;
+import org.eclipse.thym.win.core.build.WinConstants;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 
 public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
@@ -42,33 +42,30 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	public void launch(ILaunchConfiguration configuration, String mode,
 			ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		
-    // Set up
-    monitor.beginTask(Messages.WinLaunchDelegate_LaunchEmulator, 10);
-    IProject kernelProject = getProject(configuration);
-    Assert.isNotNull(kernelProject,
-        Messages.WinLaunchDelegate_NoProjectError);
-
-    HybridProject project = HybridProject.getHybridProject(kernelProject);
-    if (project == null) {
-      throw new CoreException(new Status(IStatus.ERROR, WinCore.PLUGIN_ID,
-            NLS.bind(Messages.WinLaunchDelegate_NotHybridError,
-              kernelProject.getName())));
-    }
-    
-    SubMonitor sm = SubMonitor.convert(monitor,100);
-
-    // Determine which way to run Win Universal
-	String launchType = configuration.getAttribute(WinConstants.ATTR_LAUNCH_TYPE, (String)null);
-	if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_EMULATOR)){
-		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), EMULATE_ARGS);
-	} else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_SIMULATOR)){
-		System.out.println("SIMULATE THIS");
-		CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), SIM_ARGS);
-	} else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_DEVICE)){
-		System.out.println("DEVICE THIS");
-		CordovaCLI.newCLIforProject(project).run(sm.newChild(90), RUN_ARGS);
-	}
-
+	    // Set up
+	    monitor.beginTask(Messages.WinLaunchDelegate_LaunchEmulator, 10);
+	    IProject kernelProject = getProject(configuration);
+	    Assert.isNotNull(kernelProject,
+	        Messages.WinLaunchDelegate_NoProjectError);
+	
+	    HybridProject project = HybridProject.getHybridProject(kernelProject);
+	    if (project == null) {
+	      throw new CoreException(new Status(IStatus.ERROR, WinCore.PLUGIN_ID,
+	            NLS.bind(Messages.WinLaunchDelegate_NotHybridError,
+	              kernelProject.getName())));
+	    }
+	    
+	    SubMonitor sm = SubMonitor.convert(monitor,100);
+	
+	    // Determine which way to run Win Universal
+		String launchType = configuration.getAttribute(WinConstants.ATTR_LAUNCH_TYPE, (String)null);
+		if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_EMULATOR))
+			CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), EMULATE_ARGS);
+		else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_SIMULATOR))
+			CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), SIM_ARGS);
+		else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_DEVICE))
+			CordovaCLI.newCLIforProject(project).run(sm.newChild(90), RUN_ARGS);
+	
 	    sm.worked(30);
 	    monitor.worked(2);
 	    monitor.done();

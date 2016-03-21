@@ -11,7 +11,7 @@
  *		IBM Corporation - initial API and implementation
  *******************************************************************************/  
 
-package org.eclipse.thym.win.core.vstudio;
+package org.eclipse.thym.win.core.build;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;

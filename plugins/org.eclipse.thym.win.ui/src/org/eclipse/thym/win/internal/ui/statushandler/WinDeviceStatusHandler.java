@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.thym.ui.status.AbstractStatusHandler;
-import org.eclipse.thym.win.core.vstudio.WinConstants;
+import org.eclipse.thym.win.core.build.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 
 public class WinDeviceStatusHandler extends AbstractStatusHandler {

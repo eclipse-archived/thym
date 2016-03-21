@@ -11,7 +11,7 @@
  *		IBM Corporation - initial API and implementation
  *******************************************************************************/  
 
-package org.eclipse.thym.win.core.vstudio;
+package org.eclipse.thym.win.core.build;
 
 import org.eclipse.thym.win.core.WinCore;
 

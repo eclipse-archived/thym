@@ -40,7 +40,7 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.win.core.WinCore;
-import org.eclipse.thym.win.core.vstudio.WinConstants;
+import org.eclipse.thym.win.core.build.WinConstants;
 import org.eclipse.thym.win.internal.ui.Messages;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
