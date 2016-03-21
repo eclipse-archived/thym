@@ -4,9 +4,15 @@
   <xs:import schemaLocation="common.xsd"/>
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
   <xs:element name="access">
-    <xs:complexType>
+        <xs:annotation>
+        	<xs:documentation>Defines the set of external domains the app is allowed to communicate with. The default value shown above allows it to access any server. </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
       <xs:attribute name="origin" use="required">
-        <xs:simpleType>
+                <xs:annotation>
+                	<xs:documentation>Defines the set of external domains the app is allowed to communicate with.</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
           <xs:union memberTypes="xs:anyURI">
             <xs:simpleType>
               <xs:restriction base="xs:string">

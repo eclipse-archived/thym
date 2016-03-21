@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+targetNamespace="http://www.w3.org/ns/widgets" xmlns:widgets="http://www.w3.org/ns/widgets">
+  <xs:import schemaLocation="common.xsd"/>
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+  
+
+
+  <xs:element name="plugin">
+        <xs:annotation>
+        	<xs:documentation>Specifies details about what plugin to restore during a prepare.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:attribute name="name" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Name of the plugin to be restored</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  		<xs:attribute name="spec" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Details about the plugin to be restored. This could be a major.minor.patch version number, a directory containing the plugin or a url pointing to a git repository. This information will be used to retrieve the plugin code to restore from NPM, a local directory or a git repository</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+
+
+  <xs:element name="allow-navigation">
+        <xs:annotation>
+        	<xs:documentation>Controls which URLs the WebView itself can be navigated to. Applies to top-level navigations only</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:attribute name="href" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Defines the set of external domains the WebView is allowed to navigate to.</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+
+  <xs:element name="allow-intent">
+        <xs:annotation>
+        	<xs:documentation>Controls which URLs the app is allowed to ask the system to open. By default, no external URLs are allowed.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:attribute name="href" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Defines which URLs the app is allowed to ask the system to open.</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+
+  <xs:element name="engine">
+        <xs:annotation>
+        	<xs:documentation>Specifies details about what platform to restore during a prepare.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:attribute name="name" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Name of the platform to be restored</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  		<xs:attribute name="spec" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Details about the platform to be restored. This could be a major.minor.patch version number, a directory containing the platform or a url pointing to a git repository. This information will be used to retrieve the platform code to restore from NPM, a local directory or a git repository</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+
+  <xs:element name="platform">
+        <xs:annotation>
+        	<xs:documentation>It is sometimes necessary to specify preferences or other elements specific to a particular platform. Use the element to specify configuration that should only appear in a single platform-specific config.xml file.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:choice maxOccurs="unbounded" minOccurs="0">
+  			<xs:element ref="widgets:allow-intent"></xs:element>
+  			<xs:element ref="widgets:allow-navigation"></xs:element>
+  			<xs:element ref="widgets:plugin"></xs:element>
+  			<xs:element ref="widgets:preference"></xs:element>
+  			<xs:element ref="widgets:hook"></xs:element>
+  		</xs:choice>
+  		<xs:attribute name="name" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>The platform whose preferences are being defined</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+
+  <xs:element name="hook">
+        <xs:annotation>
+        	<xs:documentation>Represents your custom script which will be called by Cordova when certain action occurs (for example, after plugin is added or platform prepare logic is invoked). This is useful when you need to extend default Cordova functionality</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+  		<xs:attribute name="type" use="required">
+  			<xs:annotation>
+  				<xs:documentation>
+  					Specifies the action during which the custom
+  					script is to be called.
+  				</xs:documentation>
+  			</xs:annotation>
+  			<xs:simpleType>
+  				<xs:restriction base="xs:string">
+  					<xs:enumeration value="before_platform_add"></xs:enumeration>
+  					<xs:enumeration value="after_platform_add"></xs:enumeration>
+  					<xs:enumeration value="before_platform_rm"></xs:enumeration>
+  					<xs:enumeration value="after_platform_rm"></xs:enumeration>
+  					<xs:enumeration value="before_platform_ls"></xs:enumeration>
+  					<xs:enumeration value="after_platform_ls"></xs:enumeration>
+  					<xs:enumeration value="before_prepare"></xs:enumeration>
+  					<xs:enumeration value="after_prepare"></xs:enumeration>
+  					<xs:enumeration value="before_compile"></xs:enumeration>
+  					<xs:enumeration value="after_compile"></xs:enumeration>
+  					<xs:enumeration value="before_build"></xs:enumeration>
+  					<xs:enumeration value="after_build"></xs:enumeration>
+  					<xs:enumeration value="before_emulate"></xs:enumeration>
+  					<xs:enumeration value="after_emulate"></xs:enumeration>
+  					<xs:enumeration value="before_run"></xs:enumeration>
+  					<xs:enumeration value="after_run"></xs:enumeration>
+  					<xs:enumeration value="before_serve"></xs:enumeration>
+  					<xs:enumeration value="after_serve"></xs:enumeration>
+  					<xs:enumeration value="before_clean"></xs:enumeration>
+  					<xs:enumeration value="after_clean"></xs:enumeration>
+  					<xs:enumeration value="pre_package"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_add"></xs:enumeration>
+  					<xs:enumeration value="after_plugin_add"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_rm"></xs:enumeration>
+  					<xs:enumeration value="after_plugin_rm"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_ls"></xs:enumeration>
+  					<xs:enumeration value="after_plugin_ls"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_search"></xs:enumeration>
+  					<xs:enumeration value="after_plugin_search"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_install"></xs:enumeration>
+  					<xs:enumeration value="after_plugin_install"></xs:enumeration>
+  					<xs:enumeration value="before_plugin_uninstall"></xs:enumeration>
+  				</xs:restriction>
+  			</xs:simpleType>
+  		</xs:attribute>
+  		<xs:attribute name="source" type="xs:string" use="required">
+  			<xs:annotation>
+  				<xs:documentation>Specifies the location of the script to be called when a specific action occurs</xs:documentation>
+  			</xs:annotation></xs:attribute>
+  	</xs:complexType>
+  </xs:element>
+</xs:schema>

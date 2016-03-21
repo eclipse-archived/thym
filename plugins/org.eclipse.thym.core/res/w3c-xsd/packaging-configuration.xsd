@@ -6,23 +6,82 @@
 	<xs:import namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd" />
 	<xs:element name="widget">
-		<xs:complexType>
-			<xs:complexContent>
-				<xs:extension base="widgets:group.widgetContent">
-					<xs:attribute ref="xml:lang" />
-					<xs:attribute name="id" type="xs:anyURI" />
-					<xs:attribute name="version" />
-					<xs:attribute name="height" type="xs:positiveInteger" />
-					<xs:attribute name="width" type="xs:positiveInteger" />
-					<xs:attribute name="viewmodes">
-						<xs:simpleType>
-							<xs:list itemType="widgets:group.listName">
-							</xs:list>
-						</xs:simpleType>
-					</xs:attribute>
-				</xs:extension>
-			</xs:complexContent>
-		</xs:complexType>
+        <xs:annotation>
+        	<xs:documentation>Root element of the config.xml document.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+        	<xs:complexContent>
+        		<xs:extension base="widgets:group.widgetContent">
+        			<xs:attribute ref="xml:lang" />
+        			<xs:attribute name="id" type="xs:anyURI">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Specifies the applications
+        						reverse-domain identifier
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="version">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Full version number expressed in
+        						major/minor/patch notation
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="height"
+        				type="xs:positiveInteger" />
+        			<xs:attribute name="width"
+        				type="xs:positiveInteger" />
+        			<xs:attribute name="viewmodes">
+        				<xs:simpleType>
+        					<xs:list
+        						itemType="widgets:group.listName">
+        					</xs:list>
+        				</xs:simpleType>
+        			</xs:attribute>
+        			<xs:attribute name="android-versionCode"
+        				type="xs:string" use="optional">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Alternative version for Android. Sets
+        						the version code for the application
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="ios-CFBundleVersion"
+        				type="xs:string" use="optional">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Alternative version for iOS
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="osx-CFBundleVersion"
+        				type="xs:string" use="optional">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Alternative version for OS X
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="windows-packageVersion"
+        				type="xs:string" use="optional">
+        				<xs:annotation>
+        					<xs:documentation>
+        						Alternative version for Windows
+        					</xs:documentation>
+        				</xs:annotation>
+        			</xs:attribute>
+        			<xs:attribute name="packageName"
+        				type="xs:string" use="optional">
+                        <xs:annotation>
+                        	<xs:documentation>Package name for Windows defaults to Cordova.Example, if not set</xs:documentation>
+                        </xs:annotation>
+        			</xs:attribute>
+        		</xs:extension>
+        	</xs:complexContent>
+        </xs:complexType>
 	</xs:element>
 	<xs:simpleType name="group.listName">
 		<xs:restriction base="xs:string">
@@ -46,10 +105,19 @@
 				<xs:element ref="widgets:preference" />
 			</xs:choice>
 			<xs:element ref="widgets:access" />
+			<xs:element ref="widgets:plugin" />
+			<xs:element ref="widgets:allow-navigation" />
+			<xs:element ref="widgets:allow-intent" />
+			<xs:element ref="widgets:hook" />
+			<xs:element ref="widgets:engine" />
+			<xs:element ref="widgets:platform" />
 		</xs:choice>
 	</xs:complexType>
 	<xs:element name="name">
-		<xs:complexType mixed="true">
+        <xs:annotation>
+        	<xs:documentation>Specifies the app's formal name, as it appears on the device's home screen and within app-store interfaces</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
 			<xs:attribute ref="xml:lang" />
 			<xs:attribute name="dir">
 				<xs:simpleType>
@@ -65,7 +133,10 @@
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="description">
-		<xs:complexType mixed="true">
+        <xs:annotation>
+        	<xs:documentation>Specifies metadata that may appear within app-store listings.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
 			<xs:attribute ref="xml:lang" />
 			<xs:attribute name="dir">
 				<xs:simpleType>
@@ -88,7 +159,10 @@
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="author">
-		<xs:complexType mixed="true">
+        <xs:annotation>
+        	<xs:documentation>Specifies contact information that may appear within app-store listings.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType mixed="true">
 			<xs:attribute ref="xml:lang" />
 			<xs:attribute name="dir">
 				<xs:simpleType>
@@ -100,9 +174,15 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:attribute>
-			<xs:attribute name="href" type="xs:anyURI" />
+			<xs:attribute name="href" type="xs:anyURI" >
+				<xs:annotation>
+					<xs:documentation>Website of the author</xs:documentation>
+				</xs:annotation></xs:attribute>
 			<xs:attribute name="email">
-				<xs:simpleType>
+                <xs:annotation>
+                	<xs:documentation>Email of the author</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
 					<xs:restriction base="xs:string">
 						<xs:pattern value=".+@.+" />
 					</xs:restriction>
@@ -127,9 +207,15 @@
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="content">
-		<xs:complexType>
+        <xs:annotation>
+        	<xs:documentation>Defines the app's starting page in the top-level web assets directory. The default value is index.html, which customarily appears in a project's top-level www directory.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
 			
-			<xs:attribute name="src" use="required" type="xs:anyURI" />
+			<xs:attribute name="src" use="required" type="xs:anyURI" >
+				<xs:annotation>
+					<xs:documentation>Defines the app's starting page in the top-level web assets directory. The default value is index.html.</xs:documentation>
+				</xs:annotation></xs:attribute>
 			<xs:attribute name="type" />
 			<xs:attribute name="encoding" />
 		</xs:complexType>
@@ -150,9 +236,105 @@
 		</xs:complexType>
 	</xs:element>
 	<xs:element name="preference">
-		<xs:complexType>
+        <xs:annotation>
+        	<xs:documentation>Sets various options as pairs of name/value attributes. Each preference's name is case-insensitive. Many preferences are unique to specific platforms.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
 			<xs:attribute ref="xml:lang" />
-			<xs:attribute name="name" use="required" />
+			<xs:attribute name="name" use="required">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration
+							value="AllowInlineMediaPlayback">
+						</xs:enumeration>
+						<xs:enumeration value="AndroidLaunchMode"></xs:enumeration>
+						<xs:enumeration value="android-maxSdkVersion"></xs:enumeration>
+						<xs:enumeration
+							value="android-targetSdkVersion">
+						</xs:enumeration>
+						<xs:enumeration value="AppendUserAgent"></xs:enumeration>
+						<xs:enumeration value="BackgroundColor"></xs:enumeration>
+						<xs:enumeration value="BackupWebStorage"></xs:enumeration>
+						<xs:enumeration value="ChildBrowser"></xs:enumeration>
+						<xs:enumeration value="CordovaWebViewEngine"></xs:enumeration>
+						<xs:enumeration value="DefaultVolumeStream"></xs:enumeration>
+						<xs:enumeration value="DisallowOverscroll"></xs:enumeration>
+						<xs:enumeration value="EnableViewportScale"></xs:enumeration>
+						<xs:enumeration value="EnableWebGL"></xs:enumeration>
+						<xs:enumeration value="ErrorUrl"></xs:enumeration>
+						<xs:enumeration value="FullScreen"></xs:enumeration>
+						<xs:enumeration value="GapBetweenPages"></xs:enumeration>
+						<xs:enumeration
+							value="HideKeyboardFormAccessoryBar">
+						</xs:enumeration>
+						<xs:enumeration value="HideMousePointer"></xs:enumeration>
+						<xs:enumeration
+							value="InAppBrowserStorageEnabled">
+						</xs:enumeration>
+						<xs:enumeration value="KeepRunning"></xs:enumeration>
+						<xs:enumeration
+							value="KeyboardDisplayRequiresUserAction">
+						</xs:enumeration>
+						<xs:enumeration value="LoadUrlTimeoutValue"></xs:enumeration>
+						<xs:enumeration value="LoadingDialog"></xs:enumeration>
+						<xs:enumeration value="LogLevel"></xs:enumeration>
+						<xs:enumeration
+							value="MediaPlaybackAllowsAirPlay">
+						</xs:enumeration>
+						<xs:enumeration
+							value="MediaPlaybackRequiresUserAction">
+						</xs:enumeration>
+						<xs:enumeration value="Min/Max Version"></xs:enumeration>
+						<xs:enumeration value="Orientation"></xs:enumeration>
+						<xs:enumeration value="OSXLocalStoragePath"></xs:enumeration>
+						<xs:enumeration value="OverrideUserAgent"></xs:enumeration>
+						<xs:enumeration value="PageLength"></xs:enumeration>
+						<xs:enumeration
+							value="PaginationBreakingMode">
+						</xs:enumeration>
+						<xs:enumeration value="PaginationMode"></xs:enumeration>
+						<xs:enumeration value="PopupBlocker"></xs:enumeration>
+						<xs:enumeration value="SetFullscreen"></xs:enumeration>
+						<xs:enumeration value="ShowTitle"></xs:enumeration>
+						<xs:enumeration
+							value="Suppresses3DTouchGesture">
+						</xs:enumeration>
+						<xs:enumeration
+							value="SuppressesIncrementalRendering">
+						</xs:enumeration>
+						<xs:enumeration
+							value="SuppressesLongPressGesture">
+						</xs:enumeration>
+						<xs:enumeration value="TopActivityIndicator"></xs:enumeration>
+						<xs:enumeration
+							value="UIWebViewDecelerationSpeed">
+						</xs:enumeration>
+						<xs:enumeration value="WebSecurity"></xs:enumeration>
+						<xs:enumeration value="WindowSize"></xs:enumeration>
+						<xs:enumeration
+							value="WindowsDefaultUriPrefix">
+						</xs:enumeration>
+						<xs:enumeration
+							value="WindowsStoreDisplayName">
+						</xs:enumeration>
+						<xs:enumeration
+							value="WindowsStoreIdentityName">
+						</xs:enumeration>
+						<xs:enumeration
+							value="WindowsStorePublisherName">
+						</xs:enumeration>
+						<xs:enumeration value="WindowsToastCapable"></xs:enumeration>
+						<xs:enumeration value="deployment-target"></xs:enumeration>
+						<xs:enumeration value="target-device"></xs:enumeration>
+						<xs:enumeration
+							value="windows-phone-target-version">
+						</xs:enumeration>
+						<xs:enumeration
+							value="windows-target-version">
+						</xs:enumeration>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:attribute>
 			<xs:attribute name="value" />
 			<xs:attribute name="readonly" type="xs:boolean" />
 		</xs:complexType>
