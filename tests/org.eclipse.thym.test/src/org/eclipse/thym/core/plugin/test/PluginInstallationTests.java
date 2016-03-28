@@ -64,6 +64,7 @@ public class PluginInstallationTests {
 		FileUtils.directoryCopy(pluginsDir, FileUtils.toURL(pluginsDirectroy));
 		
 	}
+	
 	@AfterClass
 	public static void cleanUpPlugins() throws IOException{
 		if(pluginsDirectroy != null )
@@ -78,10 +79,15 @@ public class PluginInstallationTests {
 	}
 	
 	@After
-	public void cleanProject() throws CoreException{
-		if(this.project != null ){
-			this.project.delete();
-			this.project = null;
+	public void cleanProject() {
+		
+		try {
+			if(this.project != null ){
+				this.project.delete();
+				this.project = null;
+			}
+		} catch (CoreException err) {
+			System.out.println(err.getMessage());
 		}
 	}
 
