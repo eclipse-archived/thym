@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.thym.ui.platformImages">
+      <platformImage
+            icon="icons/menu/winUni.png"
+            id="org.eclipse.thym.win.ui.winPlatformImage"
+            platformSupport="org.eclipse.thym.win.core.platformSupport"
+            projectBuilder="org.eclipse.thym.win.core.projectBuilder">
+      </platformImage>
+   </extension>
+<extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.eclipse.thym.win.internal.ui.launch.WinEmulatorLaunchShortcut"
+            icon="icons/menu/winUni.png"
+            id="org.eclipse.thym.win.ui.launch.emulator"
+            label="Run on Windows Universal Emulator"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+      <shortcut
+            class="org.eclipse.thym.win.internal.ui.launch.WinSimulatorLaunchShortcut"
+            icon="icons/menu/winUni.png"
+            id="org.eclipse.thym.win.ui.launch.simulator"
+            label="Run on Windows Universal Simulator"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+      <shortcut
+            class="org.eclipse.thym.win.internal.ui.launch.WinDeviceLaunchShortcut"
+            icon="icons/menu/winUni.png"
+            id="org.eclipse.thym.win.ui.launch.device"
+            label="Run on Windows Universal Device"
+            modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate>
+                        <adapt  type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.projectNature" 
+                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        </adapt> 
+                    </iterate>
+                </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.eclipse.thym.win.internal.ui.launch.WinLaunchConfigurationTabGroup"
+            description="Windows Phone 8 Emulator"
+            id="org.eclipse.thym.win.uiWinLaunchConfigurationTabGroup"
+            type="org.eclipse.thym.win.core.WinLaunchConfigurationType">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="icons/menu/winUni.png"
+            configTypeID="org.eclipse.thym.win.core.WinLaunchConfigurationType"
+            id="org.eclipse.thym.win.ui.WinLaunchConfigurationTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.thym.ui.hybridMobileStatusHandler">
+      <statusHandler
+            class="org.eclipse.thym.win.internal.ui.statushandler.WinBuildStatusHandler"
+            code="320"
+            id="org.eclipse.thym.win.ui.missingMSBuildStatusHandler"
+            plugin="org.eclipse.thym.win.core">
+      </statusHandler>
+      <statusHandler
+            class="org.eclipse.thym.win.internal.ui.statushandler.SDKStatusHandler"
+            code="310"
+            id="org.eclipse.thym.win.ui.missingSDKStatusHandler"
+            plugin="org.eclipse.thym.win.core">
+      </statusHandler>
+      <statusHandler
+            class="org.eclipse.thym.win.internal.ui.statushandler.WinEmulatorStatusHandler"
+            code="330"
+            id="org.eclipse.thym.win.ui.missingEmulatorsStatusHandler"
+            plugin="org.eclipse.thym.win.core">
+      </statusHandler>
+   </extension>
+</plugin>
