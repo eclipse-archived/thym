@@ -31,7 +31,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.internal.ui.importer.CordovaProjectConfigurator;
-import org.eclipse.ui.internal.wizards.datatransfer.EasymportJob;
+import org.eclipse.ui.internal.wizards.datatransfer.SmartImportJob;
 import org.eclipse.ui.wizards.datatransfer.ProjectConfigurator;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -60,7 +60,7 @@ public class ImportTest {
 		outputFile.delete();
 
 		Set<IProject> newProjects = null;
-		EasymportJob job = new EasymportJob(outputDirectory, Collections.EMPTY_SET, true, true);
+		SmartImportJob job = new SmartImportJob(outputDirectory, Collections.EMPTY_SET, true, true);
 		try {
 			Map<File, List<ProjectConfigurator>> proposals = job.getImportProposals(new NullProgressMonitor());
 			Assert.assertEquals("Expected only 1 project to import", 1, proposals.size()); //$NON-NLS-1$

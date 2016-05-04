@@ -2,10 +2,6 @@
 <?pde version="3.8"?><target includeMode="feature" name="THyM Target" sequenceNumber="13">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.e4.ui.importer" version="0.0.0"/>
-<repository location="http://download.eclipse.org/e4/snapshots/org.eclipse.e4.ui/"/>
-</location>
-<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.apache.commons.codec" version="0.0.0"/>
 <unit id="org.apache.commons.io" version="0.0.0"/>
 <unit id="org.apache.httpcomponents.httpclient" version="0.0.0"/>

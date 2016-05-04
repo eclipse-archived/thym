@@ -13,6 +13,7 @@ package org.eclipse.thym.internal.ui.importer;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -55,7 +56,8 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 		return shouldBeAnEclipseProject(project, monitor);
 	}
 
-	@Override
+	// @Override
+	// TODO Remove when fully migrated to Platform 4.6.M7
 	public IWizard getConfigurationWizard() {
 		return null;
 	}
@@ -71,11 +73,6 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 					ex.getMessage(),
 					ex));
 		}
-	}
-
-	@Override
-	public Set<IFolder> getDirectoriesToIgnore(IProject project, IProgressMonitor monitor) {
-		return null;
 	}
 
 	@Override
@@ -106,5 +103,17 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 	        }
 		}
 		return res;
+	}
+
+	// @Override
+	// TODO Uncomment when fully migrated to Platform 4.6.M7
+	public Set<IFolder> getFoldersToIgnore(IProject project, IProgressMonitor monitor) {
+		return Collections.emptySet();
+	}
+	
+	// @Override
+	// TODO Remove when fully migrated to Platform 4.6.M7
+	public Set<IFolder> getDirectoriesToIgnore(IProject project, IProgressMonitor monitor) {
+		return getDirectoriesToIgnore(project, monitor);
 	}
 }
