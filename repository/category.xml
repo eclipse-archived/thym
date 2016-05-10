@@ -8,11 +8,4 @@
       <category name="THyM"/>
    </feature>
    
-   <category-def name="THyM.incubator" label="Eclipse THyM: Incubating and Experimental plugins"/>
-   <bundle id="org.eclipse.thym.ui.importer" version="0.0.0">
-     <category name="THyM.incubator"/>
-   </bundle>
-   <bundle id="org.eclipse.thym.ui.importer.source" version="0.0.0">
-     <category name="THyM.incubator"/>
-   </bundle>
 </site>
