@@ -25,7 +25,7 @@
 <unit id="org.eclipse.wst.common.fproj.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.emf.common.feature.group" version="0.0.0"/>
 <unit id="org.eclipse.emf.ecore.feature.group" version="0.0.0"/>
-<repository location="http://download.eclipse.org/releases/staging/"/>
+<repository location="http://download.eclipse.org/staging/neon"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
 <unit id="org.hamcrest" version="1.1.0.v20090501071000"/>
