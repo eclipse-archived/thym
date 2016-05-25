@@ -304,4 +304,22 @@
             name="Install Cordova Requirements">
       </cheatsheet>
    </extension>
+   <extension
+         point="org.eclipse.ui.decorators">
+      <decorator
+            id="org.eclipse.thym.ui.wwwDecorator"
+            label="%WWWDecorator.name"
+            class="org.eclipse.thym.ui.decorators.WWWFolderDecorator"
+            adaptable="true"
+            lightweight="true"
+            location="TOP_LEFT"
+            state="true">
+            <description>
+               %WWWDecorator.description
+            </description>
+            <enablement>
+               <objectClass name="org.eclipse.core.resources.IFolder"/>
+            </enablement>
+      </decorator>
+   </extension>
 </plugin>
