@@ -198,7 +198,11 @@ public class HybridProjectCreator {
             		for (HybridMobileEngine hybridMobileEngine : engines) {
             			Engine e = model.createEngine(w);
             			e.setName(hybridMobileEngine.getId());
-            			e.setSpec(hybridMobileEngine.getVersion());
+            			if (hybridMobileEngine.isManaged()) {
+            				e.setSpec(hybridMobileEngine.getVersion());
+            			} else {
+            				e.setSpec(hybridMobileEngine.getLocation().toString());
+            			}
             			w.addEngine(e);
             		}
             	}

@@ -12,12 +12,16 @@ package org.eclipse.thym.ui.config.internal;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,15 +31,26 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Author;
 import org.eclipse.thym.core.config.Content;
+import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
+import org.eclipse.thym.core.config.WidgetModel;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
 import org.eclipse.thym.ui.plugins.internal.LaunchCordovaPluginWizardAction;
 import org.eclipse.thym.ui.wizard.export.NativeArtifactExportAction;
@@ -67,6 +82,7 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 
 	private DataBindingContext m_bindingContext;
 	
+	private AvailableCordovaEnginesSection engineSection;
 	private FormToolkit formToolkit;
 	private Text txtIdtxt;
 	private Text txtAuthorname;
@@ -77,6 +93,9 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 	private Text txtVersion;
 	private Text txtContentsource;
 	
+	private PropertyChangeListener engineListener;
+	private PropertyChangeListener contentListener;
+	private PropertyChangeListener authorListener;
 
 	//Author look alike class to be able to work the bindings with 
 	//initial null values. 
@@ -151,6 +170,10 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		formToolkit = editor.getToolkit();
 	}
 	
+	private WidgetModel getWidgetModel() {
+		return ((ConfigEditor)getEditor()).getWidgetModel();
+	}
+
 	private Widget getWidget(){
 		return ((ConfigEditor)getEditor()).getWidget();
 	}
@@ -174,9 +197,10 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		
 		createNameDescriptionSection(left);
 		createAuthorSection(left);
+		createExportSection(left);
 		
 		createPluginsSection(right);
-		createExportSection(right);
+		createEngineSection(right);
 		
 		m_bindingContext = initDataBindings();
 		bindAuthor(m_bindingContext); // binding separately is necessary to be able to work with WindowBuilder
@@ -277,7 +301,7 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		
 		createFormFieldLabel(container, "Description:");
 		
-		txtDescription = formToolkit.createText(container, "", SWT.MULTI);
+		txtDescription = formToolkit.createText(container, "", SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
 		GridDataFactory.createFrom(textGridData).hint(SWT.DEFAULT, 100).applyTo(txtDescription);
 		
 		createFormFieldLabel(container, "Content Source:");
@@ -286,6 +310,120 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		GridDataFactory.createFrom(textGridData).applyTo(txtContentsource);
 	}
 	
+	private void createEngineSection(Composite parent) {
+		Section sctnEngines = createSection(parent, "Hybrid Mobile Engine");
+		sctnEngines.setLayout(FormUtils.createClearTableWrapLayout(false, 1));
+		TableWrapData data = new TableWrapData(TableWrapData.FILL_GRAB);
+		sctnEngines.setLayoutData(data);
+
+		Composite container = formToolkit.createComposite(sctnEngines, SWT.WRAP);
+		sctnEngines.setClient(container);
+		container.setLayout(FormUtils.createSectionClientGridLayout(false, 1));
+
+		engineSection = new AvailableCordovaEnginesSection();
+		engineSection.createControl(container);
+
+		engineListener = new PropertyChangeListener() {
+			// We can't use updateActiveEngines() here because config.xml changes before
+			// the active engine in the HybridProject -- the change fires while active
+			// engine the old one.
+			@Override
+			public void propertyChange(PropertyChangeEvent ev) {
+				Display.getDefault().asyncExec(new Runnable () {
+
+					@Override
+					public void run() {
+						// The PropertyChangeEvent can fire before engines are actually
+						// updated, so we have to rely on the Widget for active engines
+						// rather than call HybridMobileEngineManager.getActiveEngines()
+						getEnginesFromWidget();
+					}
+				});
+			}
+		};
+
+		getWidget().addPropertyChangeListener("engines", engineListener);
+
+		engineSection.addSelectionChangedListener(new ISelectionChangedListener() {
+
+			@Override
+			public void selectionChanged(SelectionChangedEvent event) {
+				IStructuredSelection newSelection =
+						(IStructuredSelection) engineSection.getSelection();
+				if (newSelection == null || newSelection.isEmpty()) {
+					// Since WidgetModel depends on the config.xml, we don't want to
+					// ever remove all of the engines, as it causes Widget.getEngines()
+					// to return null, and makes configPage fail to initialize.
+					return;
+				}
+				WidgetModel model = getWidgetModel();
+				Widget w = getWidget();
+				// Null check is required since w.getEngines() will return null
+				// when there are no engine tags in config.xml.
+				if (w.getEngines() != null) {
+					for (Engine e : w.getEngines()) {
+						w.removeEngine(e);
+					}
+				}
+				HybridMobileEngine hybridEngine;
+				Engine engine;
+				for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
+					hybridEngine = (HybridMobileEngine) iter.next();
+					engine = model.createEngine(w);
+					engine.setName(hybridEngine.getId());
+					if (hybridEngine.isManaged()) {
+						engine.setSpec(hybridEngine.getVersion());
+					} else {
+						engine.setSpec(hybridEngine.getLocation().toString());
+					}
+					w.addEngine(engine);
+				}
+			}
+		});
+
+		updateActiveEngines();
+	}
+
+	private void getEnginesFromWidget() {
+		List<Engine> activeEngines = getWidget().getEngines();
+		// getEngines() can return null; property change fires when engine is removed
+		if (activeEngines == null || activeEngines.size() == 0) {
+			return;
+		}
+		List<HybridMobileEngine> engines = new ArrayList<HybridMobileEngine>();
+		List<HybridMobileEngine> availableEngines =
+				new CordovaEngineProvider().getAvailableEngines();
+		for (HybridMobileEngine availEngine : availableEngines) {
+			for (Engine activeEngine : activeEngines) {
+				if (availEngine.isManaged()) {
+					if (availEngine.getId().equals(activeEngine.getName()) &&
+						availEngine.getVersion().equals(activeEngine.getSpec())) {
+
+						engines.add(availEngine);
+					}
+				} else {
+					if (availEngine.getId().equals(activeEngine.getName()) &&
+						availEngine.getLocation().equals(activeEngine.getSpec())) {
+
+						engines.add(availEngine);
+					}
+				}
+			}
+		}
+		if (engines.size() != 0) {
+			engineSection.setSelection(new StructuredSelection(engines.toArray()));
+		}
+	}
+
+	private void updateActiveEngines() {
+		IFile file = (IFile) getEditor().getEditorInput().getAdapter(IFile.class);
+		HybridProject project = HybridProject.getHybridProject(file.getProject());
+		HybridMobileEngine[] activeEngines = project.getActiveEngines();
+		if (activeEngines != null) {
+			engineSection.setSelection(new StructuredSelection(activeEngines));
+		}
+	}
+
 	private Section createSection(Composite parent, String text){
 		Section sctn = formToolkit.createSection(parent, Section.TITLE_BAR);
 		sctn.clientVerticalSpacing = FormUtils.SECTION_HEADER_VERTICAL_SPACING;
@@ -303,23 +441,23 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 			} else {
 				value.setValue(author);
 			}
-			getWidget().addPropertyChangeListener("author",
-					new PropertyChangeListener() {
+			authorListener = new PropertyChangeListener() {
 
+				@Override
+				public void propertyChange(final PropertyChangeEvent evt) {
+					value.getRealm().exec(new Runnable() {
 						@Override
-						public void propertyChange(final PropertyChangeEvent evt) {
-							value.getRealm().exec(new Runnable() {
-								@Override
-								public void run() {
-									if (evt.getNewValue() == null) {
-										value.setValue(new DummyAuthor());
-									} else {
-										value.setValue(evt.getNewValue());
-									}
-								}
-							});
+						public void run() {
+							if (evt.getNewValue() == null) {
+								value.setValue(new DummyAuthor());
+							} else {
+								value.setValue(evt.getNewValue());
+							}
 						}
 					});
+				}
+			};
+			getWidget().addPropertyChangeListener("author", authorListener);
 		}
 		//
 		IObservableValue observeTextTxtAuthornameObserveWidget = WidgetProperties.text(SWT.Modify).observe(txtAuthorname);
@@ -346,24 +484,23 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 			} else {
 				value.setValue(content);
 			}
-			getWidget().addPropertyChangeListener("content",
-					new PropertyChangeListener() {
+			contentListener = new PropertyChangeListener() {
 
+				@Override
+				public void propertyChange(final PropertyChangeEvent evt) {
+					value.getRealm().exec(new Runnable() {
 						@Override
-						public void propertyChange(final PropertyChangeEvent evt) {
-							value.getRealm().exec(new Runnable() {
-								@Override
-								public void run() {
-									if (evt.getNewValue() == null) {
-										value.setValue(new DummyContent());
-									} else {
-										value.setValue(evt.getNewValue());
-									}
-									
-								}
-							});
+						public void run() {
+							if (evt.getNewValue() == null) {
+								value.setValue(new DummyContent());
+							} else {
+								value.setValue(evt.getNewValue());
+							}
 						}
 					});
+				}
+			};
+			getWidget().addPropertyChangeListener("content", contentListener);
 		}
 		
 		IObservableValue observeTextTxtContentsourceObserveWidget = WidgetProperties.text(SWT.Modify).observe(txtContentsource);
@@ -438,4 +575,11 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 	public void linkExited(HyperlinkEvent e) {
 	}
 
+	public void dispose() {
+		Widget w = getWidget();
+		w.removePropertyChangeListener(engineListener);
+		w.removePropertyChangeListener(authorListener);
+		w.removePropertyChangeListener(contentListener);
+		super.dispose();
+	}
 }

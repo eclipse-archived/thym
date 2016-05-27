@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. All rights reserved. This program and
+ * Copyright (c) 2015, 2016 Red Hat, Inc. All rights reserved. This program and
  * the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
@@ -76,17 +76,17 @@ public class HybridMobileEngineTests {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				Widget w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
-				assertEquals(engines.length, w.getEngines().size());
+				assertEquals("Before Update - ", engines.length, w.getEngines().size());
 				checkEnginesPersistedCorrectly(engines);
 				manager.updateEngines(engines);
 				w = WidgetModel.getModel(testproject.hybridProject()).getWidgetForRead();
-				assertEquals(engines.length, w.getEngines().size());
+				assertEquals("After Update - ", engines.length, w.getEngines().size());
 				checkEnginesPersistedCorrectly(engines);
 			}
 		};
 		IWorkspace ws= ResourcesPlugin.getWorkspace();
 		ISchedulingRule rule = ws.getRuleFactory().modifyRule(testproject.getProject());
-		ResourcesPlugin.getWorkspace().run(runnable, rule, 0,new NullProgressMonitor());
+		ws.run(runnable, rule, 0,new NullProgressMonitor());
 	}
 
 	//Check given set of engines are persisted to config.xml correctly
@@ -132,4 +132,48 @@ public class HybridMobileEngineTests {
 		assertFalse(engine_1.isManaged());
 	}
 
+	@Test
+	public void testManagerGetActiveFromJsonNoFile() throws CoreException {
+		testproject.deletePlatformsJson();
+		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		assertTrue("GetActiveEnginesFromPlatformsJson() should return empty array if platforms.json does not exist",
+				engines.length == 0);
+	}
+
+	@Test
+	public void testManagerGetActiveFromJsonInvalidJson() throws CoreException {
+		// Currently, a malformed platforms.json file is simply ignored; this should
+		// ideally be changed.
+		testproject.writePlatformsJson("{ android: ");
+		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		assertTrue(engines.length == 0);
+	}
+
+	@Test
+	public void testManagerGetActiveFromJsonOnePlatform() throws CoreException {
+		testproject.writePlatformsJson("{ \"android\" : \"5.0.0\" }");
+		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		assertTrue("Returned array should contain one engine.", engines.length == 1);
+		assertEquals(engines[0].getId(), "android");
+		assertEquals(engines[0].getVersion(), "5.0.0");
+	}
+
+	@Test
+	public void testManagerGetActiveFromJsonBadVersion() throws CoreException {
+		testproject.writePlatformsJson("{ \"android\" : \"5.9.0\" }");
+		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		assertTrue("Only engines added to Thym should be returned", engines.length == 0);
+	}
+
+	@Test
+	public void testManagerGetActiveFromJsonIgnoresUnsupported() throws CoreException {
+		// currently, Thym only looks for iOS and Android platforms.
+		testproject.writePlatformsJson(
+				"{ \"android\" : \"5.0.0\", "
+				+ "\"unsupported\" : \"3.8.0\" }");
+		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		assertTrue(engines.length == 1);
+		assertEquals(engines[0].getId(), "android");
+		assertEquals(engines[0].getVersion(), "5.0.0");
+	}
 }

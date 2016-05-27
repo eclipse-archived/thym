@@ -108,7 +108,11 @@ public class EnginePreferencesPage extends PreferencePage implements
 				HybridMobileEngine engine =(HybridMobileEngine) selections[i];
 				prefVal.append(engine.getId());
 				prefVal.append(":");
-				prefVal.append(engine.getVersion());
+				if (engine.isManaged()) {
+					prefVal.append(engine.getVersion());
+				} else {
+					prefVal.append(engine.getLocation());
+				}
 				prefVal.append(",");
 			}
 			getPreferenceStore().setValue(PlatformConstants.PREF_DEFAULT_ENGINE, prefVal.toString());

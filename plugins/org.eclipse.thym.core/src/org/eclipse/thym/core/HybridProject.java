@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -162,6 +162,16 @@ public class HybridProject implements IAdaptable {
 	public HybridMobileEngine[] getActiveEngines(){
 		return getHybridMobileEngineManager().getActiveEngines();
 	}
+
+	/**
+	 * Returns the {@link HybridMobileEngine}s for this project, as found in
+	 * platforms.json.
+	 *
+	 * @return a possibly empty array of active engines
+	 */
+	public HybridMobileEngine[] getActiveEnginesFromPlatformsJson() {
+		return getHybridMobileEngineManager().getActiveEnginesFromPlatformsJson();
+	}
 	
 	/**
 	 * Returns the active engine for the platform id or null if there is not one.
@@ -188,7 +198,19 @@ public class HybridProject implements IAdaptable {
 		Assert.isLegal(engines != null, "Engines can not be null" );
 		getHybridMobileEngineManager().updateEngines(engines);
 	}
-	
+
+	/**
+	 * Updates active Cordova engines based on what is written to
+	 * config.xml by calling Cordova update or Cordova add, depending
+	 * on context.
+	 *
+	 * <p>
+	 * This is a convenience wrapper for
+	 * {@link HybridMobileEngineManager#resyncWithConfigXml()}
+	 */
+	public void resyncWithConfigXml() {
+		getHybridMobileEngineManager().resyncWithConfigXml();
+	}
 
 	@Override
 	public boolean equals(Object obj) {

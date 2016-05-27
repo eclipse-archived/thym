@@ -20,11 +20,13 @@ public interface PlatformConstants {
 	public static final String DIR_MERGES = "merges";
 	public static final String DIR_PLUGINS = "plugins";
 	public static final String DIR_DOT_CORDOVA = ".cordova";
+	public static final String DIR_PLATFORMS = "platforms";
 	
 	public static final String FILE_JS_CORDOVA = "cordova.js";
 	public static final String FILE_JS_CORDOVA_PLUGIN = "cordova_plugins.js";
 	public static final String FILE_XML_CONFIG = "config.xml";
 	public static final String FILE_JSON_CONFIG = "config.json";
+	public static final String FILE_JSON_PLATFORMS = "platforms.json";
 	/**
 	 * plugin definition file for Cordova plugins
 	 */
@@ -37,6 +39,7 @@ public interface PlatformConstants {
 	
 	public static final IPath[] CONFIG_PATHS = {new Path(PlatformConstants.DIR_WWW).append(PlatformConstants.FILE_XML_CONFIG),
 		new Path(PlatformConstants.FILE_XML_CONFIG) };
-
+	public static final IPath PLATFORMS_JSON_PATH =
+			new Path(PlatformConstants.DIR_PLATFORMS).append(FILE_JSON_PLATFORMS);
 
 }

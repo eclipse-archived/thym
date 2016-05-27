@@ -338,6 +338,9 @@ public class WidgetModelTest {
 
 		
 		WidgetModel model = WidgetModel.getModel(project.hybridProject());
+		// Since the underlying file is modified, dispose of the model to ensure that
+		// editableWidget is properly refreshed before the assert statements.
+		model.dispose();
 		Widget widget = model.getWidgetForEdit();
 		
 		assertEquals("rev.id",widget.getId());

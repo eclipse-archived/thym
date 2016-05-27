@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,8 @@
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
 package org.eclipse.thym.hybrid.test;
+
+import java.io.ByteArrayInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -126,4 +128,20 @@ public class TestProject {
 		return new Status(IStatus.ERROR, Activator.PLUGIN_ID, message);
 	}
 
+	public void writePlatformsJson(String toWrite) throws CoreException {
+		IFile file = getProject().getFile("/platforms/platforms.json");
+		ByteArrayInputStream input = new ByteArrayInputStream(toWrite.getBytes());
+		if (!file.exists()) {
+			file.create(input, true, null);
+		} else {
+			file.setContents(input, true, false, null);
+		}
+	}
+
+	public void deletePlatformsJson() throws CoreException {
+		IFile file = getProject().getFile("/platforms/platforms.json");
+		if (file.exists()) {
+			file.delete(true, null);
+		}
+	}
 }

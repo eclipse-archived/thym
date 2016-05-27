@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -431,6 +431,9 @@ public class WidgetModel implements IModelStateListener{
 	public void modelDirtyStateChanged(IStructuredModel model, boolean isDirty) {
 		if(!isDirty){
 			synchronized (this) {
+				HybridProject project =
+						HybridProject.getHybridProject(configXMLtoIFile().getProject());
+				project.resyncWithConfigXml();
 				reloadEditableWidget();
 				//release the readOnly model to be reloaded
 				this.readonlyWidget = null;

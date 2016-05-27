@@ -62,7 +62,8 @@ public class CordovaCLI {
 	
 	public enum Command{
 		ADD("add"), 
-		REMOVE("remove");
+		REMOVE("remove"),
+		UPDATE("update");
 		
 		private final String cliCommand;
 		Command(String cli){

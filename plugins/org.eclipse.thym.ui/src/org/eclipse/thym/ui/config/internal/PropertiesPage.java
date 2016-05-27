@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.config.internal;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
