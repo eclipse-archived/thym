@@ -2,13 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.eclipse.thym.wp.core;singleton:=true
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 2.1.0.qualifier
 Bundle-Activator: org.eclipse.thym.wp.core.WPCore
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.thym.core,
  org.eclipse.debug.core,
- org.apache.commons.io;bundle-version="[2.0.0,3.0.0)"
+ org.apache.commons.io;bundle-version="[2.1.0,3.0.0)"
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: org.eclipse.thym.wp.core,
