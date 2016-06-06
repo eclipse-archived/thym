@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -54,6 +54,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Access;
 import org.eclipse.thym.core.config.Feature;
+import org.eclipse.thym.core.config.Plugin;
 import org.eclipse.thym.core.config.Preference;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
@@ -298,15 +299,15 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 					featureParamsTableViewer.setInput(null);
 					return;
 				}
-				Feature feature = (Feature)sel.getFirstElement();
-				featureParamsTableViewer.setInput(feature.getParams());
-				feature.addPropertyChangeListener("param", new PropertyChangeListener() {
-
-					@Override
-					public void propertyChange(PropertyChangeEvent event) {
-						featureParamsTableViewer.setInput(event.getNewValue());
-					}
-				});
+//				Feature feature = (Feature)sel.getFirstElement();
+//				featureParamsTableViewer.setInput(feature.getParams());
+//				feature.addPropertyChangeListener("param", new PropertyChangeListener() {
+//
+//					@Override
+//					public void propertyChange(PropertyChangeEvent event) {
+//						featureParamsTableViewer.setInput(event.getNewValue());
+//					}
+//				});
 			}
 		});
 		featureParamsTableViewer.setContentProvider(new IStructuredContentProvider() {
@@ -405,7 +406,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 		Section sctnFeatures = formToolkit.createSection(left, Section.TITLE_BAR | Section.DESCRIPTION);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(sctnFeatures);
 		formToolkit.paintBordersFor(sctnFeatures);
-		sctnFeatures.setText("Features");
+		sctnFeatures.setText("Plugins");
 		sctnFeatures.setDescription("Define plug-ins to be used in this application");
 		
 		Composite featuresComposite = formToolkit.createComposite(sctnFeatures, SWT.NONE);
@@ -415,16 +416,22 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 		
 		featuresTableViewer = new TableViewer(featuresComposite, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
 		featuresTable = featuresTableViewer.getTable();
-		featuresTable.setLinesVisible(false);
-		featuresTable.setHeaderVisible(false);
+		featuresTable.setLinesVisible(true);
+		featuresTable.setHeaderVisible(true);
 		GridData featureTableLayoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		
 		featuresTable.setLayoutData(featureTableLayoutData);
 		formToolkit.paintBordersFor(featuresTable);
 
-		TableViewerColumn tableViewerColumnURI = new TableViewerColumn(featuresTableViewer, SWT.NONE);
-		TableColumn tblclmnFeatureURI = tableViewerColumnURI.getColumn();
-		tblclmnFeatureURI.setWidth(200);
+		TableViewerColumn tableViewerColumnName = new TableViewerColumn(featuresTableViewer, SWT.NONE);
+		TableColumn tblclmnFeatureName = tableViewerColumnName.getColumn();
+		tblclmnFeatureName.setWidth(250);
+		tblclmnFeatureName.setText("name");
+
+		TableViewerColumn tableViewerColumnSpec= new TableViewerColumn(featuresTableViewer, SWT.NONE);
+		TableColumn tblclmnFeatureSpec = tableViewerColumnSpec.getColumn();
+		tblclmnFeatureSpec.setWidth(200);
+		tblclmnFeatureSpec.setText("spec");
 
 		Composite featureBtnsComposite= formToolkit.createComposite(featuresComposite, SWT.NONE);
 		formToolkit.paintBordersFor(featureBtnsComposite);
@@ -451,17 +458,14 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 						.getSelection();
 				if (selection.isEmpty())
 					return;
-				Feature feature = (Feature) selection.getFirstElement();
+				Plugin feature = (Plugin) selection.getFirstElement();
 				IResource resource = (IResource) getEditorInput().getAdapter(IResource.class);
 				HybridProject prj = HybridProject.getHybridProject(resource.getProject());
 				boolean pluginFoundAndRemoved = false;
 				try {
 					List<CordovaPlugin> plugins = prj.getPluginManager().getInstalledPlugins();
 					for (CordovaPlugin cordovaPlugin : plugins) {
-						// This is definitely error prone. As the name for a
-						// plugin is not guaranteed to be unique. Unfortunately feature tag does not have a
-						// reference to plugin id.
-						if (cordovaPlugin.getName() != null && cordovaPlugin.getName().equals(feature.getName())) {
+						if (cordovaPlugin.getId() != null && cordovaPlugin.getId().equals(feature.getName())) {
 							PluginUninstallAction action = new PluginUninstallAction(
 									cordovaPlugin);
 							action.run();
@@ -473,7 +477,7 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 					HybridUI.log(IStatus.ERROR, "Error removing the installed plugin", ex);
 				}
 				if(!pluginFoundAndRemoved){
-					getWidget().removeFeature(feature);
+					getWidget().removePlugin(feature);
 					featureParamsTableViewer.setInput(null);
 				}
 				selectFirstFeature();
@@ -523,11 +527,11 @@ public class PropertiesPage extends AbstactConfigEditorPage{
 		accessViewer.setInput(accessesGetWidgetObserveList);
 		//
 		ObservableListContentProvider listContentProvider_2 = new ObservableListContentProvider();
-		IObservableMap observeMap = BeansObservables.observeMap(listContentProvider_2.getKnownElements(), Feature.class, "name");
-		featuresTableViewer.setLabelProvider(new ObservableMapLabelProvider(observeMap));
+		IObservableMap[] observeMapsPlugin = BeansObservables.observeMaps(listContentProvider_2.getKnownElements(), Plugin.class, new String[]{"name", "spec"});
+		featuresTableViewer.setLabelProvider(new ObservableMapLabelProvider(observeMapsPlugin));
 		featuresTableViewer.setContentProvider(listContentProvider_2);
 		//
-		IObservableList featuresGetWidgetObserveList = BeanProperties.list("features").observe(getWidget());
+		IObservableList featuresGetWidgetObserveList = BeanProperties.list("plugins").observe(getWidget());
 		featuresTableViewer.setInput(featuresGetWidgetObserveList);
 		//
 		return bindingContext;

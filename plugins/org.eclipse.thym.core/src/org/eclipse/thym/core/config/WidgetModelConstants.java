@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -53,8 +53,8 @@ interface WidgetModelConstants {
     static final String IMAGERESOURCE_ATTR_SRC = "src";
     static final String LICENSE_ATTR_HREF = "href";
     static final String FEATURE_PARAM_TAG = "param";
-    static final String PLUGIN_ATTR_VERSION = "version";
     static final String PLUGIN_ATTR_NAME = "name";
+    static final String PLUGIN_ATTR_SPEC = "spec";
     static final String PARAM_ATTR_NAME = "name";
     static final String PARAM_ATTR_VALUE = "value";
     static final String PREFERENCE_ATTR_VALUE = "value";

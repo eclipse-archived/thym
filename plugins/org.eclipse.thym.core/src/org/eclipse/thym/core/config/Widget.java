@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2016 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_NAME;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_PREFERENCE;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_SPLASH;
 import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_ENGINE;
+import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_PLUGIN;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class Widget extends AbstractConfigObject {
 	private Property<List<Icon>> icons = new Property<List<Icon>>("icons");
 	private Property<List<Splash>> splashes = new Property<List<Splash>>("splashes");
 	private Property<List<Engine>> engines = new Property<List<Engine>>("engines");
+	private Property<List<Plugin>> plugins = new Property<List<Plugin>>("plugins");
 	
 	/**
 	 * Creates a new instance from its xml representation.
@@ -101,6 +103,7 @@ public class Widget extends AbstractConfigObject {
 		loadListItem(WIDGET_TAG_ICON, null, node, icons, Icon.class);
 		loadListItem(WIDGET_TAG_SPLASH, null, node, splashes, Splash.class);
 		loadListItem(WIDGET_TAG_ENGINE, null, node, engines, Engine.class);
+		loadListItem(WIDGET_TAG_PLUGIN, null, node, plugins, Plugin.class);
 	}
 
 
@@ -223,6 +226,10 @@ public class Widget extends AbstractConfigObject {
 		return engines.getValue();
 	}
 	
+	public List<Plugin> getPlugins(){
+		return plugins.getValue();
+	}
+
 	public void setId(String id) {
 		this.id.setValue(id);
 		setAttributeValue(itemNode, null, WIDGET_ATTR_ID, id);
@@ -297,6 +304,10 @@ public class Widget extends AbstractConfigObject {
 		addItem(engine, engines);
 	}
 	
+	public void addPlugin(Plugin plugin){
+		addItem(plugin, plugins);
+	}
+
 	
 	public void removePreference( Preference preference){
 		removeItem(preference, this.preferences);
@@ -322,6 +333,10 @@ public class Widget extends AbstractConfigObject {
 		removeItem(engine, this.engines);
 	}
 	
+	public void removePlugin(Plugin plugin){
+		removeItem(plugin, this.plugins);
+	}
+
 	private <T extends AbstractConfigObject > void removeItem(T object, Property<List<T>> property){
 		if(object == null )
 			return;
