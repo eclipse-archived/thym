@@ -9,5 +9,12 @@ units.1.provides.0.namespace=osgi.bundle
 units.1.provides.0.name=org.jboss.tools.aerogear.hybrid.core
 units.1.provides.0.version=1.2.0
 
+# Optional importer, for backward compatibility with Mars
+requires.0.namespace=org.eclipse.equinox.p2.iu
+requires.0.name=org.eclipse.thym.ui.importer
+requires.0.version=2.0.0
+requires.0.optional=true
+requires.0.greedy=true
+
 update.matchExp=providedCapabilities.exists(pc | pc.namespace \=\= 'org.eclipse.equinox.p2.iu' && (pc.name \=\= 'org.jboss.tools.aerogear.hybrid.feature.feature.group' || pc.name \=\= 'org.eclipse.thym.feature.feature.group'))
 update.description = Update JBoss Tools Hybrid Mobile Tools with Eclipse Thym components

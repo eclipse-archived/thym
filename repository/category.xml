@@ -7,5 +7,8 @@
    <feature id="org.eclipse.thym.feature.source" version="0.0.0">
       <category name="THyM"/>
    </feature>
+   <bundle id="org.eclipse.thym.ui.importer" version="0.0.0">
+     <category name="THyM"/>
+   </bundle>
    
 </site>
