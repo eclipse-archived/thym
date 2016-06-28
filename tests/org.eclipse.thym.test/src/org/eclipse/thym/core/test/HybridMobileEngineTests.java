@@ -36,11 +36,21 @@ public class HybridMobileEngineTests {
 	
 	private TestProject testproject;
 	private HybridMobileEngineManager manager;
+	private static CordovaEngineProvider provider = new CordovaEngineProvider();
+	private HybridMobileEngine testEngine;
 
 	@Before 
 	public void setUpHybridMobileManager() throws CoreException{
 		testproject = new TestProject();
 		manager = new HybridMobileEngineManager(testproject.hybridProject());
+		// To support testing on platforms that don't have any cordova engines installed,
+		// we need to create a temporary engine and trick CordovaEngineProvider into
+		// thinking it's installed.
+		testEngine = provider.createEngine("android", "1.0.0", null, null);
+		testEngine.setLocation(new Path("/temporary/test/location"));
+		// CordovaEngineProvider.engineFound() just places the provided engine in the
+		// static installed engines list.
+		provider.engineFound(testEngine);
 	}
 	
 	@After
@@ -52,6 +62,9 @@ public class HybridMobileEngineTests {
 		if(manager != null ){
 			manager = null;
 		}
+		// deleteEngineLibraries() has the side effect of clearing the engineList in
+		// CordovaEngineProvider (this is also why testEngine needs to have a path set).
+		provider.deleteEngineLibraries(testEngine);
 	}
 	
 	@Test
@@ -142,8 +155,7 @@ public class HybridMobileEngineTests {
 
 	@Test
 	public void testManagerGetActiveFromJsonInvalidJson() throws CoreException {
-		// Currently, a malformed platforms.json file is simply ignored; this should
-		// ideally be changed.
+		// Currently, a malformed platforms.json file is simply ignored.
 		testproject.writePlatformsJson("{ android: ");
 		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
 		assertTrue(engines.length == 0);
@@ -151,29 +163,28 @@ public class HybridMobileEngineTests {
 
 	@Test
 	public void testManagerGetActiveFromJsonOnePlatform() throws CoreException {
-		testproject.writePlatformsJson("{ \"android\" : \"5.0.0\" }");
+		testproject.writePlatformsJson("{ \"android\" : \"/temporary/test/location\" }");
 		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
 		assertTrue("Returned array should contain one engine.", engines.length == 1);
 		assertEquals(engines[0].getId(), "android");
-		assertEquals(engines[0].getVersion(), "5.0.0");
+		assertEquals(engines[0].getVersion(), "1.0.0");
 	}
 
 	@Test
 	public void testManagerGetActiveFromJsonBadVersion() throws CoreException {
-		testproject.writePlatformsJson("{ \"android\" : \"5.9.0\" }");
+		testproject.writePlatformsJson("{ \"android\" : \"1.9.0\" }");
 		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
 		assertTrue("Only engines added to Thym should be returned", engines.length == 0);
 	}
 
 	@Test
 	public void testManagerGetActiveFromJsonIgnoresUnsupported() throws CoreException {
-		// currently, Thym only looks for iOS and Android platforms.
 		testproject.writePlatformsJson(
-				"{ \"android\" : \"5.0.0\", "
+				"{ \"android\" : \"/temporary/test/location\", "
 				+ "\"unsupported\" : \"3.8.0\" }");
 		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
 		assertTrue(engines.length == 1);
 		assertEquals(engines[0].getId(), "android");
-		assertEquals(engines[0].getVersion(), "5.0.0");
+		assertEquals(engines[0].getVersion(), "1.0.0");
 	}
 }

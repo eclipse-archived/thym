@@ -16,6 +16,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -51,6 +52,13 @@ public class TestProject {
 			HybridProjectCreator projectCreator = new HybridProjectCreator();
 			projectCreator.createBasicTemplatedProject(PROJECT_NAME, null, APPLICATION_NAME, APPLICATION_ID, 
 					HybridMobileEngineManager.defaultEngines(), new NullProgressMonitor());
+
+			// Ensure the platforms folder exists; tests that write platforms.json fail otherwise.
+			IFolder platformsFolder = getProject().getFolder("/platforms");
+			if (!platformsFolder.exists()) {
+				platformsFolder.create(true, true, null);
+			}
+
 		} catch (CoreException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
