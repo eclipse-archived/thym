@@ -343,6 +343,8 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		};
 
 		getWidget().addPropertyChangeListener("engines", engineListener);
+		
+		updateActiveEngines();
 
 		engineSection.addSelectionChangedListener(new ISelectionChangedListener() {
 
@@ -380,8 +382,6 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 				}
 			}
 		});
-
-		updateActiveEngines();
 	}
 
 	private void getEnginesFromWidget() {
