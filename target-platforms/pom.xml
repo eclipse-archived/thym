@@ -14,6 +14,7 @@
 	<modules>
 		<module>luna.R</module>
 		<module>mars.R</module>
-		<module>neon.M</module>
+		<module>neon.R</module>
+		<module>oxygen.M</module>
 	</modules>
 </project>
