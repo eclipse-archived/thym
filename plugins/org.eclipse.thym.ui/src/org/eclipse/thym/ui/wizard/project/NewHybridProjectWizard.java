@@ -195,5 +195,10 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 	public boolean isPluginSelectionOptional() {
 		return true;
 	}
+	
+	@Override
+	public boolean needsProgressMonitor(){
+		return true;
+	}
 
 }

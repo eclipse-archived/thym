@@ -14,7 +14,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,15 +25,15 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -98,6 +97,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	private Text gitUrlTxt;
 	private final CordovaPluginRegistryManager client = new CordovaPluginRegistryManager();
 	private int initialTab;
+	private GetPluginsInfoJob pluginsJob;
 
 	public CordovaPluginSelectionPage(){
 		super(PAGE_NAME,PAGE_TITLE, HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, CordovaPluginWizard.IMAGE_WIZBAN));
@@ -130,7 +130,6 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		this.noProject = noProject;
 	}
 
-	@SuppressWarnings("restriction")
 	@Override
 	public void createControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NONE);
@@ -151,8 +150,10 @@ public class CordovaPluginSelectionPage extends WizardPage {
 					event.widget.getDisplay().asyncExec(new Runnable() {
 						@Override
 						public void run() {
-							populatePluginInfos();
-							displayPluginInfos();
+							if(catalogViewer.getInput() == null){
+								populatePluginInfos();
+								displayPluginInfos();
+							}
 						}
 					});
 				}
@@ -160,10 +161,8 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		});
 		registryTab = new TabItem(tabFolder, SWT.NONE);
 		registryTab.setText("Registry");
-		catalogViewer = new CordovaPluginCatalogViewer((noProject?SWT.NULL: CordovaPluginCatalogViewer.FILTER_INSTALLED));
+		catalogViewer = new CordovaPluginCatalogViewer(tabFolder, SWT.NONE);
 		catalogViewer.createControl(tabFolder);
-		catalogViewer.getControl().setFocus();
-		
 		
 		registryTab.setControl(catalogViewer.getControl());
 		
@@ -221,27 +220,22 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		restoreWidgetValues();
 		updateProjectOnViewer();
 		updateInitialTab();
-		catalogViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+		catalogViewer.addCheckStateListener(new ICheckStateListener() {
 			
 			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
+			public void checkStateChanged(CheckStateChangedEvent event) {
 				setPageComplete(validatePage());
+				
 			}
 		});
+		populatePluginInfos();
+		displayPluginInfos();
 	}
 	
 	@Override
 	public void setVisible(boolean visible) {
 		super.setVisible(visible);
-		if (visible && getSelectedTabItem() == registryTab) {
-			Display.getCurrent().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					populatePluginInfos();
-					displayPluginInfos();
-				}
-			});
-		}
+		displayPluginInfos();
 	}
 
 	private void createProjectGroup(Composite container) {
@@ -285,44 +279,54 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		btnProjectBrowse.setText("Browse...");
 	}
 
-	private void populatePluginInfos() {
-		try {
-			getContainer().run(true, true, new IRunnableWithProgress() {
-				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException,
-						InterruptedException {
-					synchronized (this.getClass()) {
-						// called from multiple locations! synchronize 
-						// to avoid multiple trips to retrieve the info
-						try {
-							if (cordovaPluginInfos == null) {
-								cordovaPluginInfos = client.retrievePluginInfos(monitor);
-							}
-						} catch (CoreException ce) {
-							throw new InvocationTargetException(ce);
+	class GetPluginsInfoJob extends Job {
+		
+		public GetPluginsInfoJob() {
+			super("Retrieve plug-in registry catalog");
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			try {
+				synchronized (this.getClass()) {
+					// called from multiple locations! synchronize
+					// to avoid multiple trips to retrieve the info
+					try {
+						if (cordovaPluginInfos == null) {
+							cordovaPluginInfos = client.retrievePluginInfos(monitor);
 						}
-					}
-					if(cordovaPluginInfos == null){
-						CoreException e =  new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, 
-								"Error while retrieving the Cordova Plug-in Registry Catalog"));
-						throw new InvocationTargetException(e);
+					} catch (CoreException ce) {
+						throw new InvocationTargetException(ce);
 					}
 				}
-			});
-		} catch (InvocationTargetException inve) {
-			if (inve.getTargetException() != null) {
-				if(inve.getTargetException() instanceof CoreException ){
-					StatusManager.handle((CoreException) inve.getTargetException());
-				}else{
-					ErrorDialog.openError(getShell(), "Registry catalog eror ",null, 
-							new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, "Error retrieving the Cordova plug-in registry catalog", inve.getTargetException() ));
+				if (cordovaPluginInfos == null) {
+					CoreException e = new CoreException(new Status(IStatus.ERROR, HybridUI.PLUGIN_ID,
+							"Error while retrieving the Cordova Plug-in Registry Catalog"));
+					throw new InvocationTargetException(e);
+				}
+			} catch (InvocationTargetException inve) {
+				if (inve.getTargetException() != null) {
+					if (inve.getTargetException() instanceof CoreException) {
+						StatusManager.handle((CoreException) inve.getTargetException());
+					} else {
+						ErrorDialog.openError(getShell(), "Registry catalog error ", null,
+								new Status(IStatus.ERROR, HybridUI.PLUGIN_ID,
+										"Error retrieving the Cordova plug-in registry catalog",
+										inve.getTargetException()));
+					}
 				}
 			}
-		} catch (InterruptedException inte) {
-			throw new OperationCanceledException(inte.getMessage());
+			return Status.OK_STATUS;
 		}
+
 	}
-	
+
+	private void populatePluginInfos() {
+		pluginsJob = new GetPluginsInfoJob();
+		pluginsJob.setUser(true);
+		pluginsJob.schedule();
+	}
+
 	private void setupFromInitialSelection() {
 		if(initialSelection != null && !initialSelection.isEmpty()){
 			Iterator<?> selects = initialSelection.iterator();
@@ -382,12 +386,8 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		return textProject.getText();
 	}
 	
-	@SuppressWarnings("unchecked")
 	private List<CordovaRegistryPluginInfo> getCheckedCordovaRegistryItems(){
-		IStructuredSelection selection = catalogViewer.getSelection();
-		if(selection == null || selection.isEmpty())
-			return Collections.emptyList();
-		return selection.toList();
+		return catalogViewer.getPluginsToInstall();
 	}
 	
 	private TabItem getSelectedTabItem(){
@@ -411,7 +411,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		case PLUGIN_SOURCE_DIRECTORY:
 			valid = validateDirectroyTab();
 			break;
-		case PLUGIN_SOURCE_GIT:	
+		case PLUGIN_SOURCE_GIT: 
 			valid = validateGitTab(); 
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
@@ -448,9 +448,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 			}
 		}
 		if (!projectValid) {
-			setMessage(
-					"Specified project is not suitable for Cordova plug-in installation",
-					ERROR);
+			setMessage("Specified project is not suitable for Cordova plug-in installation", ERROR);
 			return false;
 		}
 		return true;
@@ -554,23 +552,63 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	}
 
 	protected void displayPluginInfos() {
-		if(getControl() == null || cordovaPluginInfos == null ) return;
-		final Display display = getControl().getDisplay();
-		final Object[] pluginInfos = cordovaPluginInfos.toArray();
-		display.syncExec(new Runnable() {
-			@Override
-			public void run() {
-				BusyIndicator.showWhile(display, new Runnable() {
-					@SuppressWarnings("restriction")
+			if (!getControl().isDisposed() && isCurrentPage()) {
+				Object viewerInput = catalogViewer.getInput();
+				if (viewerInput != null) {
+					return;
+				}
+			}
+			if(!(isCurrentPage() && getSelectedTabItem() == registryTab)){
+				return;
+			}
+			
+			try {
+				getContainer().run(true, false, new IRunnableWithProgress() {
+
 					@Override
-					public void run() {
-						if(!getControl().isDisposed() && isCurrentPage()){
-							catalogViewer.getViewer().setInput(pluginInfos);
-						}
+					public void run(IProgressMonitor monitor){
+						monitor.beginTask("Retrieve plug-in registry catalog",2);
+						monitor.worked(1);
+						try {
+							if(pluginsJob != null){
+								pluginsJob.join(); // wait for job to finish
+							}
+							
+						} catch (InterruptedException e) {
+							HybridUI.log(IStatus.ERROR, "Error retrieving the Cordova plug-in registry catalog" ,e);
+						} 
+						monitor.done();
 					}
 				});
+			} catch (InvocationTargetException e) {
+				ErrorDialog.openError(getShell(), "Registry catalog error ", null,
+						new Status(IStatus.ERROR, HybridUI.PLUGIN_ID,
+								"Error retrieving the Cordova plug-in registry catalog",
+								e.getTargetException()));
+			} catch (InterruptedException e) {
+				HybridUI.log(IStatus.ERROR, "Error retrieving the Cordova plug-in registry catalog" ,e);
 			}
-		});
+			
+			
+			final Display display = getControl().getDisplay();
+			display.syncExec(new Runnable() {
+				@Override
+				public void run() {
+					if (getControl() == null || cordovaPluginInfos == null){
+						return;
+					}
+					final Object[] pluginInfos = cordovaPluginInfos.toArray();
+					if (!getControl().isDisposed() && isCurrentPage()) {
+						BusyIndicator.showWhile(display, new Runnable() {
+							@Override
+							public void run() {
+								catalogViewer.setInput(pluginInfos);
+							}
+						});
+					}
+				}
+			});
+			
 	}
-	
+
 }

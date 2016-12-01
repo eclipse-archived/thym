@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -38,6 +39,7 @@ public class EngineConfigurationPage extends WizardPage {
 
 	@Override
 	public void createControl(Composite parent) {
+		((WizardDialog) this.getWizard().getContainer()).setMinimumPageSize(300, 400);
 		Composite control = new Composite(parent, SWT.NONE);
 		
 		initializeDialogUnits(control);
