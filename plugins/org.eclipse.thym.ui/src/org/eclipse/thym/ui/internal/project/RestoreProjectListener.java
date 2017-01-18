@@ -16,10 +16,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
@@ -45,7 +47,7 @@ public class RestoreProjectListener implements IResourceChangeListener {
 		}
 
 		@Override
-		protected IStatus run(IProgressMonitor monitor) {
+		public IStatus run(IProgressMonitor monitor) {
 			HybridProject hybridProject  = HybridProject.getHybridProject(project);
 			if(hybridProject == null ) return Status.OK_STATUS;
 			IStatus status = Status.OK_STATUS;
@@ -72,6 +74,9 @@ public class RestoreProjectListener implements IResourceChangeListener {
 				try {
 					if (project.hasNature(HybridAppNature.NATURE_ID)) {
 						RestoreProjectJob job = new RestoreProjectJob(project);
+						ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory()
+								.modifyRule(project);
+						job.setRule(rule);
 						job.schedule();
 					}
 				} catch (CoreException e) {
