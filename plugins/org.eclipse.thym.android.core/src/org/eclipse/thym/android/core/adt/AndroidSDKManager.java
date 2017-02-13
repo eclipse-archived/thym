@@ -27,7 +27,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IStreamListener;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
@@ -384,8 +386,14 @@ public class AndroidSDKManager {
 		}
 	}
 	
-	public void waitForEmulator() throws CoreException{
-		while(true){
+	/**
+	 * Wait for Android Emulator
+	 * @param emulatorProcess android emulator process
+	 * @param monitor progress monitor to be checked for cancellation
+	 * @throws CoreException
+	 */
+	public void waitForEmulator(IProcess emulatorProcess, IProgressMonitor monitor) throws CoreException{
+		while(!emulatorProcess.isTerminated()){ //check if process is terminated - could not start etc..
 			List<AndroidDevice> devices = this.listDevices();
 			if(devices != null ){
 				for (AndroidDevice androidDevice : devices) {
@@ -396,9 +404,13 @@ public class AndroidSDKManager {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
-
+				throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Exception occured while waiting for emulator",e));
+			}
+			if (monitor.isCanceled()){
+				throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Operation cancelled"));
 			}
 		}
+		throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Android emulator was terminated"));
 	}
 	
 	public void startApp(String component, String serialNumber, IProgressMonitor monitor) throws CoreException{
@@ -424,13 +436,12 @@ public class AndroidSDKManager {
 	}
 	
 	
-	public void startEmulator(String avd) throws CoreException{
+	public IProcess startEmulator(String avd) throws CoreException{
 		ExternalProcessUtility processUtility = new ExternalProcessUtility();
 		StringBuilder command = new StringBuilder(getEmulatorCommand());
-		command.append(" -cpu-delay 0"); 
 		command.append(" -no-boot-anim");
 		command.append(" -avd ").append(avd);
-		processUtility.execAsync(command.toString(), null, null, null, null);
+		return processUtility.exec(DebugPlugin.parseArguments(command.toString()), null, null, null, null, null, null);
 	}
 	
 	public void startAVDManager() throws CoreException{

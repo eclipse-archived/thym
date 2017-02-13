@@ -85,7 +85,7 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 				}
 			}, IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_PHANTOMS | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS );
 			
-        	if(!getBuildArtifact().exists()){
+        	if(getBuildArtifact() == null || !getBuildArtifact().exists()){
         		throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID, "Build failed... Build artifact does not exist"));
         	}
 		}
