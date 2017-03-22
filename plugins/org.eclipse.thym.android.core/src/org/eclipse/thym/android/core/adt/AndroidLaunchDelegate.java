@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
@@ -135,9 +136,9 @@ public class AndroidLaunchDelegate implements ILaunchConfigurationDelegate2 {
 				return false;
 			}
 			//start the emulator.
-			sdk.startEmulator(avdName);
+			IProcess emulatorProcess = sdk.startEmulator(avdName);
 			// wait for it to come online
-			sdk.waitForEmulator();
+			sdk.waitForEmulator(emulatorProcess, monitor);
 		}
 		this.device = getEmulator();
 		if(this.device == null ){// This is non-sense so is adb

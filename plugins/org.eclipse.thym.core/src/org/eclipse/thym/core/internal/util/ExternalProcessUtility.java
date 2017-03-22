@@ -55,8 +55,7 @@ public class ExternalProcessUtility {
 			IStreamListener outStreamListener,
 			IStreamListener errorStreamListener, String[] envp) throws CoreException{
 		HybridCore.trace("Async Execute command line: "+Arrays.toString(command));
-		IProcess prcs = exec(command, workingDirectory, new NullProgressMonitor(), envp, null);
-		setTracing(command, outStreamListener, errorStreamListener, prcs);
+		exec(command, workingDirectory, new NullProgressMonitor(), envp, null,outStreamListener,errorStreamListener);
 	}
 	
 	/**
@@ -93,11 +92,10 @@ public class ExternalProcessUtility {
 			monitor = new NullProgressMonitor();
 		}
 		HybridCore.trace("Sync Execute command line: "+Arrays.toString(command));
-		IProcess prcs = exec(command, workingDirectory, monitor, envp, launchConfiguration);
+		IProcess prcs = exec(command, workingDirectory, monitor, envp, launchConfiguration,outStreamListener,errorStreamListener);
 		if(prcs == null ){
 			return 0;
 		}
-		setTracing(command, outStreamListener, errorStreamListener, prcs);
 		
 		while (!prcs.isTerminated()) {
 			try {
@@ -123,12 +121,14 @@ public class ExternalProcessUtility {
 	 * @param monitor
 	 * @param envp
 	 * @param launchConfiguration
+	 * @param outStreamListener
+	 * @param errorStreamListener
 	 * @return the process
 	 * @throws CoreException
 	 */
-	public IProcess exec(String[] command, File workingDirectory, 
-			IProgressMonitor monitor, String[] envp, 
-			ILaunchConfiguration launchConfiguration ) throws CoreException{
+	public IProcess exec(String[] command, File workingDirectory, IProgressMonitor monitor, 
+			String[] envp, ILaunchConfiguration launchConfiguration, 
+			IStreamListener outStreamListener, IStreamListener errorStreamListener ) throws CoreException{
 		
 		checkCommands(command);
 		checkWorkingDirectory(workingDirectory);
@@ -146,6 +146,7 @@ public class ExternalProcessUtility {
 		Map<String, String> processAttributes = generateProcessAttributes(command, launchConfiguration);
 		Launch launch = new Launch(launchConfiguration, "run", null);
 		IProcess prcs = DebugPlugin.newProcess(launch, process, command[0], processAttributes);
+		setTracing(command, outStreamListener, errorStreamListener, prcs);
 		DebugPlugin.getDefault().getLaunchManager().addLaunch(launch);
 		return prcs;
 	}
@@ -190,12 +191,16 @@ public class ExternalProcessUtility {
 		
 		if( outStreamListener != null ){
 			prcs.getStreamsProxy().getOutputStreamMonitor().addListener(outStreamListener);
+			//See bug 121454. Ensure that output to fast processes is processed
+			outStreamListener.streamAppended(prcs.getStreamsProxy().getOutputStreamMonitor().getContents(), null);
 		}
 
 		if( errorStreamListener != null ){
 			prcs.getStreamsProxy().getErrorStreamMonitor().addListener(errorStreamListener);
+			//See bug 121454. Ensure that output to fast processes is processed
+			errorStreamListener.streamAppended(prcs.getStreamsProxy().getErrorStreamMonitor().getContents(), null);
 		}
-	}	
+	}
 
 	private void checkCommandLine(String commandLine) {
 		if(commandLine == null || commandLine.isEmpty()){

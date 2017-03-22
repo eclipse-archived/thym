@@ -222,11 +222,7 @@ public class CordovaCLI {
 		}
 		ExternalProcessUtility ep = new ExternalProcessUtility();
 		IProcess process = ep.exec(commandList.toArray(new String[commandList.size()]), getWorkingDirectory(), 
-				monitor, null, launchConfiguration);
-		 if(listener != null){
-			 process.getStreamsProxy().getOutputStreamMonitor().addListener(listener);
-			 process.getStreamsProxy().getErrorStreamMonitor().addListener(listener);
-		 }
+				monitor, null, launchConfiguration, listener, listener);
 		 return process;
 	}
 	
