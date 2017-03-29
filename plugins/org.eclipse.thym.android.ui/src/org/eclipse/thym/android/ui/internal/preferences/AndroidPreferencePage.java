@@ -17,6 +17,7 @@ import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.android.core.AndroidConstants;
+import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -53,6 +54,10 @@ public class AndroidPreferencePage
 			String filename = getTextControl().getText();
 			filename = filename.trim();
 			if(filename.isEmpty()){
+				if(AndroidCore.getSDKLocation() != null){
+					getTextControl().setMessage(AndroidCore.getSDKLocation());
+					return true;
+				}
 				this.getPage().setMessage("A location for the Android SDK must be specified", IStatus.WARNING);
 				return true;
 			}else{

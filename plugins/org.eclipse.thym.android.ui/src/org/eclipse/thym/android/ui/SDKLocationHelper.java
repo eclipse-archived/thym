@@ -13,7 +13,6 @@ package org.eclipse.thym.android.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
-import org.eclipse.thym.android.ui.internal.preferences.AndroidPreferences;
 import org.eclipse.thym.android.ui.internal.statushandler.MissingSDKStatusHandler;
 import org.eclipse.thym.core.HybridMobileStatus;
 /**
@@ -25,23 +24,12 @@ import org.eclipse.thym.core.HybridMobileStatus;
 public class SDKLocationHelper {
 	
 	public static boolean defineSDKLocationIfNecessary(){
-		if(isSDKLocationDefined())
+		if(AndroidCore.getSDKLocation() != null){
 			return true;
+		}
 		MissingSDKStatusHandler handler = new MissingSDKStatusHandler();
 		handler.handle(makeNoSDKLocationStatus());
-		return isSDKLocationDefined();
-	}
-	
-	public static String getSDKLocation()
-	{
-		if(isSDKLocationDefined())
-			return  AndroidPreferences.getPrefs().getAndroidSDKLocation();
-		return null;
-	}
-
-	public static boolean isSDKLocationDefined() {
-		String sdkLocation = AndroidPreferences.getPrefs().getAndroidSDKLocation();
-		return (sdkLocation != null && sdkLocation.length()>0);
+		return AndroidCore.getSDKLocation() != null;
 	}
 	
 	public static HybridMobileStatus makeNoSDKLocationStatus(){

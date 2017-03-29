@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.android.core;
 
+import java.io.File;
 import java.util.Hashtable;
 
 import org.eclipse.core.runtime.ILog;
@@ -60,8 +61,37 @@ public class AndroidCore implements BundleActivator, DebugOptionsListener {
 		AndroidCore.context = null;
 	}
 	
+	/**
+	 * Returns location of Android SDK defined in preferences. If SDK is not defined in preferences returns 
+	 * location from environment variable ANDROID_HOME. If location is not valid or is not defined, null is returned.
+	 * @return location of Android SDK or null if location is not valid
+	 */
 	public static String getSDKLocation(){
-		return Platform.getPreferencesService().getString("org.eclipse.thym.ui", AndroidConstants.PREF_ANDROID_SDK_LOCATION, null, null);
+		String prefSDKLocation =Platform.getPreferencesService().getString("org.eclipse.thym.ui", AndroidConstants.PREF_ANDROID_SDK_LOCATION, null, null);
+		if(isValidSDKLocation(prefSDKLocation)){
+			return prefSDKLocation;
+		}
+		String envSDKLocation = System.getenv(AndroidConstants.ANDROID_HOME);
+		if(isValidSDKLocation(envSDKLocation)){
+			return envSDKLocation;
+		}
+		return null;
+	}
+	
+	private static boolean isValidSDKLocation(String sdkLocation){
+		if(sdkLocation != null && !sdkLocation.isEmpty()){
+			File file = new File(sdkLocation);
+			if(!file.isDirectory()){
+				return false;
+			}
+			File toolsFolder = new File(file,"tools");
+			File platformToolsFolder = new File(file, "platform-tools");
+			if(!toolsFolder.isDirectory() || !platformToolsFolder.isDirectory()){
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	public static void log(int status, String message, Throwable throwable ){
