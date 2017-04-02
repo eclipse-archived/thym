@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.eclipse.thym.android.core.adt;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -20,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
@@ -50,8 +54,13 @@ public class BuildDelegate extends AbstractNativeBinaryBuildDelegate {
 			String buildType = "--debug";
 			if(isRelease()){
 				buildType = "--release";
-			}	
-			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(70),"android",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
+			}
+			Map<String,String> androidHome = null;
+			if(AndroidCore.getSDKLocation() != null){
+				androidHome = new HashMap<>();
+				androidHome.put(AndroidConstants.ANDROID_HOME, AndroidCore.getSDKLocation());
+			}
+			IStatus status = CordovaCLI.newCLIforProject(hybridProject,androidHome).build(sm.newChild(70),"android",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
 			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(20));
 			if(status.getSeverity() == IStatus.ERROR){
 				throw new CoreException(status);

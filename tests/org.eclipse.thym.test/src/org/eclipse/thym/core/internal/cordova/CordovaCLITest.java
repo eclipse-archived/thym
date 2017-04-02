@@ -19,6 +19,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -29,6 +31,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy2;
@@ -38,6 +41,7 @@ import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("restriction")
 public class CordovaCLITest {
@@ -64,6 +68,31 @@ public class CordovaCLITest {
     public void testNullProject(){
     	CordovaCLI.newCLIforProject(null);
 		
+    }
+    
+    @Test
+    public void testNullEnvProperties(){
+    	CordovaCLI cli = CordovaCLI.newCLIforProject(getTheProject(), null);
+    	assertNotNull(cli);
+    }
+    
+    @Test
+    public void testAdditionalEnvProperties() throws CoreException{
+    	Map<String,String> envProps = new HashMap<>();
+    	String androidPath = "/path/to/android";
+    	String androidHome = "ANDROID_HOME";
+    	envProps.put(androidHome, androidPath);
+    	
+    	CordovaCLI mockCLI = getMockCLI(envProps);
+    	IProcess mockProcess = mock(IProcess.class);
+    	IStreamsProxy2 mockStreams  = mock(IStreamsProxy2.class);
+    	setupMocks(mockCLI, mockProcess, mockStreams);
+    	
+    	ArgumentCaptor<ILaunchConfiguration> confCaptor = ArgumentCaptor.forClass(ILaunchConfiguration.class);
+    	mockCLI.prepare(new NullProgressMonitor(), "android");
+    	verify(mockCLI).startShell(any(IStreamListener.class), any(IProgressMonitor.class), confCaptor.capture());
+    	Map<String,String> attr = confCaptor.getValue().getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, (Map<String,String>)null);
+    	assertEquals(androidPath, attr.get(androidHome));
     }
     
     @Test
@@ -202,15 +231,20 @@ public class CordovaCLITest {
 	}
 
 	private CordovaCLI getMockCLI() {
-		HybridProject hProject = HybridProject.getHybridProject(getTheProject());
-		assertNotNull(hProject);
-		CordovaCLI mockCLI = spy(CordovaCLI.newCLIforProject(hProject));
+		CordovaCLI mockCLI = spy(CordovaCLI.newCLIforProject(getTheProject()));
 		return mockCLI;
 	}
 	
-	private IProject getTheProject() {
+	private CordovaCLI getMockCLI(Map<String,String> additionalEnvProps) {
+		CordovaCLI mockCLI = spy(CordovaCLI.newCLIforProject(getTheProject(),additionalEnvProps));
+		return mockCLI;
+	}
+	
+	private HybridProject getTheProject() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
-		return theProject;
+		HybridProject hProject = HybridProject.getHybridProject(theProject);
+		assertNotNull(hProject);
+		return hProject;
 	}
 }

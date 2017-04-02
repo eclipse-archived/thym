@@ -36,10 +36,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.thym.android.core.AndroidConstants;
+import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.android.core.adt.AndroidAPILevelComparator;
 import org.eclipse.thym.android.core.adt.AndroidAVD;
 import org.eclipse.thym.android.core.adt.AndroidSDKManager;
-import org.eclipse.thym.android.ui.internal.statushandler.MissingSDKStatusHandler;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.thym.core.HybridCore;
@@ -146,7 +146,6 @@ public class AndroidSimOptionsTab extends AbstractLaunchConfigurationTab {
 		if(!SDKLocationHelper.defineSDKLocationIfNecessary()){
 			setErrorMessage("Android SDK location is not defined" );
 		}
-		
 		String projectName =null;
 		try {
 			projectName = configuration.getAttribute(HybridProjectLaunchConfigConstants.ATTR_BUILD_SCOPE, (String)null);
@@ -198,12 +197,16 @@ public class AndroidSimOptionsTab extends AbstractLaunchConfigurationTab {
 	
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
-		return isTabValid() && SDKLocationHelper.isSDKLocationDefined() && super.isValid(launchConfig);
+		return isTabValid() && AndroidCore.getSDKLocation()!=null && super.isValid(launchConfig);
 	}
 
 	private boolean isTabValid() {
 		setMessage(null);
 		setErrorMessage(null);
+		if(AndroidCore.getSDKLocation() == null){
+			setErrorMessage("Android SDK location is not defined" );
+			return false;
+		}
 		String avd = AVDCombo.getText();
 		if(avd != null && !avd.isEmpty()){
 			AndroidAPILevelComparator alc = new AndroidAPILevelComparator();

@@ -31,5 +31,7 @@ public interface AndroidConstants {
 	
 	public static final int STATUS_CODE_ANDROID_SDK_NOT_DEFINED= 200;
 	public static final int STATUS_CODE_ANDROID_AVD_ISSUE= 210;
+	
+	public static final String ANDROID_HOME="ANDROID_HOME";
 
 }
