@@ -39,6 +39,7 @@ Export-Package: org.eclipse.thym.ui,
  org.eclipse.thym.ui.config.internal;x-internal:=true,
  org.eclipse.thym.ui.internal.preferences,
  org.eclipse.thym.ui.launch,
+ org.eclipse.thym.ui.requirement,
  org.eclipse.thym.ui.status,
  org.eclipse.thym.ui.util,
  org.eclipse.thym.ui.wizard.project;x-internal:=true

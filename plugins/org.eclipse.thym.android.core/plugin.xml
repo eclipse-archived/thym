@@ -18,8 +18,7 @@
             platform="Android"
             platformID="android"
             pluginInstallActionFactory="org.eclipse.thym.android.core.adt.AndroidPluginInstallationActionsFactory"
-            libraryResolver="org.eclipse.thym.android.core.adt.AndroidLibraryResolver">
-            
+            libraryResolver="org.eclipse.thym.android.core.adt.AndroidLibraryResolver">       
       </platform>
    </extension>
    <extension
@@ -29,6 +28,12 @@
             id="org.eclipse.thym.android.core.projectBuilder"
             platform="Android">
       </builder>
+   </extension>
+   <extension
+         point="org.eclipse.thym.core.cordovaEnvVariables">
+      <variables
+            class="org.eclipse.thym.android.core.AndroidCore">
+      </variables>
    </extension>
 
 </plugin>

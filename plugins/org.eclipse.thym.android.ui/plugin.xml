@@ -99,4 +99,11 @@
             plugin="org.eclipse.thym.android.core">
       </statusHandler>
    </extension>
+   <extension 
+   		point="org.eclipse.thym.ui.platformRequirements">
+   		<requirementHandler 
+   			class="org.eclipse.thym.android.ui.SDKLocationHelper"
+   			platformID="android">
+   		</requirementHandler>
+   	</extension>
 </plugin>

@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="platformImages" name="Platform Images" schema="schema/platformImage.exsd"/>
    <extension-point id="hybridMobileStatusHandler" name="Hybrid Mobile Status Handler" schema="schema/hybridMobileStatusHandler.exsd"/>
+   <extension-point id="platformRequirements" name="Platform Requirements Handler" schema="schema/platformRequirements.exsd"/>
 
    <extension
          point="org.eclipse.ui.newWizards">

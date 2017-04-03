@@ -82,21 +82,10 @@ public class CordovaCLI {
 	 * @return a cli wrapper
 	 */
 	public static CordovaCLI newCLIforProject(HybridProject project){
-		return newCLIforProject(project, null);
-	}
-	
-	/**
-	 * Initialize a CLI for a {@link HybridProject}.
-	 * 
-	 * @param project
-	 * @param additionalEnvProps additional environment properties to be used when running cordova CLI
-	 * @return a cli wrapper
-	 */
-	public static CordovaCLI newCLIforProject(HybridProject project, Map<String,String> additionalEnvProps){
 		if(project == null ){
 			throw new IllegalArgumentException("No project specified");
 		}
-		return new CordovaCLI(project,additionalEnvProps);
+		return new CordovaCLI(project, HybridCore.getEnvVariables());
 	}
 	
 	private CordovaCLI(HybridProject project, Map<String,String> additionalEnvProps){
@@ -252,7 +241,7 @@ public class CordovaCLI {
 			ILaunchConfiguration cfg = type.newInstance(null, "cordova");
 			ILaunchConfigurationWorkingCopy wc = cfg.getWorkingCopy();
 			wc.setAttribute(IProcess.ATTR_PROCESS_LABEL, label);
-			if(additionalEnvProps != null){
+			if(additionalEnvProps != null && !additionalEnvProps.isEmpty()){
 				wc.setAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES,additionalEnvProps);
 			}
 			cfg = wc.doSave();

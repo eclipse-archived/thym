@@ -30,6 +30,7 @@ import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.internal.preferences.HybridToolsPreferences;
 import org.eclipse.thym.ui.internal.project.RestoreProjectListener;
 import org.eclipse.thym.ui.internal.status.HybridMobileStatusExtension;
+import org.eclipse.thym.ui.requirement.PlatformRequirementsExtension;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -139,6 +140,38 @@ public class HybridUI extends AbstractUIPlugin {
 			handlers.add(ext);
 		}
     	return handlers;
+    }
+    
+    /**
+     * Returns list of all platform requirement extensions
+     * @return
+     */
+    public static List<PlatformRequirementsExtension> getPlatformRequirementExtensions(){
+    	IConfigurationElement[] configurationElements = Platform.getExtensionRegistry().getConfigurationElementsFor(PlatformRequirementsExtension.EXTENSION_POINT_ID);
+    	List<PlatformRequirementsExtension> handlers = new ArrayList<>();
+    	if(configurationElements != null){
+    		for(IConfigurationElement element: configurationElements){
+    			PlatformRequirementsExtension handler = new PlatformRequirementsExtension(element);
+    			handlers.add(handler);
+    		}
+    	}
+    	return handlers;
+    }
+    
+    /**
+     * Returns list of platform requirement extensions for given platform
+     * @param platformID
+     * @return
+     */
+    public static List<PlatformRequirementsExtension> getPlatformRequirementExtensions(String platformID){
+    	List<PlatformRequirementsExtension> filteredExtensions = new ArrayList<>();
+    	List<PlatformRequirementsExtension> extensions = getPlatformRequirementExtensions();
+    	for(PlatformRequirementsExtension extension: extensions){
+    		if(extension.getPlatformID() != null && extension.getPlatformID().equals(platformID)){
+    			filteredExtensions.add(extension);
+    		}
+    	}
+    	return filteredExtensions;
     }
     
 }

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test
-Bundle-SymbolicName: org.eclipse.thym.test
+Bundle-SymbolicName: org.eclipse.thym.test;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-Activator: org.eclipse.thym.hybrid.test.Activator
 Bundle-Vendor: Eclipse.org - Thym 
