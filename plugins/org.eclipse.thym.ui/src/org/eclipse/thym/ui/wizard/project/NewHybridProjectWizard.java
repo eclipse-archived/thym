@@ -42,6 +42,7 @@ import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
 import org.eclipse.thym.ui.plugins.internal.ICordovaPluginWizard;
 import org.eclipse.thym.ui.plugins.internal.RegistryConfirmPage;
+import org.eclipse.thym.ui.requirement.PlatformRequirementsExtension;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -72,9 +73,16 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		this.selection = selection;
 	}
-
+	
 	@Override
 	public boolean performFinish() {
+		HybridMobileEngine[] selectedEngines = pageTwo.getSelectedEngines();
+		for(HybridMobileEngine selectedEngine: selectedEngines){
+			List<PlatformRequirementsExtension> extensions = HybridUI.getPlatformRequirementExtensions(selectedEngine.getId());
+			for(PlatformRequirementsExtension extension: extensions){
+				extension.getHandler().checkPlatformRequirements();
+			}
+		}
 		WorkspaceModifyOperation runnable = new WorkspaceModifyOperation() {
 			
 			@Override

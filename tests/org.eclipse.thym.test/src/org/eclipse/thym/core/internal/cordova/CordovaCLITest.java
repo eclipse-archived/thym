@@ -67,23 +67,11 @@ public class CordovaCLITest {
     @Test(expected=IllegalArgumentException.class)
     public void testNullProject(){
     	CordovaCLI.newCLIforProject(null);
-		
-    }
-    
-    @Test
-    public void testNullEnvProperties(){
-    	CordovaCLI cli = CordovaCLI.newCLIforProject(getTheProject(), null);
-    	assertNotNull(cli);
     }
     
     @Test
     public void testAdditionalEnvProperties() throws CoreException{
-    	Map<String,String> envProps = new HashMap<>();
-    	String androidPath = "/path/to/android";
-    	String androidHome = "ANDROID_HOME";
-    	envProps.put(androidHome, androidPath);
-    	
-    	CordovaCLI mockCLI = getMockCLI(envProps);
+    	CordovaCLI mockCLI = getMockCLI();
     	IProcess mockProcess = mock(IProcess.class);
     	IStreamsProxy2 mockStreams  = mock(IStreamsProxy2.class);
     	setupMocks(mockCLI, mockProcess, mockStreams);
@@ -92,7 +80,7 @@ public class CordovaCLITest {
     	mockCLI.prepare(new NullProgressMonitor(), "android");
     	verify(mockCLI).startShell(any(IStreamListener.class), any(IProgressMonitor.class), confCaptor.capture());
     	Map<String,String> attr = confCaptor.getValue().getAttribute(ILaunchManager.ATTR_ENVIRONMENT_VARIABLES, (Map<String,String>)null);
-    	assertEquals(androidPath, attr.get(androidHome));
+    	assertEquals(EnvironmentPropsExt.ENV_VALUE, attr.get(EnvironmentPropsExt.ENV_KEY));
     }
     
     @Test
@@ -232,11 +220,6 @@ public class CordovaCLITest {
 
 	private CordovaCLI getMockCLI() {
 		CordovaCLI mockCLI = spy(CordovaCLI.newCLIforProject(getTheProject()));
-		return mockCLI;
-	}
-	
-	private CordovaCLI getMockCLI(Map<String,String> additionalEnvProps) {
-		CordovaCLI mockCLI = spy(CordovaCLI.newCLIforProject(getTheProject(),additionalEnvProps));
 		return mockCLI;
 	}
 	

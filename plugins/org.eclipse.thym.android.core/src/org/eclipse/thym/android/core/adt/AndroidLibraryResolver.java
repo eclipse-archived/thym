@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.internal.util.FileUtils;
 

@@ -15,13 +15,14 @@ import org.eclipse.thym.android.core.AndroidConstants;
 import org.eclipse.thym.android.core.AndroidCore;
 import org.eclipse.thym.android.ui.internal.statushandler.MissingSDKStatusHandler;
 import org.eclipse.thym.core.HybridMobileStatus;
+import org.eclipse.thym.ui.requirement.PlatformRequirementsHandler;
 /**
  * Helper class for the Android SDK location. 
  * 
  * @author Gorkem Ercan
  *
  */
-public class SDKLocationHelper {
+public class SDKLocationHelper implements PlatformRequirementsHandler{
 	
 	public static boolean defineSDKLocationIfNecessary(){
 		if(AndroidCore.getSDKLocation() != null){
@@ -35,6 +36,11 @@ public class SDKLocationHelper {
 	public static HybridMobileStatus makeNoSDKLocationStatus(){
 		return	new HybridMobileStatus(IStatus.ERROR, AndroidCore.PLUGIN_ID, AndroidConstants.STATUS_CODE_ANDROID_SDK_NOT_DEFINED, 
 				"Android SDK location is not defined", null);
+	}
+
+	@Override
+	public void checkPlatformRequirements() {
+		defineSDKLocationIfNecessary();
 	}
 
 }

@@ -4,6 +4,7 @@
    <extension-point id="org.eclipse.thym.core.platformSupport" name="Native Platform Support" schema="schema/platformSupport.exsd"/>
    <extension-point id="org.eclipse.thym.core.projectBuilder" name="Native Binary Builder" schema="schema/projectBuilder.exsd"/>
    <extension-point id="org.eclipse.thym.core.cordovaEngineRepoProvider" name="Cordova Engine Repository Provider" schema="schema/cordovaEngineRepoProvider.exsd"/>
+   <extension-point id="org.eclipse.thym.core.cordovaEnvVariables" name="envVariables" schema="schema/cordovaEnvVariables.exsd"/>
    <extension
          id="org.eclipse.thym.core.HybridAppNature"
          name="Hybrid Mobile Application Nature"

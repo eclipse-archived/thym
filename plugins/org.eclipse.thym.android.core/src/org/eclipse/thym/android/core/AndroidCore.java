@@ -11,7 +11,9 @@
 package org.eclipse.thym.android.core;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
@@ -19,13 +21,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.service.debug.DebugOptions;
 import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
+import org.eclipse.thym.core.CordovaEnvVariables;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class AndroidCore implements BundleActivator, DebugOptionsListener {
+public class AndroidCore implements BundleActivator, DebugOptionsListener, CordovaEnvVariables {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.eclipse.thym.android.core"; //$NON-NLS-1$
@@ -109,5 +112,15 @@ public class AndroidCore implements BundleActivator, DebugOptionsListener {
 	public static void trace( String message){
 		if( !DEBUG ) return;
 		TRACE.trace(null, message);
+	}
+	
+	@Override
+	public Map<String, String> getAdditionalEnvVariables() {
+		Map<String,String> sdkEnv = new HashMap<>();
+		String sdkLocation = getSDKLocation();
+		if(sdkLocation != null){
+			sdkEnv.put(AndroidConstants.ANDROID_HOME, sdkLocation);
+		}
+		return sdkEnv;
 	}
 }

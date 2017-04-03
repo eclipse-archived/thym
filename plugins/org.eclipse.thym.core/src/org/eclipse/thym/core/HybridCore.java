@@ -11,12 +11,15 @@
 package org.eclipse.thym.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -30,6 +33,7 @@ import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
+import org.eclipse.thym.core.extensions.CordovaEnvVariablesExtension;
 import org.eclipse.thym.core.extensions.ExtensionPointProxy;
 import org.eclipse.thym.core.extensions.NativeProjectBuilder;
 import org.eclipse.thym.core.extensions.PlatformSupport;
@@ -253,6 +257,27 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 			return new String[0];
 		}
 		return s.split(",");
+	}
+	
+	/**
+	 * Returns additional environment variables to be used with CordovaCLI 
+	 * defined by extension point {@link CordovaEnvVariablesExtension}
+	 * @return additional environment variables
+	 */
+	public static Map<String, String> getEnvVariables() {
+		Map<String, String> additionalEnvProperties = new HashMap<>();
+		IConfigurationElement[] extensions = Platform.getExtensionRegistry()
+				.getConfigurationElementsFor(CordovaEnvVariablesExtension.EXTENSION_POINT_ID);
+		if (extensions != null) {
+			for (IConfigurationElement element : extensions) {
+				CordovaEnvVariablesExtension extension = new CordovaEnvVariablesExtension(element);
+				Map<String, String> envVariables = extension.getHandler().getAdditionalEnvVariables();
+				if (envVariables != null) {
+					additionalEnvProperties.putAll(envVariables);
+				}
+			}
+		}
+		return additionalEnvProperties;
 	}
 
 }
