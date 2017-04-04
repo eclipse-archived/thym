@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
+import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection.EngineListChangeListener;
 
 public class EngineConfigurationPage extends WizardPage {
 
@@ -54,6 +55,14 @@ public class EngineConfigurationPage extends WizardPage {
 			
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
+				setPageComplete(validatePage());
+				
+			}
+		});
+		engineSection.addEngineListChangeListener(new EngineListChangeListener() {
+			
+			@Override
+			public void listChanged() {
 				setPageComplete(validatePage());
 				
 			}
