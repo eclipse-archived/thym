@@ -87,8 +87,8 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 	private static final int TREE_HEIGHT = 250;
 	private static final int TREE_WIDTH = 500;
 	
-	private ListenerList selectionListeners;
-	private ListenerList engineChangeListeners;
+	private ListenerList<ISelectionChangedListener> selectionListeners;
+	private ListenerList<EngineListChangeListener> engineChangeListeners;
 	private CheckboxTreeViewer engineList;
 	private ISelection prevSelection = new StructuredSelection();
 	private CordovaEngineProvider provider;
@@ -264,8 +264,8 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider{
 	}
 	
 	public AvailableCordovaEnginesSection() {
-		this.selectionListeners = new ListenerList();
-		this.engineChangeListeners = new ListenerList();
+		this.selectionListeners = new ListenerList<ISelectionChangedListener>();
+		this.engineChangeListeners = new ListenerList<EngineListChangeListener>();
 		this.formToolkit = null;
 	}
 
