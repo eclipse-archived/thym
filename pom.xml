@@ -15,6 +15,7 @@
 		<cbi.jarsigner.skip>true</cbi.jarsigner.skip>
 		<tycho.scmUrl>scm:git:https://github.com/eclipse/thym.git</tycho.scmUrl>
 		<target-platform>neon.R</target-platform>
+		<eclipse-orbit-url>http://download.eclipse.org/tools/orbit/R-builds/R20170307180635/repository</eclipse-orbit-url>
 	</properties>
 
 	<modules>
@@ -203,6 +204,15 @@ http://www.eclipse.org/legal/epl-v10.htm
 			<url>https://repo.eclipse.org/content/repositories/cbi-releases/</url>
 		</pluginRepository>
 	</pluginRepositories>
+
+	<repositories>
+		<repository>
+			<id>eclipse-orbit-update-site</id>
+			<url>${eclipse-orbit-url}</url>
+			<layout>p2</layout>
+		</repository>
+	</repositories>
+	
 
 </project>
 	
