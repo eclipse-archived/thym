@@ -174,7 +174,14 @@ public class CordovaCLI {
 			streamProxy.write(cordovaCommand.toString());
 			while (!process.isTerminated()) {
 				//exit the shell after sending the command
-				streamProxy.write("exit\n");
+				try{
+					streamProxy.write("exit\n");
+				} catch (IOException e) {
+					if(process.isTerminated()){ //ok, if process is terminated
+						break;
+					}
+					throw e;
+				}
 				if (monitor.isCanceled()) {
 					process.terminate();
 					break;
