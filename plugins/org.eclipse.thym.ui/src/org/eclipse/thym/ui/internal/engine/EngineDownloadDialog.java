@@ -39,6 +39,8 @@ import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
@@ -69,6 +71,7 @@ public class EngineDownloadDialog extends TitleAreaDialog{
     private CordovaEngineProvider engineProvider;
     private List<HybridMobileEngine> engines;
     private ProgressMonitorPart progressMonitorPart;
+    private Button nightlyBuilds;
 
 
     private class DownloadableEngineLabelProvider extends LabelProvider implements ITableLabelProvider{
@@ -142,6 +145,7 @@ public class EngineDownloadDialog extends TitleAreaDialog{
     private class DownloadableVersionsContentProvider implements ITreeContentProvider{
         private DownloadableCordovaEngine[] downloadables;
         private PlatformSupport[] platforms;
+        private boolean nightlyBuilds = false;
 
         @Override
         public void dispose() {
@@ -189,7 +193,11 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 			ArrayList<DownloadableCordovaEngine> platformDownloadables = new ArrayList<DownloadableCordovaEngine>();
 			for (DownloadableCordovaEngine engine : downloadables) {
 				if(engine.getPlatformId().equals(platform.getPlatformId())){
-					platformDownloadables.add(engine);
+					if(nightlyBuilds) {
+						platformDownloadables.add(engine);
+					} else if (!isNightlyBuild(engine)){
+						platformDownloadables.add(engine);
+					}
 				}
 			}
 			return platformDownloadables.toArray(new DownloadableCordovaEngine[platformDownloadables.size()]);
@@ -211,6 +219,14 @@ public class EngineDownloadDialog extends TitleAreaDialog{
 		@Override
 		public boolean hasChildren(Object element) {
 			return element instanceof PlatformSupport;
+		}
+		
+		public void showNightlyBuilds(boolean nightlyBuilds){
+			this.nightlyBuilds = nightlyBuilds;
+		}
+		
+		private boolean isNightlyBuild(DownloadableCordovaEngine engine){
+			return engine.getVersion() != null && engine.getVersion().contains("nightly");
 		}
 
     }
@@ -243,7 +259,8 @@ public class EngineDownloadDialog extends TitleAreaDialog{
         tree.setLinesVisible(true);
 
         platformList = new CheckboxTreeViewer(tree);
-        platformList.setContentProvider(new DownloadableVersionsContentProvider());
+        final DownloadableVersionsContentProvider provider = new DownloadableVersionsContentProvider();
+        platformList.setContentProvider(provider);
         platformList.setLabelProvider(new DownloadableEngineLabelProvider());
         platformList.setComparator(new DownloadableEngineComparator());
         platformList.addFilter(new InstalledVersionsFilter());
@@ -259,6 +276,20 @@ public class EngineDownloadDialog extends TitleAreaDialog{
             }
         });
 
+        
+        nightlyBuilds = new Button(composite, SWT.CHECK);
+        nightlyBuilds.setText("Show nightly builds");
+        nightlyBuilds.setSelection(false);
+        nightlyBuilds.addSelectionListener(new SelectionAdapter() {
+        	
+        	@Override
+        	public void widgetSelected(SelectionEvent e) {
+        		provider.showNightlyBuilds(nightlyBuilds.getSelection());
+        		platformList.refresh();
+        		validate();
+        	}
+		});
+        
         createProgressMonitorPart(composite);
         engineProvider = new CordovaEngineProvider();
         try {
