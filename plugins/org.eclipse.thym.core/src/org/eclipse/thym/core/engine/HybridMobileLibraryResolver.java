@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.thym.core.engine;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.net.URL;
 
 import org.eclipse.core.runtime.CoreException;
@@ -17,11 +19,18 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.platform.PlatformConstants;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public abstract class HybridMobileLibraryResolver {
 	
 	public static final IPath PATH_CORDOVA_JS = new Path(PlatformConstants.FILE_JS_CORDOVA);
+	public static final String PLATFORM_JSON = "platform.json";
 	
 	public static final String VAR_PACKAGE_NAME = "$package";
 	public static final String VAR_APP_NAME = "$appname";
@@ -73,5 +82,27 @@ public abstract class HybridMobileLibraryResolver {
 	 * @return
 	 */
 	public abstract String detectVersion();
+	
+	/**
+	 * Reads library name from package.json file 
+	 * @return library name or null if name cannot be determined
+	 * @throws FileNotFoundException if package.json file does not exist
+	 */
+	public String readLibraryName() {
+		try{
+			FileReader packageJson = new FileReader(libraryRoot.append(PLATFORM_JSON).toFile());
+			JsonReader reader = new JsonReader(packageJson);
+			JsonParser parser = new JsonParser();
+			JsonObject root = parser.parse(reader).getAsJsonObject();
+			JsonElement nameElement = root.get("name");
+			if(nameElement != null){
+				return nameElement.getAsString();
+			}
+			return null;
+		} catch (Exception e) {
+			HybridCore.log(IStatus.ERROR, "Error occured while reading "+PLATFORM_JSON, e);
+			return null;
+		}
+	}
 	
 }
