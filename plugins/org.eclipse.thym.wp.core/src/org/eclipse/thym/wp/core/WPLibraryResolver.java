@@ -50,12 +50,13 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 	public static final String MAIN_PAGE_XAML = "MainPage.xaml"; //$NON-NLS-1$
 	public static final String MAIN_PAGE_XAML_CS = "MainPage.xaml.cs"; //$NON-NLS-1$
 	public static final String DEFAULT_APP_NAME = "CordovaWP8AppProj"; //$NON-NLS-1$
-	public static final String DEFAULT_APP_NAME_CSPROJ = DEFAULT_APP_NAME
-			+ WPProjectUtils.CSPROJ_EXTENSION;
+	public static final String DEFAULT_APP_NAME_CSPROJ = DEFAULT_APP_NAME + WPProjectUtils.CSPROJ_EXTENSION;
 	public static final String DEFAULT_SLN_NAME = "CordovaWP8Solution.sln"; //$NON-NLS-1$
 
 	private static final String TEMPLATE = "template"; //$NON-NLS-1$
 	private static final String PROPERTIES = "Properties"; //$NON-NLS-1$
+	
+	public static final String CORDOVA_WP8 = "cordova-wp8";
 
 	private HashMap<IPath, URL> files = new HashMap<IPath, URL>();
 
@@ -70,12 +71,13 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 
 	@Override
 	public IStatus isLibraryConsistent() {
-		if (version == null) {
-			return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
-					Messages.WPLibraryResolver_NotCompatibleError);
+		if (version != null) {
+			String name = readLibraryName();
+			if(name != null && name.equals(CORDOVA_WP8)){
+				return Status.OK_STATUS;
+			}
 		}
-		return libraryRoot.lastSegment().equals(WP8) ? Status.OK_STATUS
-				: Status.CANCEL_STATUS;
+		return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, Messages.WPLibraryResolver_NotCompatibleError);
 	}
 
 	@Override
@@ -104,46 +106,35 @@ public class WPLibraryResolver extends HybridMobileLibraryResolver {
 						reader.close();
 				}
 			} catch (IOException e) {
-				WPCore.log(IStatus.ERROR,
-						Messages.WPLibraryResolver_CannotDetectError, e);
+				WPCore.log(IStatus.ERROR, Messages.WPLibraryResolver_CannotDetectError, e);
 			}
 		} else {
-			WPCore.log(IStatus.ERROR, NLS.bind(
-					Messages.WPLibraryResolver_NoVersionError,
-					versionFile.toString()), null);
+			WPCore.log(IStatus.ERROR, NLS.bind(Messages.WPLibraryResolver_NoVersionError, versionFile.toString()),
+					null);
 		}
 		return null;
 	}
 
 	private void initFiles() {
 		IPath templatePrjRoot = libraryRoot.append(TEMPLATE);
-		files.put(PATH_CORDOVA_JS,
-				getEngineFile(templatePrjRoot.append(PlatformConstants.DIR_WWW)
-						.append(PlatformConstants.FILE_JS_CORDOVA)));
+		files.put(PATH_CORDOVA_JS, getEngineFile(
+				templatePrjRoot.append(PlatformConstants.DIR_WWW).append(PlatformConstants.FILE_JS_CORDOVA)));
 		files.put(new Path(VAR_APP_NAME), getEngineFile(templatePrjRoot));
 		files.put(new Path(VERSION), getEngineFile(libraryRoot.append(VERSION)));
-		files.put(new Path(WP_APP_MANIFEST_XML), getEngineFile(templatePrjRoot
-				.append(PROPERTIES).append(WP_APP_MANIFEST_XML)));
-		files.put(new Path(APP_XAML),
-				getEngineFile(templatePrjRoot.append(APP_XAML)));
-		files.put(new Path(APP_XAML_CS),
-				getEngineFile(templatePrjRoot.append(APP_XAML_CS)));
-		files.put(new Path(MAIN_PAGE_XAML),
-				getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML)));
-		files.put(new Path(MAIN_PAGE_XAML_CS),
-				getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML_CS)));
-		files.put(new Path(DEFAULT_APP_NAME_CSPROJ),
-				getEngineFile(templatePrjRoot.append(DEFAULT_APP_NAME_CSPROJ)));
-		files.put(new Path(DEFAULT_SLN_NAME),
-				getEngineFile(templatePrjRoot.append(DEFAULT_SLN_NAME)));
+		files.put(new Path(WP_APP_MANIFEST_XML),
+				getEngineFile(templatePrjRoot.append(PROPERTIES).append(WP_APP_MANIFEST_XML)));
+		files.put(new Path(APP_XAML), getEngineFile(templatePrjRoot.append(APP_XAML)));
+		files.put(new Path(APP_XAML_CS), getEngineFile(templatePrjRoot.append(APP_XAML_CS)));
+		files.put(new Path(MAIN_PAGE_XAML), getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML)));
+		files.put(new Path(MAIN_PAGE_XAML_CS), getEngineFile(templatePrjRoot.append(MAIN_PAGE_XAML_CS)));
+		files.put(new Path(DEFAULT_APP_NAME_CSPROJ), getEngineFile(templatePrjRoot.append(DEFAULT_APP_NAME_CSPROJ)));
+		files.put(new Path(DEFAULT_SLN_NAME), getEngineFile(templatePrjRoot.append(DEFAULT_SLN_NAME)));
 	}
 
 	private URL getEngineFile(IPath path) {
 		File file = path.toFile();
 		if (!file.exists()) {
-			WPCore.log(IStatus.WARNING, NLS.bind(
-					Messages.WPLibraryResolver_MissingEngineError,
-					file.toString()), null);
+			WPCore.log(IStatus.WARNING, NLS.bind(Messages.WPLibraryResolver_MissingEngineError, file.toString()), null);
 		}
 		return FileUtils.toURL(file);
 	}

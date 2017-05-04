@@ -19,7 +19,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -37,8 +36,7 @@ import org.eclipse.thym.win.internal.core.Messages;
 import org.eclipse.thym.win.core.WinCore;
 
 public class WinLibraryResolver extends HybridMobileLibraryResolver {
-
-	private static final String WIN = "windows"; //$NON-NLS-1$
+	
 	public static final String VERSION = "VERSION"; //$NON-NLS-1$
 	public static final String WIN_PHONE_APP_MANIFEST = "package.phone.appxmanifest"; //$NON-NLS-1$
 	public static final String WIN_APP_MANIFEST = "package.windows.appxmanifest"; //$NON-NLS-1$
@@ -54,7 +52,8 @@ public class WinLibraryResolver extends HybridMobileLibraryResolver {
 	public static final String WIN_SLN_NAME = "CordovaApp.sln"; //$NON-NLS-1$
 
 	private static final String TEMPLATE = "template"; //$NON-NLS-1$
-	private static final String PROPERTIES = "Properties"; //$NON-NLS-1$
+	
+	public static final String CORDOVA_WIN = "cordova-windows";
 
 	private HashMap<IPath, URL> files = new HashMap<IPath, URL>();
 
@@ -101,22 +100,13 @@ public class WinLibraryResolver extends HybridMobileLibraryResolver {
 	
 	@Override
 	public IStatus isLibraryConsistent() {
-		if(version == null ){
-			return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Library for Android platform is not compatible with this tool. File for path {0} is missing.");
-		}
-		if(files.isEmpty()) initFiles();
-		Iterator<IPath> paths = files.keySet().iterator();
-		while (paths.hasNext()) {
-			IPath key = paths.next();
-			URL url = files.get(key);
-			if(url != null  ){
-				File file = new File(url.getFile());
-				if( file.exists())
-					continue;
+		if (version != null) {
+			String name = readLibraryName();
+			if(name != null && name.equals(CORDOVA_WIN)){
+				return Status.OK_STATUS;
 			}
-			return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, NLS.bind("Library for Windows Universal platform is not compatible with this tool. File for path {0} is missing.", key.toString()));
 		}
-		return Status.OK_STATUS;
+		return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, Messages.WinLibraryResolver_NotCompatibleError);
 	}
 	
 	@Override
