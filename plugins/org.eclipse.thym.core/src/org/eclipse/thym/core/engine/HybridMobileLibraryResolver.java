@@ -30,7 +30,7 @@ import com.google.gson.stream.JsonReader;
 public abstract class HybridMobileLibraryResolver {
 	
 	public static final IPath PATH_CORDOVA_JS = new Path(PlatformConstants.FILE_JS_CORDOVA);
-	public static final String PLATFORM_JSON = "platform.json";
+	public static final String PACKAGE_JSON = "package.json";
 	
 	public static final String VAR_PACKAGE_NAME = "$package";
 	public static final String VAR_APP_NAME = "$appname";
@@ -90,7 +90,7 @@ public abstract class HybridMobileLibraryResolver {
 	 */
 	public String readLibraryName() {
 		try{
-			FileReader packageJson = new FileReader(libraryRoot.append(PLATFORM_JSON).toFile());
+			FileReader packageJson = new FileReader(libraryRoot.append(PACKAGE_JSON).toFile());
 			JsonReader reader = new JsonReader(packageJson);
 			JsonParser parser = new JsonParser();
 			JsonObject root = parser.parse(reader).getAsJsonObject();
@@ -100,7 +100,7 @@ public abstract class HybridMobileLibraryResolver {
 			}
 			return null;
 		} catch (Exception e) {
-			HybridCore.log(IStatus.ERROR, "Error occured while reading "+PLATFORM_JSON, e);
+			HybridCore.log(IStatus.ERROR, "Error occured while reading "+PACKAGE_JSON, e);
 			return null;
 		}
 	}

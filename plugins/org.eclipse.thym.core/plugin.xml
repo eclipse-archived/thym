@@ -46,4 +46,13 @@
             id="org.eclipse.thym.core.CordovaContainerInitializer">
       </JsGlobalScopeContainerInitializer>
    </extension>
+       <extension point="org.eclipse.core.expressions.propertyTesters">
+    	<propertyTester
+          class="org.eclipse.thym.core.platform.PlatformPropertyTester"
+          id="org.eclipse.thym.core.platformPropertyTester"
+          namespace="org.eclipse.thym"
+          properties="projectWithPlatform"
+          type="org.eclipse.core.resources.IResource">
+    	</propertyTester>
+ 	</extension>
 </plugin>
