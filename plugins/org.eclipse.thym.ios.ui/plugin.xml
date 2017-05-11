@@ -19,8 +19,7 @@
           			property="os.name"
           			value="Mac OS X" />
           		 <adapt  type="org.eclipse.core.resources.IResource">
-          		 <test property="org.eclipse.core.resources.projectNature" 
-                    value="org.eclipse.thym.core.HybridAppNature" /> 
+          		 	<test property="org.eclipse.thym.projectWithPlatform" value="ios" forcePluginActivation="true"/>    
                  </adapt>   	
 				</and>
 				</iterate>

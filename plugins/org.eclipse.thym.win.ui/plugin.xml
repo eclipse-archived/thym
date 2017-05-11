@@ -23,8 +23,7 @@
                     <count value="1"/>
                     <iterate>
                         <adapt  type="org.eclipse.core.resources.IResource">
-                        <test property="org.eclipse.core.resources.projectNature" 
-                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        <test property="org.eclipse.thym.projectWithPlatform" value="windows" forcePluginActivation="true"/>      
                         </adapt> 
                     </iterate>
                 </with>
@@ -43,8 +42,7 @@
                     <count value="1"/>
                     <iterate>
                         <adapt  type="org.eclipse.core.resources.IResource">
-                        <test property="org.eclipse.core.resources.projectNature" 
-                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        <test property="org.eclipse.thym.projectWithPlatform" value="windows" forcePluginActivation="true"/>      
                         </adapt> 
                     </iterate>
                 </with>
@@ -63,8 +61,7 @@
                     <count value="1"/>
                     <iterate>
                         <adapt  type="org.eclipse.core.resources.IResource">
-                        <test property="org.eclipse.core.resources.projectNature" 
-                           value="org.eclipse.thym.core.HybridAppNature" />    
+                        <test property="org.eclipse.thym.projectWithPlatform" value="windows" forcePluginActivation="true"/>      
                         </adapt> 
                     </iterate>
                 </with>
