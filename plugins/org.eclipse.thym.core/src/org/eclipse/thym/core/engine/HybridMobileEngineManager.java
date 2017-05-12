@@ -71,10 +71,6 @@ public class HybridMobileEngineManager {
 	 * 	<li>
 	 * if <i>engine</i> entries exist on config.xml match them to installed cordova engines. 
 	 * 	</li>
-	 * 	<li>
-	 * if no <i>engine</i> entries exists on config.xml returns the default engines.
-	 * if default engines can be determined.
-	 * 	</li>
 	 * @see HybridMobileEngineManager#defaultEngines()
 	 * @return possibly empty array of {@link HybridMobileEngine}s
 	 */
@@ -91,26 +87,23 @@ public class HybridMobileEngineManager {
 			if(w != null ){
 				engines = w.getEngines();
 			}
-			if(engines == null || engines.isEmpty() ){
-				HybridCore.log(IStatus.INFO, "No engine information exists on config.xml. Falling back to default engines",null );
-				return defaultEngines();
-			}
-			CordovaEngineProvider engineProvider = new CordovaEngineProvider();
-			ArrayList<HybridMobileEngine> activeEngines = new ArrayList<HybridMobileEngine>();
-			final List<HybridMobileEngine> availableEngines = engineProvider.getAvailableEngines();
-			for (Engine engine : engines) {
-				for (HybridMobileEngine hybridMobileEngine : availableEngines) {
-					if(engineMatches(engine, hybridMobileEngine)){
-						activeEngines.add(hybridMobileEngine);
-						break;
+			if(engines != null && !engines.isEmpty() ){
+				CordovaEngineProvider engineProvider = new CordovaEngineProvider();
+				ArrayList<HybridMobileEngine> activeEngines = new ArrayList<HybridMobileEngine>();
+				final List<HybridMobileEngine> availableEngines = engineProvider.getAvailableEngines();
+				for (Engine engine : engines) {
+					for (HybridMobileEngine hybridMobileEngine : availableEngines) {
+						if(engineMatches(engine, hybridMobileEngine)){
+							activeEngines.add(hybridMobileEngine);
+							break;
+						}
 					}
 				}
+				return activeEngines.toArray(new HybridMobileEngine[activeEngines.size()]);
 			}
-			return activeEngines.toArray(new HybridMobileEngine[activeEngines.size()]);
 		} catch (CoreException e) {
 			HybridCore.log(IStatus.WARNING, "Engine information can not be read", e);
 		}
-		HybridCore.log(IStatus.WARNING, "Could not determine the engines used", null);
 		return new HybridMobileEngine[0];
 	}
 
@@ -308,7 +301,9 @@ public class HybridMobileEngineManager {
 				}
 				model.save();
 				IStatus status = Status.OK_STATUS;
-				status = cordova.prepare(sm.newChild(40), "").convertTo(ErrorDetectingCLIResult.class).asStatus();
+				if(w.getEngines() != null && !w.getEngines().isEmpty()){
+					status = cordova.prepare(sm.newChild(40), "").convertTo(ErrorDetectingCLIResult.class).asStatus();
+				}
 				project.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
 				sm.done();
 				return status;
@@ -335,10 +330,9 @@ public class HybridMobileEngineManager {
 					HybridCore.log(IStatus.WARNING, err, null);
 					return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, err);
 				}
-				HybridMobileEngine[] activeEngines =
-						project.getActiveEnginesFromPlatformsJson();
+				HybridMobileEngine[] activeEngines = project.getActiveEnginesFromPlatformsJson();
 				CordovaCLI cordova = CordovaCLI.newCLIforProject(project);
-				MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0,
+				MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, 
 						"Errors updating engines from config.xml", null);
 				IStatus subStatus = Status.OK_STATUS;
 				SubMonitor sm = SubMonitor.convert(monitor, 100);
@@ -347,20 +341,28 @@ public class HybridMobileEngineManager {
 				if (widget != null) {
 					List<Engine> configEngines = widget.getEngines();
 					if (configEngines == null) {
-						return new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
-								"No engine found in config.xml");
-					}
-					SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(configEngines.size());
-					for (Engine e : configEngines) {
-						String platformSpec = e.getName() + "@" + e.getSpec();
-						if (checkPlatformInstalled(activeEngines, e.getName())) {
-							subStatus = cordova.platform(Command.UPDATE, loopMonitor.newChild(1), platformSpec)
-									.convertTo(ErrorDetectingCLIResult.class).asStatus();
-						} else {
-							subStatus = cordova.platform(Command.ADD, loopMonitor.newChild(1), platformSpec)
-									.convertTo(ErrorDetectingCLIResult.class).asStatus();
+						if(activeEngines == null){
+							return status; 
 						}
-						status.add(subStatus);
+						SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(activeEngines.length);
+						for(HybridMobileEngine engine: activeEngines){
+							subStatus = cordova.platform(Command.REMOVE, loopMonitor.newChild(1), engine.getId())
+									.convertTo(ErrorDetectingCLIResult.class).asStatus();
+							status.add(subStatus);
+						}
+					} else {
+						SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(configEngines.size());
+						for (Engine e : configEngines) {
+							String platformSpec = e.getName() + "@" + e.getSpec();
+							if (checkPlatformInstalled(activeEngines, e.getName())) {
+								subStatus = cordova.platform(Command.UPDATE, loopMonitor.newChild(1), platformSpec)
+										.convertTo(ErrorDetectingCLIResult.class).asStatus();
+							} else {
+								subStatus = cordova.platform(Command.ADD, loopMonitor.newChild(1), platformSpec)
+										.convertTo(ErrorDetectingCLIResult.class).asStatus();
+							}
+							status.add(subStatus);
+						}
 					}
 				}
 				project.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));

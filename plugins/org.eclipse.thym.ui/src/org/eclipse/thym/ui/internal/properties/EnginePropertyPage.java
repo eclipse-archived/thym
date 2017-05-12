@@ -57,6 +57,7 @@ public class EnginePropertyPage extends PropertyPage {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				setValid(isValid());
+				getContainer().updateButtons();
 			}
 		});
 		noDefaultAndApplyButton();
@@ -79,45 +80,43 @@ public class EnginePropertyPage extends PropertyPage {
 	
 	@Override
 	public boolean isValid() {
-		if(engineSection.getSelection().isEmpty()){
-			setErrorMessage("No engines have been selected");
-			return false;
-		}
-		IStructuredSelection sel = (IStructuredSelection) engineSection.getSelection();
-		for (Iterator iterator = sel.iterator(); iterator.hasNext();) {
-			HybridMobileEngine engine = (HybridMobileEngine) iterator.next();
-			IStatus consistentStatus = engine.isLibraryConsistent();
-			if(!consistentStatus.isOK()){
-				IStatus[] statusArray = consistentStatus.getChildren();
-				int severity = consistentStatus.getSeverity();
-				String message = consistentStatus.getMessage();
-				//Replace the message with child status message
-				for (int i = 0; i < statusArray.length; i++) {
-					if(statusArray[i].getSeverity() == severity){
-						message = statusArray[i].getMessage();
-					}
-				}
-				setMessage(message, severity);
-				return severity != IStatus.ERROR;
-			}
-			//TODO: 
-			try {
-				List<CordovaPlugin> installedPlugins = getProject().getPluginManager().getInstalledPlugins();
-				for (CordovaPlugin cordovaPlugin : installedPlugins) {
-					IStatus status = cordovaPlugin.isEngineCompatible(engine);
-					if( !status.isOK())
-					{
-						setMessage(status.getMessage(), status.getSeverity());
-						return status.getSeverity() != IStatus.ERROR;
-					}
-				}
-			} catch (CoreException e) {
-				HybridUI.log(IStatus.WARNING, "Error while checking engine and plug-in compatability ",  e);
-			}
-			
-		}
 		setMessage(null);
 		setErrorMessage(null);
+		IStructuredSelection sel = (IStructuredSelection) engineSection.getSelection();
+		if(sel != null){
+			for (Iterator<?> iterator = sel.iterator(); iterator.hasNext();) {
+				HybridMobileEngine engine = (HybridMobileEngine) iterator.next();
+				IStatus consistentStatus = engine.isLibraryConsistent();
+				if(!consistentStatus.isOK()){
+					IStatus[] statusArray = consistentStatus.getChildren();
+					int severity = consistentStatus.getSeverity();
+					String message = consistentStatus.getMessage();
+					//Replace the message with child status message
+					for (int i = 0; i < statusArray.length; i++) {
+						if(statusArray[i].getSeverity() == severity){
+							message = statusArray[i].getMessage();
+						}
+					}
+					setMessage(message, severity);
+					return severity != IStatus.ERROR;
+				}
+				//TODO: 
+				try {
+					List<CordovaPlugin> installedPlugins = getProject().getPluginManager().getInstalledPlugins();
+					for (CordovaPlugin cordovaPlugin : installedPlugins) {
+						IStatus status = cordovaPlugin.isEngineCompatible(engine);
+						if( !status.isOK())
+						{
+							setMessage(status.getMessage(), status.getSeverity());
+							return status.getSeverity() != IStatus.ERROR;
+						}
+					}
+				} catch (CoreException e) {
+					HybridUI.log(IStatus.WARNING, "Error while checking engine and plug-in compatability ",  e);
+				}
+				
+			}
+		}
 		return true;
 	}
 	
