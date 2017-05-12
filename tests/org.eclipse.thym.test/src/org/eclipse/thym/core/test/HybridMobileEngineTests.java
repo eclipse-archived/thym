@@ -35,7 +35,9 @@ import org.junit.Test;
 public class HybridMobileEngineTests {
 	
 	private TestProject testproject;
+	private TestProject testProjectWithoutEngine;
 	private HybridMobileEngineManager manager;
+	private HybridMobileEngineManager managerWithoutEngine;
 	private static CordovaEngineProvider provider = new CordovaEngineProvider();
 	private HybridMobileEngine testEngine;
 
@@ -51,6 +53,9 @@ public class HybridMobileEngineTests {
 		// CordovaEngineProvider.engineFound() just places the provided engine in the
 		// static installed engines list.
 		provider.engineFound(testEngine);
+		
+		testProjectWithoutEngine = new TestProject();
+		managerWithoutEngine = new HybridMobileEngineManager(testProjectWithoutEngine.hybridProject());
 	}
 	
 	@After
@@ -62,6 +67,10 @@ public class HybridMobileEngineTests {
 		if(manager != null ){
 			manager = null;
 		}
+		if(testProjectWithoutEngine != null){
+			testProjectWithoutEngine.delete();
+			testProjectWithoutEngine = null;
+		}
 		// deleteEngineLibraries() has the side effect of clearing the engineList in
 		// CordovaEngineProvider (this is also why testEngine needs to have a path set).
 		provider.deleteEngineLibraries(testEngine);
@@ -71,6 +80,9 @@ public class HybridMobileEngineTests {
 	public void testHybridMobileManagerActiveEngines() throws CoreException{
 		//Test project is created with default engines so we expect them to be equal.
 		assertArrayEquals(HybridMobileEngineManager.defaultEngines(), manager.getActiveEngines());
+		
+		//Project has no engine
+		assertTrue(managerWithoutEngine.getActiveEngines().length == 1);
 	}
 	
 	@Test
@@ -168,6 +180,13 @@ public class HybridMobileEngineTests {
 		assertTrue("Returned array should contain one engine.", engines.length == 1);
 		assertEquals(engines[0].getId(), "android");
 		assertEquals(engines[0].getVersion(), "1.0.0");
+	}
+	
+	@Test
+	public void testManagerGetActiveFromJsonNoPlatform() throws CoreException {
+		testProjectWithoutEngine.writePlatformsJson("{}");
+		HybridMobileEngine[] engines = managerWithoutEngine.getActiveEnginesFromPlatformsJson();
+		assertTrue(engines.length == 0);
 	}
 
 	@Test

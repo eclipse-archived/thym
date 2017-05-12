@@ -352,12 +352,6 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 			public void selectionChanged(SelectionChangedEvent event) {
 				IStructuredSelection newSelection =
 						(IStructuredSelection) engineSection.getSelection();
-				if (newSelection == null || newSelection.isEmpty()) {
-					// Since WidgetModel depends on the config.xml, we don't want to
-					// ever remove all of the engines, as it causes Widget.getEngines()
-					// to return null, and makes configPage fail to initialize.
-					return;
-				}
 				WidgetModel model = getWidgetModel();
 				Widget w = getWidget();
 				// Null check is required since w.getEngines() will return null
@@ -367,18 +361,20 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 						w.removeEngine(e);
 					}
 				}
-				HybridMobileEngine hybridEngine;
-				Engine engine;
-				for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
-					hybridEngine = (HybridMobileEngine) iter.next();
-					engine = model.createEngine(w);
-					engine.setName(hybridEngine.getId());
-					if (hybridEngine.isManaged()) {
-						engine.setSpec(hybridEngine.getVersion());
-					} else {
-						engine.setSpec(hybridEngine.getLocation().toString());
+				if (newSelection != null && !newSelection.isEmpty()) {
+					HybridMobileEngine hybridEngine;
+					Engine engine;
+					for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
+						hybridEngine = (HybridMobileEngine) iter.next();
+						engine = model.createEngine(w);
+						engine.setName(hybridEngine.getId());
+						if (hybridEngine.isManaged()) {
+							engine.setSpec(hybridEngine.getVersion());
+						} else {
+							engine.setSpec(hybridEngine.getLocation().toString());
+						}
+						w.addEngine(engine);
 					}
-					w.addEngine(engine);
 				}
 			}
 		});
@@ -388,6 +384,7 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 		List<Engine> activeEngines = getWidget().getEngines();
 		// getEngines() can return null; property change fires when engine is removed
 		if (activeEngines == null || activeEngines.size() == 0) {
+			engineSection.setSelection(new StructuredSelection());
 			return;
 		}
 		List<HybridMobileEngine> engines = new ArrayList<HybridMobileEngine>();
