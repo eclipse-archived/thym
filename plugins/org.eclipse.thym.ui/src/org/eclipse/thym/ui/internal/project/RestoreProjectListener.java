@@ -23,10 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.natures.HybridAppNature;
-import org.eclipse.thym.ui.HybridUI;
 /**
  * 
  * A listener that restores the newly imported Cordova projects.
@@ -47,9 +44,12 @@ public class RestoreProjectListener implements IResourceChangeListener {
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
 			HybridProject hybridProject  = HybridProject.getHybridProject(project);
-			if(hybridProject != null ) {
+			if(hybridProject != null){
 				try{
-					hybridProject.prepare(monitor, "");
+					//do not call prepare for project with no engines otherwise cordova will complain
+					if(hybridProject.getEngineManager().hasActiveEngine()) {
+						hybridProject.prepare(monitor);
+					}
 				}catch(CoreException e){
 					return e.getStatus();
 				}
@@ -57,25 +57,23 @@ public class RestoreProjectListener implements IResourceChangeListener {
 			return Status.OK_STATUS;
 		}	
 	}
-	
+
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		IResourceDelta[] projectDeltas = event.getDelta().getAffectedChildren();
 		for (IResourceDelta delta : projectDeltas) {
-			if (delta.getKind() == IResourceDelta.ADDED && (delta.getFlags() & IResourceDelta.OPEN) != 0
-					&& delta.getResource().getType() == IResource.PROJECT) {
+			if((delta.getResource().getType() == IResource.PROJECT) && 
+				(delta.getKind() == IResourceDelta.CHANGED || delta.getKind() == IResourceDelta.ADDED) 
+					&& (delta.getFlags() & IResourceDelta.OPEN) != 0){
 				IProject project = delta.getResource().getProject();
-				try {
-					if (project.hasNature(HybridAppNature.NATURE_ID)) {
+				if(project.isOpen()){
+					HybridProject hybridProject  = HybridProject.getHybridProject(project);
+					if(hybridProject != null ) {
 						RestoreProjectJob job = new RestoreProjectJob(project);
-						ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory()
-								.modifyRule(project);
+						ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(project);
 						job.setRule(rule);
 						job.schedule();
 					}
-				} catch (CoreException e) {
-					HybridUI.log(IStatus.ERROR, NLS.bind("Can not check nature for project {0} ", project.getName()),
-							e);
 				}
 			}
 		}

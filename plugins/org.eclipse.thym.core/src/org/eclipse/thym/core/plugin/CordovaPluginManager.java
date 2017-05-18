@@ -68,7 +68,6 @@ public class CordovaPluginManager {
 	 * A plug-ins installation is a two step process. This method triggers the 
 	 * first step where Cordova Plug-ins is installed to HybridProject. 
 	 * 
-	 * @see #completePluginInstallationsForPlatform(File, String)
 	 * @param directory
 	 * @param overwrite
 	 * @param monitor

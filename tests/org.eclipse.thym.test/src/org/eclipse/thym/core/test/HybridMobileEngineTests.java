@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Red Hat, Inc. All rights reserved. This program and
+ * Copyright (c) 2015, 2017 Red Hat, Inc. All rights reserved. This program and
  * the accompanying materials are made available under the terms of the Eclipse
  * Public License v1.0 which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
@@ -40,6 +40,10 @@ public class HybridMobileEngineTests {
 	private HybridMobileEngineManager managerWithoutEngine;
 	private static CordovaEngineProvider provider = new CordovaEngineProvider();
 	private HybridMobileEngine testEngine;
+	
+	public static final String PROJECT_NAME1 = "HybridToolsTest1";
+	public static final String APPLICATION_NAME1 = "Test applciation1";
+	public static final String APPLICATION_ID1 = "hybrid.tools.test1";
 
 	@Before 
 	public void setUpHybridMobileManager() throws CoreException{
@@ -54,7 +58,7 @@ public class HybridMobileEngineTests {
 		// static installed engines list.
 		provider.engineFound(testEngine);
 		
-		testProjectWithoutEngine = new TestProject();
+		testProjectWithoutEngine = new TestProject(false, PROJECT_NAME1, APPLICATION_NAME1, APPLICATION_ID1);
 		managerWithoutEngine = new HybridMobileEngineManager(testProjectWithoutEngine.hybridProject());
 	}
 	
@@ -82,7 +86,7 @@ public class HybridMobileEngineTests {
 		assertArrayEquals(HybridMobileEngineManager.defaultEngines(), manager.getActiveEngines());
 		
 		//Project has no engine
-		assertTrue(managerWithoutEngine.getActiveEngines().length == 1);
+		assertTrue(managerWithoutEngine.getActiveEngines().length == 0);
 	}
 	
 	@Test
@@ -171,6 +175,12 @@ public class HybridMobileEngineTests {
 		testproject.writePlatformsJson("{ android: ");
 		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
 		assertTrue(engines.length == 0);
+	}
+	
+	@Test
+	public void testManagerHasEngines(){
+		assertFalse(managerWithoutEngine.hasActiveEngine());
+		assertTrue(manager.hasActiveEngine());
 	}
 
 	@Test

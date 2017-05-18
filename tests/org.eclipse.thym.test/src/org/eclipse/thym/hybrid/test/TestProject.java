@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc.
+ * Copyright (c) 2013, 2017 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -42,16 +43,31 @@ public class TestProject {
 		PlatformConstants.DIR_PLUGINS,
 		PlatformConstants.DIR_WWW };
 	
+	private String projectName;
+	private String appName;
+	private String appId;
+	
 	public static final String PROJECT_NAME = "HybridToolsTest";
 	public static final String APPLICATION_NAME = "Test applciation";
 	public static final String APPLICATION_ID = "hybrid.tools.test";
 	
-	@SuppressWarnings("restriction")
 	public TestProject(){
+		this(true, PROJECT_NAME, APPLICATION_NAME, APPLICATION_ID);
+	}
+	
+	@SuppressWarnings("restriction")
+	public TestProject(boolean withEngine, String projectName, String appName, String id){
 		try {
+			this.projectName = projectName;
+			this.appName = appName;
+			this.appId = appId;
+			HybridMobileEngine[] engines = null;
+			if(withEngine){
+				engines = HybridMobileEngineManager.defaultEngines();
+			}
 			HybridProjectCreator projectCreator = new HybridProjectCreator();
-			projectCreator.createBasicTemplatedProject(PROJECT_NAME, null, APPLICATION_NAME, APPLICATION_ID, 
-					HybridMobileEngineManager.defaultEngines(), new NullProgressMonitor());
+			projectCreator.createBasicTemplatedProject(projectName, null, appName, id, 
+					engines, new NullProgressMonitor());
 
 			// Ensure the platforms folder exists; tests that write platforms.json fail otherwise.
 			IFolder platformsFolder = getProject().getFolder("/platforms");
@@ -87,7 +103,7 @@ public class TestProject {
 			return error("error parsing config.xml");
 		}
 		String id = doc.getDocumentElement().getAttribute("id");
-		if( !APPLICATION_ID.equals(id)){
+		if( !appId.equals(id)){
 			error("wrong application id");
 		}
 		NodeList nodes = doc.getDocumentElement().getElementsByTagName("name");
@@ -95,7 +111,7 @@ public class TestProject {
 			return error("Application name is not updated"); 
 		}
 		String name = nodes.item(0).getTextContent();
-		if( !APPLICATION_NAME.equals(name)){
+		if( !appName.equals(name)){
 			return error("Wrong application name");
 		}
 		
@@ -106,7 +122,7 @@ public class TestProject {
 
 	public IProject getProject() {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		IProject project = root.getProject(PROJECT_NAME);
+		IProject project = root.getProject(projectName);
 		return project;
 	}
 	

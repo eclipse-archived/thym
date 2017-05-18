@@ -123,7 +123,7 @@ public class HybridProjectCreator {
     /**
      * Converts a given IProject to a {@link HybridProject}. The project is required 
      * to have at least <i>www</i> folder and a <i>config.xml</i> file to already exist. This 
-     * function will add missing folders, configure natures and the JavaScript project.
+     * function will add missing folders, configure natures, JavaScript project and calls cordova prepare.
      * <p>
      * Calling this method on an existing hybrid project has no effect.
      * </p>
@@ -145,6 +145,11 @@ public class HybridProjectCreator {
         addPlatformPaths(project, monitor);
         addNature(project, monitor);
         setUpJavaScriptProject(project, monitor);
+        HybridProject newHybridProject = HybridProject.getHybridProject(project);
+        //do not call prepare for project with no engines otherwise cordova will complain
+        if(newHybridProject.getEngineManager().hasActiveEngine()){
+        	newHybridProject.prepare(monitor);
+        }
     }
 
     private IProject createHybridMobileProject(String projectName,
