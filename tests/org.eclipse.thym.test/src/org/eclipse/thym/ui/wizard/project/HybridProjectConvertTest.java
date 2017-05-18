@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. 
+ * Copyright (c) 2015, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,10 @@ package org.eclipse.thym.ui.wizard.project;
 
 import static org.junit.Assert.*;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -32,17 +34,34 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.hybrid.test.RequiresCordovaCLICategory;
 import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
 import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 @SuppressWarnings("restriction")
+@RunWith(Parameterized.class)
 public class HybridProjectConvertTest {
 
     private static final String PROJECT_NAME = "ConvertTest";
+    
+    @Parameters(name = "{index}: project with config {0}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {     
+                 {"/res/configWithoutEngine.xml"}, {"/res/config.xml"}  
+           });
+    }
+    
+    @Parameter
+    public String configXmlLocation;
 
     @Before
     public void createBaseProject() throws CoreException{
@@ -68,6 +87,7 @@ public class HybridProjectConvertTest {
     }
     
     @Test(expected = CoreException.class)
+    @Category(value=RequiresCordovaCLICategory.class)
     public void testCanConvertCausesException() throws CoreException{
         IProject project = getTheProject();
         assertTrue(project.exists());
@@ -76,6 +96,7 @@ public class HybridProjectConvertTest {
     }
     
     @Test
+    @Category(value=RequiresCordovaCLICategory.class)
     public void testNature() throws CoreException{
         IProject project = getTheProject();
         addRequiredResources(project);
@@ -89,6 +110,7 @@ public class HybridProjectConvertTest {
 
     
     @Test
+    @Category(value=RequiresCordovaCLICategory.class)
     public void directoryStructureTest() throws CoreException{
         IProject theProject = getTheProject();
         addRequiredResources(theProject);
@@ -111,6 +133,7 @@ public class HybridProjectConvertTest {
     }
     
     @Test
+    @Category(value=RequiresCordovaCLICategory.class)
     public void testJavaScriptProjectSetup() throws CoreException{
         IProject theProject = getTheProject();
         addRequiredResources(theProject);
@@ -144,7 +167,9 @@ public class HybridProjectConvertTest {
         folder.create(true, true, new NullProgressMonitor());
         IFile file = project.getFile(PlatformConstants.FILE_XML_CONFIG);
         assertFalse(file.exists());
-        file.create(this.getClass().getResourceAsStream("/res/config.xml"),true,new NullProgressMonitor());
+        InputStream configXML = this.getClass().getResourceAsStream(configXmlLocation);
+        assertNotNull(configXML);
+        file.create(configXML,true,new NullProgressMonitor());
     }
     
 }

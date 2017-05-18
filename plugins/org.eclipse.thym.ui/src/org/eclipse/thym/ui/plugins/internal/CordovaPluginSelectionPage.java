@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -152,11 +152,11 @@ public class CordovaPluginSelectionPage extends WizardPage {
 						public void run() {
 							if(catalogViewer.getInput() == null){
 								populatePluginInfos();
-								displayPluginInfos();
 							}
 						}
 					});
 				}
+				displayPluginInfos();
 			}
 		});
 		registryTab = new TabItem(tabFolder, SWT.NONE);
@@ -322,9 +322,11 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	}
 
 	private void populatePluginInfos() {
-		pluginsJob = new GetPluginsInfoJob();
-		pluginsJob.setUser(true);
-		pluginsJob.schedule();
+		if(pluginsJob == null){
+			pluginsJob = new GetPluginsInfoJob();
+			pluginsJob.setUser(true);
+			pluginsJob.schedule();
+		}
 	}
 
 	private void setupFromInitialSelection() {

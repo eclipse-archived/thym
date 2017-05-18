@@ -399,6 +399,14 @@ public class HybridMobileEngineManager {
 		}
 		return null;
 	}
+	
+	/**
+	 * Checks if project has at least one active engine
+	 * @return true if project has active engine, false otherwise
+	 */
+	public boolean hasActiveEngine(){
+		return getActiveEngines().length > 0;
+	}
 
 	private boolean checkPlatformInstalled(HybridMobileEngine[] activeEngines, String engineName) {
 		for (HybridMobileEngine engine : activeEngines) {
