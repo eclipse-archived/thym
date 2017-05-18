@@ -354,12 +354,16 @@ public class HybridMobileEngineManager {
 						SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(configEngines.size());
 						for (Engine e : configEngines) {
 							String platformSpec = e.getName() + "@" + e.getSpec();
-							if (checkPlatformInstalled(activeEngines, e.getName())) {
-								subStatus = cordova.platform(Command.UPDATE, loopMonitor.newChild(1), platformSpec)
-										.convertTo(ErrorDetectingCLIResult.class).asStatus();
-							} else {
+							if (!checkPlatformInstalled(activeEngines, e.getName())) {
 								subStatus = cordova.platform(Command.ADD, loopMonitor.newChild(1), platformSpec)
 										.convertTo(ErrorDetectingCLIResult.class).asStatus();
+							} else {
+								String engineVersion = e.getSpec().replaceAll("~", "");
+								//update only if version of installed platform changed
+								if(!engineVersion.equals(getInstalledPlatformVersion(activeEngines, e.getName()))){
+									subStatus = cordova.platform(Command.UPDATE, loopMonitor.newChild(1), platformSpec)
+											.convertTo(ErrorDetectingCLIResult.class).asStatus();
+								}	
 							}
 							status.add(subStatus);
 						}
@@ -384,6 +388,15 @@ public class HybridMobileEngineManager {
 			}
 		}
 		return false;
+	}
+	
+	private String getInstalledPlatformVersion(HybridMobileEngine[] activeEngines, String engineName) {
+		for (HybridMobileEngine engine : activeEngines) {
+			if (engine.getId().equals(engineName)) {
+				return engine.getVersion();
+			}
+		}
+		return null;
 	}
 
 	private boolean isEngineRemoved(final Engine engine, final HybridMobileEngine[] engines){
