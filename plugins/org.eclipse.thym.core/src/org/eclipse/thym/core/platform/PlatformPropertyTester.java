@@ -28,7 +28,7 @@ public class PlatformPropertyTester extends PropertyTester {
 			IProject project = ((IProject)receiver);
 			HybridProject hybridProject = HybridProject.getHybridProject(project);
 			if(hybridProject != null){
-				HybridMobileEngine[] engines = hybridProject.getActiveEngines();
+				HybridMobileEngine[] engines = hybridProject.getEngineManager().getActiveEngines();
 				if(engines != null){
 					for(HybridMobileEngine engine: engines){
 						if(engine.getId().equals(expectedValue)){

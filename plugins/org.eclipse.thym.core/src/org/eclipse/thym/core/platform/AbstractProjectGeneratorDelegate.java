@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,8 +32,6 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.internal.util.FileUtils;
-import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.osgi.framework.Bundle;
 /**
  * Abstract class for all the native project generators delegates.
@@ -95,7 +93,7 @@ public abstract class AbstractProjectGeneratorDelegate {
 				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,
 						NLS.bind("Project {0} is missing or not a Hybrid Mobile project", getProjectName())));
 			}
-			HybridMobileEngine[] engine = hybridProject.getActiveEngines();
+			HybridMobileEngine[] engine = hybridProject.getEngineManager().getActiveEngines();
 			if(engine == null || engine.length <1 ){
 				throw new CoreException(HybridMobileStatus.newMissingEngineStatus(project, 
 					"Hybrid Mobile Engine is missing. Please install the missing engine or use a different engine."));
@@ -199,15 +197,9 @@ public abstract class AbstractProjectGeneratorDelegate {
 
 	protected void completeCordovaPluginInstallations(IProgressMonitor monitor) throws CoreException{
 		HybridProject project = HybridProject.getHybridProject(getProject());
-		if( project == null ) return;
-		CordovaPluginManager pluginManager = new CordovaPluginManager(project);
-		pluginManager.completePluginInstallationsForPlatform(getDestination(), getTargetShortName(),new FileOverwriteCallback() {
-			
-			@Override
-			public boolean isOverwiteAllowed(String[] files) {
-				return true;
-			}
-		},monitor);
+		if(project != null) {
+			project.prepare(monitor, "");
+		}
 	}
 
 	/**

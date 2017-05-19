@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 IBM Corporation and others.
+ * Copyright (c) 2016, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.internal.core.Messages;
@@ -49,7 +48,7 @@ public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}
-			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WIN, buildType);
+			hybridProject.build(generateMonitor.split(90), WIN,buildType);
 		} finally {
 			monitor.done();
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Red Hat, Inc. 
+ * Copyright (c) 2016, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.eclipse.thym.ui.internal.cordova;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaCLIErrors;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
@@ -34,9 +33,9 @@ public class RequirementsUtility {
 	 * @param project
 	 * @return error code or 0
 	 */
-	private static int doCheckCordovaRequirements(HybridProject project) {
+	private static int doCheckCordovaRequirements() {
 		try {
-			CordovaCLI cli = CordovaCLI.newCLIforProject(project);
+			CordovaCLI cli = new CordovaCLI();
 			ErrorDetectingCLIResult cordovaResult = cli.version(new NullProgressMonitor())
 					.convertTo(ErrorDetectingCLIResult.class);
 			IStatus cordovaStatus = cordovaResult.asStatus();
@@ -75,8 +74,8 @@ public class RequirementsUtility {
 	 * @param project
 	 * @return
 	 */
-	public static boolean checkCordovaRequirements(HybridProject project){
-		int status = doCheckCordovaRequirements(project);
+	public static boolean checkCordovaRequirements(){
+		int status = doCheckCordovaRequirements();
 		if(status > 0 ){
 			String message = null;
 			switch (status) {
@@ -93,7 +92,7 @@ public class RequirementsUtility {
 			MissingRequirementsDialog mrd = new MissingRequirementsDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 			mrd.setMessage(message);
 			mrd.open();
-			return doCheckCordovaRequirements( project) == 0;
+			return doCheckCordovaRequirements() == 0;
 		}
 		return true;
 	}
