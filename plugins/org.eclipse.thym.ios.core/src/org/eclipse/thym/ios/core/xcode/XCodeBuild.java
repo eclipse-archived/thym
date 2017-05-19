@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -26,8 +25,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IStreamMonitor;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.internal.util.ExternalProcessUtility;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.ios.core.IOSCore;
@@ -109,11 +106,7 @@ public class XCodeBuild extends AbstractNativeBinaryBuildDelegate{
 			if (sm.isCanceled()) {
 				return;
 			}
-			IStatus status = CordovaCLI.newCLIforProject(hybridProject).build(sm.newChild(70), "ios",buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
-			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(20));
-			if(status.getSeverity() == IStatus.ERROR){
-				throw new CoreException(status);
-			}
+			hybridProject.build(sm.split(90), "ios",buildType);
 			String name = hybridProject.getAppName();
 			IFolder buildFolder = hybridProject.getProject().getFolder("platforms/ios/build");
 			IFolder artifactFolder = null;

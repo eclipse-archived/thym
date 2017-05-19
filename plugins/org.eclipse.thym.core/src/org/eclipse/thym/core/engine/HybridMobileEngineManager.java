@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -36,8 +37,8 @@ import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.osgi.framework.Version;
@@ -57,6 +58,9 @@ public class HybridMobileEngineManager {
 	private final HybridProject project;
 	
 	public HybridMobileEngineManager(HybridProject project){
+		if(project == null ){
+			throw new IllegalArgumentException("No project specified");
+		}
 		this.project = project;
 	}
 
@@ -270,6 +274,7 @@ public class HybridMobileEngineManager {
 	 * @throws CoreException
 	 */
 	public void updateEngines(final HybridMobileEngine[] engines) throws CoreException{
+		Assert.isLegal(engines != null, "Engines can not be null" );
 		WorkspaceJob updateJob = new WorkspaceJob(NLS.bind("Update Cordova Engines for {0}",project.getProject().getName()) ) {
 			
 			@Override
@@ -278,7 +283,7 @@ public class HybridMobileEngineManager {
 				WidgetModel model = WidgetModel.getModel(project);
 				Widget w = model.getWidgetForEdit();
 				List<Engine> existingEngines = w.getEngines();
-				CordovaCLI cordova = CordovaCLI.newCLIforProject(project);
+				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
 				SubMonitor sm = SubMonitor.convert(monitor,100);
 				if(existingEngines != null ){
 					for (Engine existingEngine : existingEngines) {
@@ -300,13 +305,11 @@ public class HybridMobileEngineManager {
 					w.addEngine(e);
 				}
 				model.save();
-				IStatus status = Status.OK_STATUS;
 				if(w.getEngines() != null && !w.getEngines().isEmpty()){
-					status = cordova.prepare(sm.newChild(40), "").convertTo(ErrorDetectingCLIResult.class).asStatus();
+					project.prepare(sm.newChild(70), "");
 				}
-				project.getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
 				sm.done();
-				return status;
+				return Status.OK_STATUS;
 			}
 		};
 		ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(this.project.getProject());
@@ -330,8 +333,8 @@ public class HybridMobileEngineManager {
 					HybridCore.log(IStatus.WARNING, err, null);
 					return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, err);
 				}
-				HybridMobileEngine[] activeEngines = project.getActiveEnginesFromPlatformsJson();
-				CordovaCLI cordova = CordovaCLI.newCLIforProject(project);
+				HybridMobileEngine[] activeEngines = getActiveEnginesFromPlatformsJson();
+				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
 				MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, 
 						"Errors updating engines from config.xml", null);
 				IStatus subStatus = Status.OK_STATUS;
@@ -379,6 +382,22 @@ public class HybridMobileEngineManager {
 				.modifyRule(project.getProject());
 		prepareJob.setRule(rule);
 		prepareJob.schedule();
+	}
+	
+	/**
+	 * Returns the active engine for the platform id or null if there is not one.
+	 * 
+	 * @param platformId
+	 * @return active engine or null
+	 */
+	public HybridMobileEngine getActiveEngineForPlatform(String platformId){
+		HybridMobileEngine[] engines = getActiveEngines();
+		for (HybridMobileEngine hybridMobileEngine : engines) {
+			if(platformId.equals(hybridMobileEngine.getId())){
+				return hybridMobileEngine;
+			}
+		}
+		return null;
 	}
 
 	private boolean checkPlatformInstalled(HybridMobileEngine[] activeEngines, String engineName) {

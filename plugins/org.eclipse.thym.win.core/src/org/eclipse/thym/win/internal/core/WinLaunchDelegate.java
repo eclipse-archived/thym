@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 IBM Corporation and others.
+ * Copyright (c) 2016, 2017 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,7 +30,6 @@ import org.eclipse.thym.core.HybridProjectLaunchConfigConstants;
 import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.core.build.WinBuild;
 import org.eclipse.thym.win.core.build.WinConstants;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
 
 public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 
@@ -60,11 +59,11 @@ public class WinLaunchDelegate implements ILaunchConfigurationDelegate2 {
 	    // Determine which way to run Win Universal
 		String launchType = configuration.getAttribute(WinConstants.ATTR_LAUNCH_TYPE, (String)null);
 		if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_EMULATOR))
-			CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), EMULATE_ARGS);
+			project.emulate(sm.newChild(90), EMULATE_ARGS);
 		else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_SIMULATOR))
-			CordovaCLI.newCLIforProject(project).emulate(sm.newChild(90), SIM_ARGS);
+			project.emulate(sm.newChild(90), SIM_ARGS);
 		else if (launchType.equals(WinConstants.ATTR_LAUNCH_TYPE_DEVICE))
-			CordovaCLI.newCLIforProject(project).run(sm.newChild(90), RUN_ARGS);
+			project.run(sm.newChild(90), RUN_ARGS);
 	
 	    sm.worked(30);
 	    monitor.worked(2);

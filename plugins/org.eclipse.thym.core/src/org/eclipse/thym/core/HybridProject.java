@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,15 +13,21 @@ package org.eclipse.thym.core;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
-import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
@@ -97,6 +103,60 @@ public class HybridProject implements IAdaptable {
 		}
 		return pluginManager;
 	}
+	
+	public void build(IProgressMonitor monitor, final String... buildOptions) throws CoreException{
+		ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(getProject());
+		try{
+			Job.getJobManager().beginRule(rule, monitor);
+		
+			SubMonitor sm = SubMonitor.convert(monitor);
+			sm.setWorkRemaining(100);
+			ErrorDetectingCLIResult status = getProjectCLI().build(sm.newChild(70),buildOptions).convertTo(ErrorDetectingCLIResult.class);
+			getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
+			if(status.asStatus().getSeverity() == IStatus.ERROR){
+				throw new CoreException(status.asStatus());
+			}
+		} finally {
+			Job.getJobManager().endRule(rule);
+		}
+	}
+	
+	public void prepare(IProgressMonitor monitor, final String...options) throws CoreException{
+		ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(getProject());
+		try{
+			Job.getJobManager().beginRule(rule, monitor);
+		
+			SubMonitor sm = SubMonitor.convert(monitor);
+			sm.setWorkRemaining(100);
+			ErrorDetectingCLIResult status = getProjectCLI().prepare(sm.newChild(70),options).convertTo(ErrorDetectingCLIResult.class);
+			getProject().refreshLocal(IResource.DEPTH_INFINITE, sm.newChild(30));
+			if(status.asStatus().getSeverity() == IStatus.ERROR){
+				throw new CoreException(status.asStatus());
+			}
+		} finally {
+			Job.getJobManager().endRule(rule);
+		}
+	}
+	
+	public void emulate(IProgressMonitor monitor, final String...options) throws CoreException{
+		ErrorDetectingCLIResult status = getProjectCLI().emulate(monitor,options).convertTo(ErrorDetectingCLIResult.class);
+		if(status.asStatus().getSeverity() == IStatus.ERROR){
+			throw new CoreException(status.asStatus());
+		}
+	}
+	
+	public void run(IProgressMonitor monitor, final String...options) throws CoreException{
+		ErrorDetectingCLIResult status = getProjectCLI().run(monitor,options).convertTo(ErrorDetectingCLIResult.class);
+		if(status.asStatus().getSeverity() == IStatus.ERROR){
+			throw new CoreException(status.asStatus());
+		}
+	}
+	
+	public CordovaProjectCLI getProjectCLI(){
+		return CordovaProjectCLI.newCLIforProject(HybridProject.this);
+	}
+		
+	
 
 	/**
 	 * Returns the app name from the config.xml 
@@ -147,69 +207,11 @@ public class HybridProject implements IAdaptable {
 		return null;
 	}
 	
-	private HybridMobileEngineManager getHybridMobileEngineManager(){
+	public HybridMobileEngineManager getEngineManager(){
 		if (this.engineManager == null ){
 			engineManager = new HybridMobileEngineManager(this);
 		}
 		return engineManager;
-	}
-	
-	/**
-	 * Returns the currently used {@link HybridMobileEngine}s for this project.
-	 * 
-	 * @return array of engines
-	 */
-	public HybridMobileEngine[] getActiveEngines(){
-		return getHybridMobileEngineManager().getActiveEngines();
-	}
-
-	/**
-	 * Returns the {@link HybridMobileEngine}s for this project, as found in
-	 * platforms.json.
-	 *
-	 * @return a possibly empty array of active engines
-	 */
-	public HybridMobileEngine[] getActiveEnginesFromPlatformsJson() {
-		return getHybridMobileEngineManager().getActiveEnginesFromPlatformsJson();
-	}
-	
-	/**
-	 * Returns the active engine for the platform id or null if there is not one.
-	 * 
-	 * @param platformId
-	 * @return active engine or null
-	 */
-	public HybridMobileEngine getActiveEngineForPlatform(String platformId){
-		HybridMobileEngine[] engines = getActiveEngines();
-		for (HybridMobileEngine hybridMobileEngine : engines) {
-			if(platformId.equals(hybridMobileEngine.getId())){
-				return hybridMobileEngine;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Updates the active engine for the project.
-	 * @param engine
-	 * @throws CoreException
-	 */
-	public void updateActiveEngines(final HybridMobileEngine[] engines) throws CoreException{
-		Assert.isLegal(engines != null, "Engines can not be null" );
-		getHybridMobileEngineManager().updateEngines(engines);
-	}
-
-	/**
-	 * Updates active Cordova engines based on what is written to
-	 * config.xml by calling Cordova update or Cordova add, depending
-	 * on context.
-	 *
-	 * <p>
-	 * This is a convenience wrapper for
-	 * {@link HybridMobileEngineManager#resyncWithConfigXml()}
-	 */
-	public void resyncWithConfigXml() {
-		getHybridMobileEngineManager().resyncWithConfigXml();
 	}
 
 	@Override

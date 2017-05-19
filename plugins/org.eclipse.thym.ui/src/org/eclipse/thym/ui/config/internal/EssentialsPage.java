@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -415,7 +415,7 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 	private void updateActiveEngines() {
 		IFile file = (IFile) getEditor().getEditorInput().getAdapter(IFile.class);
 		HybridProject project = HybridProject.getHybridProject(file.getProject());
-		HybridMobileEngine[] activeEngines = project.getActiveEngines();
+		HybridMobileEngine[] activeEngines = project.getEngineManager().getActiveEngines();
 		if (activeEngines != null) {
 			engineSection.setSelection(new StructuredSelection(activeEngines));
 		}

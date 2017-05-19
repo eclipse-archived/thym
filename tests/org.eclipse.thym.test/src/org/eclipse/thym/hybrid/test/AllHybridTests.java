@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.eclipse.thym.hybrid.test;
 
+import org.eclipse.thym.core.HybridProjectTest;
 import org.eclipse.thym.core.config.WidgetModelTest;
-import org.eclipse.thym.core.internal.cordova.CordovaCLITest;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLITest;
 import org.eclipse.thym.core.plugin.test.CordovaPluginRegistryTest;
 import org.eclipse.thym.core.plugin.test.PluginInstallationTests;
 import org.eclipse.thym.core.test.ExternalProcessUtilityTest;
@@ -30,7 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class,HybridProjectConvertTest.class, 
 	WidgetModelTest.class, CordovaPluginRegistryTest.class,HybridProjectConventionsTest.class, HybridMobileEngineTests.class,
 	PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class,
-	TestBundleHttpStorage.class,PluginXMLHelperTests.class,ExternalProcessUtilityTest.class,CordovaCLITest.class})
+	TestBundleHttpStorage.class,PluginXMLHelperTests.class,ExternalProcessUtilityTest.class,CordovaProjectCLITest.class, 
+	HybridProjectTest.class})
 public class AllHybridTests {
 
 }

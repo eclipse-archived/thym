@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,8 +25,6 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.ui.HybridUI;
 /**
@@ -49,18 +47,14 @@ public class RestoreProjectListener implements IResourceChangeListener {
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
 			HybridProject hybridProject  = HybridProject.getHybridProject(project);
-			if(hybridProject == null ) return Status.OK_STATUS;
-			IStatus status = Status.OK_STATUS;
-			try{
-				status = CordovaCLI.newCLIforProject(hybridProject)
-						.prepare( monitor, "")
-						.convertTo(ErrorDetectingCLIResult.class)
-						.asStatus();
-				hybridProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-			}catch(CoreException e){
-				return e.getStatus();
+			if(hybridProject != null ) {
+				try{
+					hybridProject.prepare(monitor, "");
+				}catch(CoreException e){
+					return e.getStatus();
+				}
 			}
-			return status;
+			return Status.OK_STATUS;
 		}	
 	}
 	

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,8 +32,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI.Command;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
@@ -83,8 +83,8 @@ public class CordovaPluginManager {
 		if(monitor.isCanceled()) return;
 		// read plugin.xml to verify the plugin
 		readPluginXML(directory);
-		IStatus status = CordovaCLI.newCLIforProject(project)
-			.plugin(Command.ADD, monitor, directory.toString(), CordovaCLI.OPTION_SAVE)
+		IStatus status = CordovaProjectCLI.newCLIforProject(project)
+			.plugin(Command.ADD, monitor, directory.toString(), CordovaProjectCLI.OPTION_SAVE)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -112,8 +112,8 @@ public class CordovaPluginManager {
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled()) return;
 		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
-		IStatus status = CordovaCLI.newCLIforProject(this.project)
-				.plugin(Command.ADD, monitor, pluginCoords, CordovaCLI.OPTION_SAVE )
+		IStatus status = CordovaProjectCLI.newCLIforProject(this.project)
+				.plugin(Command.ADD, monitor, pluginCoords, CordovaProjectCLI.OPTION_SAVE )
 				.convertTo(PluginMessagesCLIResult.class)
 				.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -146,8 +146,8 @@ public class CordovaPluginManager {
 		if(monitor == null )
 			monitor = new NullProgressMonitor();
 		if(monitor.isCanceled()) return;	
-		IStatus status = CordovaCLI.newCLIforProject(project)
-			.plugin(Command.ADD, monitor, uri.toString(), CordovaCLI.OPTION_SAVE)
+		IStatus status = CordovaProjectCLI.newCLIforProject(project)
+			.plugin(Command.ADD, monitor, uri.toString(), CordovaProjectCLI.OPTION_SAVE)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -198,8 +198,8 @@ public class CordovaPluginManager {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
 		}
 		if(monitor.isCanceled()) return;
-		IStatus status = CordovaCLI.newCLIforProject(project)
-			.plugin(Command.REMOVE, monitor, id, CordovaCLI.OPTION_SAVE)
+		IStatus status = CordovaProjectCLI.newCLIforProject(project)
+			.plugin(Command.REMOVE, monitor, id, CordovaProjectCLI.OPTION_SAVE)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -212,31 +212,6 @@ public class CordovaPluginManager {
 	
 	private void resetInstalledPlugins() {
 		installedPlugins.clear();
-	}
-
-	/**
-	 * Completes the installation of all the installed plug-ins in this HybridProject 
-	 * to the given platform project location. 
-	 * This installation involves modifying of necessary files and 
-	 * copying/generation of the others.
-	 * 
-	 * @param platformProjectLocation
-	 * @param platform
-	 * @param overwrite
-	 * @param monitor
-	 * 
-	 * @throws CoreException
-	 */
-	public void completePluginInstallationsForPlatform(File platformProjectLocation, String platform, FileOverwriteCallback overwrite, IProgressMonitor monitor) throws CoreException{
-		if(monitor.isCanceled()) return;
-		IStatus status = CordovaCLI.newCLIforProject(project)
-			.prepare(monitor, platform)
-			.convertTo(PluginMessagesCLIResult.class)
-			.asStatus();
-		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-		if(!status.isOK()){
-			throw new CoreException(status);
-		}
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 Zend Technologies Ltd. 
+ * Copyright (c) 2014, 2017 Zend Technologies Ltd. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,6 @@ package org.eclipse.thym.wp.core.vstudio;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -22,8 +21,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.internal.cordova.CordovaCLI;
-import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.wp.core.WPCore;
 import org.eclipse.thym.wp.internal.core.Messages;
@@ -70,12 +67,7 @@ public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 			if(isRelease()){
 				buildType = "--release";
 			}
-			IStatus status = 
-			CordovaCLI.newCLIforProject(hybridProject).build(generateMonitor, WPProjectUtils.WP8, buildType).convertTo(ErrorDetectingCLIResult.class).asStatus();
-			this.getProject().refreshLocal(IResource.DEPTH_INFINITE, generateMonitor);
-			if(status.getSeverity() == IStatus.ERROR){
-				throw new CoreException(status);
-			}
+			hybridProject.build(generateMonitor.split(90), WPProjectUtils.WP8,buildType);
 			
 			File vstudioProjectDir = hybridProject.getProject().getFolder("platforms/wp8").getLocation().toFile();
 			if (isRelease()) {

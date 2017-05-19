@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -62,7 +62,7 @@ public class EnginePropertyPage extends PropertyPage {
 		});
 		noDefaultAndApplyButton();
 		HybridProject hybridProject = getProject();
-		HybridMobileEngine[] activeEngines = hybridProject.getActiveEngines();
+		HybridMobileEngine[] activeEngines = hybridProject.getEngineManager().getActiveEngines();
 		if(activeEngines != null){
 			engineSection.setSelection(new StructuredSelection(activeEngines));
 		}
@@ -130,7 +130,7 @@ public class EnginePropertyPage extends PropertyPage {
 		@SuppressWarnings("rawtypes")
 		List list = selection.toList();
 		try {
-			getProject().updateActiveEngines((HybridMobileEngine[]) list.toArray(new HybridMobileEngine[list.size()]));
+			getProject().getEngineManager().updateEngines((HybridMobileEngine[]) list.toArray(new HybridMobileEngine[list.size()]));
 		} catch (CoreException e) {
 			ErrorDialog.openError(getShell(), 
 					"Hybrid Mobile Engine Update failed", "Unable to update the active engine for the project "+ getProject().getProject().getName(), 
