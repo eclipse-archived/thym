@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
@@ -77,16 +77,17 @@ public class HybridProjectCreator {
      * @throws CoreException
      */
     public IProject createBasicTemplatedProject( String projectName, URI location, String appName, String appID, HybridMobileEngine[] engines, IProgressMonitor monitor ) throws CoreException {
-        if(monitor == null )
+        if(monitor == null ){
             monitor = new NullProgressMonitor();
-        
+        }
+        SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
         //don't pass the engines info to createProject. We will update the config.xml with 
         //after we add template files. It causes premature resource change events.
-        IProject project = createProject(projectName, location, appName, appID, null, monitor);
-        addTemplateFiles(project, new SubProgressMonitor(monitor, 5));    
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-        updateConfig(project, appName, appID, engines, new SubProgressMonitor(monitor, 1));
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+        IProject project = createProject(projectName, location, appName, appID, null, subMonitor.split(20));
+        addTemplateFiles(project, subMonitor.split(20));  
+        project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(20, SubMonitor.SUPPRESS_ALL_LABELS));
+        updateConfig(project, appName, appID, engines, subMonitor.split(20));
+        project.refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(20,SubMonitor.SUPPRESS_ALL_LABELS));
         return project;
     }
 
@@ -106,13 +107,16 @@ public class HybridProjectCreator {
      * @throws CoreException
      */
     public IProject createProject( String projectName, URI location,  String appName, String appID, HybridMobileEngine[] engines, IProgressMonitor monitor ) throws CoreException {
-        if(monitor == null )
+        if(monitor == null ) {
             monitor = new NullProgressMonitor();
-        IProject project = createHybridMobileProject(projectName, location, new SubProgressMonitor(monitor, 1));
-        addCommonPaths(project, monitor);
-        addPlatformPaths(project, new SubProgressMonitor( monitor, 1));
-        setUpJavaScriptProject(project, monitor);
-        updateConfig(project, appName, appID, engines, monitor);
+        }
+        SubMonitor subMonitor = SubMonitor.convert(monitor,100);
+        subMonitor.setTaskName("Creating project "+projectName);
+        IProject project = createHybridMobileProject(projectName, location, subMonitor.split(20));
+        addCommonPaths(project, subMonitor.split(10));
+        addPlatformPaths(project, subMonitor.split(10));
+        setUpJavaScriptProject(project, subMonitor.split(10));
+        updateConfig(project, appName, appID, engines, subMonitor.split(50));
         return project;
     }
     
@@ -146,8 +150,9 @@ public class HybridProjectCreator {
     private IProject createHybridMobileProject(String projectName,
             URI location, IProgressMonitor monitor) throws CoreException {
         Assert.isNotNull(projectName, "Project name is null, can not create a project without a name");
-        IProject project = createBasicProject(projectName, location, new SubProgressMonitor(monitor, 5));
-        addNature(project, new SubProgressMonitor(monitor, 5));
+        SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
+        IProject project = createBasicProject(projectName, location, subMonitor.split(50));
+        addNature(project, subMonitor.split(50));
         return project;
     }
 
@@ -210,6 +215,8 @@ public class HybridProjectCreator {
             }
         } catch (CoreException e) {
             HybridCore.log(IStatus.ERROR, "Error updating application name and id to config.xml", e);
+        } finally {
+        	monitor.done();
         }
     }
 
@@ -239,13 +246,13 @@ public class HybridProjectCreator {
     }
 
     private void addCommonPaths(IProject project, IProgressMonitor monitor) throws CoreException {
-        SubProgressMonitor subMonitor = new SubProgressMonitor(monitor, COMMON_PATHS.length);
+    	SubMonitor subMonitor = SubMonitor.convert(monitor,COMMON_PATHS.length);
         for (String path : COMMON_PATHS) {
             IFolder folder = project.getFolder(path);
             if( !folder.exists()){
                 createFolder(folder,subMonitor);
             }
-            subMonitor.worked(1);
+            subMonitor.split(1);
         }
         subMonitor.done();
     }

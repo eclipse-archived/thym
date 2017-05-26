@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -88,6 +89,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 			@Override
 			public void execute(IProgressMonitor monitor) throws InvocationTargetException,
 					InterruptedException {
+				SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
 				HybridProjectCreator creator = new HybridProjectCreator();
 				WizardNewHybridProjectCreationPage page = (WizardNewHybridProjectCreationPage)pageOne;
 				EngineConfigurationPage enginePage = (EngineConfigurationPage)pageTwo;
@@ -99,8 +101,8 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 					String appName = page.getApplicationName();
 					String appID = page.getApplicationID();
 					HybridMobileEngine[] engines = enginePage.getSelectedEngines();
-					IProject project = creator.createBasicTemplatedProject(page.getProjectName(), location ,appName, appID, engines, monitor);
-					installSelectedPlugins(project, monitor);
+					IProject project = creator.createBasicTemplatedProject(page.getProjectName(), location ,appName, appID, engines, subMonitor.split(30));
+					installSelectedPlugins(project, subMonitor.split(60));
 					addToWorkingSets(project);
 					openAndSelectConfigFile(project);
 					
@@ -129,6 +131,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 	}
 	
 	private void installSelectedPlugins(IProject project, IProgressMonitor monitor) throws CoreException{
+		SubMonitor subMonitor = SubMonitor.convert(monitor);
 		Assert.isNotNull(project);
 		HybridProject hybridProject = HybridProject.getHybridProject(project);
 		FileOverwriteCallback cb = new FileOverwriteCallback() {
@@ -141,16 +144,19 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 		switch (pageThree.getPluginSourceType()){
 		case PLUGIN_SOURCE_DIRECTORY:
 			File directory = new File(pageThree.getSelectedDirectory());
-			pm.installPlugin(directory,cb, monitor);
+			pm.installPlugin(directory,cb, subMonitor);
 			break;
 		case PLUGIN_SOURCE_GIT:
 			URI uri = URI.create(pageThree.getSpecifiedGitURL());
-			pm.installPlugin(uri,cb,false, monitor );
+			pm.installPlugin(uri,cb,false, subMonitor);
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
 			List<RegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
-			for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
-				pm.installPlugin(cordovaRegistryPluginVersion,cb,false, monitor);
+			if(!plugins.isEmpty()){
+				subMonitor.setWorkRemaining(plugins.size());
+				for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
+					pm.installPlugin(cordovaRegistryPluginVersion,cb,false, subMonitor.split(1));
+				}
 			}
 			break;
 		default:

@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridMobileStatus;
@@ -108,15 +109,17 @@ public class CordovaPluginManager {
 	 *</ul>
 	 */
 	public void installPlugin(RegistryPluginVersion plugin, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor ) throws CoreException{
-		if(monitor == null )
+		if(monitor == null ) {
 			monitor = new NullProgressMonitor();
-		if(monitor.isCanceled()) return;
+		}
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
+		subMonitor.setTaskName("Installing plugin: "+plugin.getName());
 		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
 		IStatus status = CordovaProjectCLI.newCLIforProject(this.project)
-				.plugin(Command.ADD, monitor, pluginCoords, CordovaProjectCLI.OPTION_SAVE )
+				.plugin(Command.ADD, subMonitor.split(50), pluginCoords, CordovaProjectCLI.OPTION_SAVE )
 				.convertTo(PluginMessagesCLIResult.class)
 				.asStatus();
-		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(50, SubMonitor.SUPPRESS_ALL_LABELS));
 		if(!status.isOK()){
 			throw new CoreException(status);
 		}
