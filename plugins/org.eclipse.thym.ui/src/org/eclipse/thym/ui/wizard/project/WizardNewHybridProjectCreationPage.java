@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,22 +10,38 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.wizard.project;
 
+import static org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_WARNING;
+import static org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_ERROR;
+
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.eclipse.ui.dialogs.WorkingSetGroup;
+import org.osgi.framework.Version;
 import org.eclipse.thym.core.HybridProjectConventions;
+import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
+import org.eclipse.thym.ui.HybridUI;
 
 public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreationPage{
 	private Text txtName;
@@ -33,7 +49,9 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 	private WorkingSetGroup workingSetGroup;
 	private final PropertyModifyListener propertyModifyListener = new PropertyModifyListener();
 	private IStructuredSelection currentSelection;
-	
+	private CordovaIsAvailableJob cordovaIsAvailableJob;
+	private CLabel cordovaLabel;
+	private Boolean cordovaFound = null;
 	
 	class PropertyModifyListener implements ModifyListener{
 		private boolean skipValidation = false;
@@ -65,7 +83,7 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 		setDescription("Create a hybrid mobile application using Apache Cordova for cross-platform mobile development");
 	}
 
-	public void createControl(Composite parent ){		
+	public void createControl(Composite parent ){
         super.createControl(parent);
          
         Group applicationGroup = new Group((Composite)getControl(), SWT.NONE);
@@ -93,21 +111,43 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
         txtID.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         
         createWorkingSetGroup();
+        
+        Group cordovaGroup = new Group((Composite)getControl(), SWT.NONE);
+        cordovaGroup.setText("Cordova version");
+        layout = new GridLayout();
+        layout.numColumns = 1;
+        cordovaGroup.setLayout(layout);
+        cordovaGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        
+        cordovaLabel = new CLabel(cordovaGroup, SWT.NONE);
+		cordovaLabel.setImage(JFaceResources.getImage(DLG_IMG_MESSAGE_WARNING));
+		cordovaLabel.setText("Checking cordova availability...");
+		cordovaLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL,true, true, 1, 1));
 
-
-        setPageComplete(validatePage());
         setErrorMessage(null);
         setMessage(null);
+        setPageComplete(validatePage());
         Dialog.applyDialogFont(getControl());
+        checkCordovaIsAvailable();
 	}
 	
 	@Override
 	protected boolean validatePage() {
+		if(cordovaFound == null){
+			setMessage("Checking cordova availability...", WARNING);
+			this.getContainer().updateMessage();
+			return false;
+		}
+		if(!cordovaFound){
+			setMessage("Cordova not found, please run 'npm install -g cordova' on a command line", ERROR);
+			this.getContainer().updateMessage();
+			return false;
+		}
+		
 		boolean superValidate = super.validatePage();
 		if(!superValidate || txtID == null || txtName == null ){//validate is actually called first time on super.createControl()
 			return superValidate;                                // in order to avoid NPEs for the half initialized UI we do a partial
 		}                                                       // until all UI components are in place.
-		
 		if( !propertyModifyListener.isNameOrIDChanged() ){
 			String id = HybridProjectConventions.generateProjectID(getProjectName());
 			String name = HybridProjectConventions.generateApplicationName(getProjectName());
@@ -147,6 +187,7 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 		
 		if(status.getSeverity() == IStatus.ERROR ){
 			setMessage(status.getMessage(), ERROR);
+			this.getContainer().updateMessage();
 			return false;
 		}
 		if (status.getSeverity() == IStatus.WARNING) {
@@ -174,4 +215,65 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 	public IWorkingSet[] getSelectedWorkingSets(){
 		return workingSetGroup.getSelectedWorkingSets();
 	}
+	
+	class CordovaIsAvailableJob extends Job {
+		
+		private String cordovaVersion;
+		
+		public CordovaIsAvailableJob() {
+			super("Checking cordova availability");
+		}
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			try {
+				ErrorDetectingCLIResult result = new CordovaCLI().version(monitor).convertTo(ErrorDetectingCLIResult.class);
+				if(result.asStatus().isOK()){
+					cordovaVersion = Version.parseVersion(result.getMessage()).toString();
+				}
+			} catch (CoreException e) {
+				HybridUI.log(WARNING, "Unable to determine if cordova is available", e);
+			}
+			return Status.OK_STATUS;
+			
+		}
+		
+		public String getCordovaVersion(){
+			return cordovaVersion;
+		}
+
+	}
+
+	private void checkCordovaIsAvailable() {
+		cordovaIsAvailableJob = new CordovaIsAvailableJob();
+		cordovaIsAvailableJob.setUser(true);
+		cordovaIsAvailableJob.schedule();
+		cordovaIsAvailableJob.addJobChangeListener(new JobChangeAdapter() {
+			
+			@Override
+			public void done(IJobChangeEvent event) {
+				if(!getControl().isDisposed()){
+					final Display display = getControl().getDisplay();
+					display.syncExec(new Runnable() {
+						@Override
+						public void run() {
+							if(cordovaIsAvailableJob.getCordovaVersion() != null){
+								cordovaLabel.setText(cordovaIsAvailableJob.getCordovaVersion());
+								cordovaLabel.setImage(null);
+								cordovaFound = true;
+							} else {
+								cordovaLabel.setText("Cordova not found, please run 'npm install -g cordova' on a command line");
+								cordovaLabel.setImage(JFaceResources.getImage(DLG_IMG_MESSAGE_ERROR));
+								cordovaLabel.setForeground(getControl().getDisplay().getSystemColor(SWT.COLOR_RED));
+								cordovaFound = false;
+							}
+							setPageComplete(validatePage());
+						}
+					});
+				}
+			}
+		});
+	}
+	
+	
 }
