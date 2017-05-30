@@ -47,16 +47,17 @@ public class HybridMobileEngineTests {
 
 	@Before 
 	public void setUpHybridMobileManager() throws CoreException{
-		testproject = new TestProject();
-		manager = new HybridMobileEngineManager(testproject.hybridProject());
-		// To support testing on platforms that don't have any cordova engines installed,
-		// we need to create a temporary engine and trick CordovaEngineProvider into
-		// thinking it's installed.
 		testEngine = provider.createEngine("android", "1.0.0", null, null);
 		testEngine.setLocation(new Path("/temporary/test/location"));
 		// CordovaEngineProvider.engineFound() just places the provided engine in the
 		// static installed engines list.
 		provider.engineFound(testEngine);
+		
+		testproject = new TestProject();
+		manager = new HybridMobileEngineManager(testproject.hybridProject());
+		// To support testing on platforms that don't have any cordova engines installed,
+		// we need to create a temporary engine and trick CordovaEngineProvider into
+		// thinking it's installed.
 		
 		testProjectWithoutEngine = new TestProject(false, PROJECT_NAME1, APPLICATION_NAME1, APPLICATION_ID1);
 		managerWithoutEngine = new HybridMobileEngineManager(testProjectWithoutEngine.hybridProject());

@@ -276,6 +276,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 
 	@Override
 	public void engineFound(HybridMobileEngine engine) {
+		initEngineList();
 		engineList.add(engine);
 	}
 
