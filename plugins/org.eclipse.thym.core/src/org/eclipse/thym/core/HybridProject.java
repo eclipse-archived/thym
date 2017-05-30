@@ -12,6 +12,7 @@ package org.eclipse.thym.core;
 
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -20,6 +21,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
@@ -156,7 +158,32 @@ public class HybridProject implements IAdaptable {
 		return CordovaProjectCLI.newCLIforProject(HybridProject.this);
 	}
 		
+	public void updateDerivedFolders(IProgressMonitor monitor) throws CoreException{
+		if(monitor == null){
+			monitor = new NullProgressMonitor();
+		}
+		for(String derivedFolder: PlatformConstants.DERIVED_SUBFOLDERS){
+			IFolder folder = getProject().getFolder(derivedFolder);
+			if(folder != null && folder.exists()){
+				for(IResource member: folder.members()){
+					if(member instanceof IFolder){
+						IFolder subFolder = (IFolder) member;
+						setDerivedFolder(subFolder, monitor);
+					}
+				}
+			}
+		}
+		for(String derivedFolder: PlatformConstants.DERIVED_FOLDERS){
+			IFolder folder = getProject().getFolder(derivedFolder);
+			setDerivedFolder(folder, monitor);
+		}
+	}
 	
+	private void setDerivedFolder(IFolder folder, IProgressMonitor monitor) throws CoreException{
+		if(folder != null && folder.exists() && !folder.isDerived()){
+			folder.setDerived(true, monitor);
+		}
+	}
 
 	/**
 	 * Returns the app name from the config.xml 

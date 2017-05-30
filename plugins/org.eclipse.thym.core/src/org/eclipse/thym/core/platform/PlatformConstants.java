@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ public interface PlatformConstants {
 	public static final String DIR_PLUGINS = "plugins";
 	public static final String DIR_DOT_CORDOVA = ".cordova";
 	public static final String DIR_PLATFORMS = "platforms";
+	public static final String DIR_NODE = "node_modules";
 	
 	public static final String FILE_JS_CORDOVA = "cordova.js";
 	public static final String FILE_JS_CORDOVA_PLUGIN = "cordova_plugins.js";
@@ -41,5 +42,8 @@ public interface PlatformConstants {
 		new Path(PlatformConstants.FILE_XML_CONFIG) };
 	public static final IPath PLATFORMS_JSON_PATH =
 			new Path(PlatformConstants.DIR_PLATFORMS).append(FILE_JSON_PLATFORMS);
+	
+	public static final String[] DERIVED_SUBFOLDERS= {DIR_PLUGINS, DIR_PLATFORMS};
+	public static final String[] DERIVED_FOLDERS= {DIR_NODE};
 
 }

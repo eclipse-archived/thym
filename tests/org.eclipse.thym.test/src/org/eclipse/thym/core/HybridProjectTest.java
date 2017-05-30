@@ -17,19 +17,24 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Matchers.anyInt;
 
 import static org.mockito.Mockito.verify;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
@@ -37,6 +42,7 @@ import org.eclipse.debug.core.model.IStreamsProxy2;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
+import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -222,6 +228,65 @@ public class HybridProjectTest {
 			return;
 		}
 		fail("run should throw CoreException");
+	}
+	
+	@Test
+	public void testProjectDerivedFolders() throws CoreException{
+		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
+		HybridProject hProject = HybridProject.getHybridProject(theProject);
+		createFolders(hProject);
+		hProject.updateDerivedFolders(new NullProgressMonitor());
+		
+		for(String folderName: PlatformConstants.DERIVED_SUBFOLDERS){
+			checkDerivedSubFolders(hProject, folderName);
+		}
+		for(String folderName: PlatformConstants.DERIVED_FOLDERS){
+			IFolder folder = hProject.getProject().getFolder(folderName);
+			assertTrue(folder.isDerived());
+		}
+	}
+	
+	private void checkDerivedSubFolders(HybridProject hProject, String folderName){
+		IFolder folder = hProject.getProject().getFolder(folderName);
+		IFolder subFolder1 = folder.getFolder(folder.getName()+"0");
+		assertTrue(subFolder1.isDerived());
+		IFolder subFolder2 = folder.getFolder(folder.getName()+"1");
+		assertTrue(subFolder2.isDerived());
+		
+		IFile subFile1 = folder.getFile("file0");
+		assertFalse(subFile1.isDerived());
+		
+		IFile subFile2 = folder.getFile("file1");
+		assertFalse(subFile2.isDerived());
+	}
+	
+	private void createFolders(HybridProject hProject) throws CoreException{
+		for(String folderName: PlatformConstants.DERIVED_FOLDERS){
+			IFolder folder = hProject.getProject().getFolder(new Path(folderName));
+			if(!folder.exists()){
+				folder.create(true, true, new NullProgressMonitor());
+			}
+		}
+		for(int i=0; i<PlatformConstants.DERIVED_SUBFOLDERS.length; i++){
+			String folderName = PlatformConstants.DERIVED_SUBFOLDERS[i];
+			IFolder folder = hProject.getProject().getFolder(new Path(folderName));
+			if(!folder.exists()){
+				folder.create(true, true, new NullProgressMonitor());
+			}
+			//create 2 subfolders and 2 files
+			for(int y=0;y<2;y++){
+				IFolder subFolder = hProject.getProject().getFolder(new Path(folderName+"/"+folderName+y));
+				if(!subFolder.exists()){
+					subFolder.create(true, true, new NullProgressMonitor());
+				}
+				IFile subFile = hProject.getProject().getFile(new Path(folderName+"/file"+y));
+				if(!subFile.exists()){
+					subFile.create(null, true, new NullProgressMonitor());
+				}
+			}
+		}
+		hProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 	}
 	
 	private CordovaProjectCLI setupMockCLI(HybridProject project) throws CoreException {

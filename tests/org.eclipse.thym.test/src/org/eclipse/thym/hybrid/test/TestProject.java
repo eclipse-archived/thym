@@ -60,7 +60,7 @@ public class TestProject {
 		try {
 			this.projectName = projectName;
 			this.appName = appName;
-			this.appId = appId;
+			this.appId = id;
 			HybridMobileEngine[] engines = null;
 			if(withEngine){
 				engines = HybridMobileEngineManager.defaultEngines();

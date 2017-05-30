@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.util.Map;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.ILog;
@@ -37,6 +38,7 @@ import org.eclipse.thym.core.extensions.CordovaEnvVariablesExtension;
 import org.eclipse.thym.core.extensions.ExtensionPointProxy;
 import org.eclipse.thym.core.extensions.NativeProjectBuilder;
 import org.eclipse.thym.core.extensions.PlatformSupport;
+import org.eclipse.thym.core.internal.project.DerivedFoldersChangeListener;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -59,10 +61,12 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 	private static ILog logger;
 	private ServiceTracker<IRetrieveFileTransferFactory, IRetrieveFileTransferFactory> retrievalFactoryTracker;
 	private static HybridCore inst;
+	private final DerivedFoldersChangeListener derivedFoldersChangeListener;
 
 	public HybridCore(){
 		super();
 		inst =this;
+		derivedFoldersChangeListener = new DerivedFoldersChangeListener();
 	}
 	
 	public static HybridCore getDefault(){
@@ -83,7 +87,7 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 		Hashtable<String,Object> props = new Hashtable<String, Object>();
 		props.put(org.eclipse.osgi.service.debug.DebugOptions.LISTENER_SYMBOLICNAME, PLUGIN_ID);
 		context.registerService(DebugOptionsListener.class.getName(), this, props);
-		
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(derivedFoldersChangeListener, IResourceChangeEvent.POST_CHANGE);
 	}
 
 	/*
