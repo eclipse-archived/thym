@@ -33,6 +33,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridMobileStatus;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.config.Plugin;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.core.internal.util.XMLUtil;
@@ -65,11 +66,8 @@ public class CordovaPluginManager {
 	
 	/**
 	 * Installs a Cordova plug-in to {@link HybridProject} from directory.
-	 * A plug-ins installation is a two step process. This method triggers the 
-	 * first step where Cordova Plug-ins is installed to HybridProject. 
 	 * 
 	 * @param directory
-	 * @param overwrite
 	 * @param monitor
 	 * @throws CoreException <ul>
 	 *<li>if plugin.xml is missing</li>
@@ -77,29 +75,17 @@ public class CordovaPluginManager {
 	 *<li>if an error occurs during installation</li>
 	 *</ul>
 	 */
-	public void installPlugin(File directory, FileOverwriteCallback overwrite, IProgressMonitor monitor) throws CoreException{
-		if(monitor == null )
-			monitor = new NullProgressMonitor();
-		if(monitor.isCanceled()) return;
+	public void installPlugin(File directory, IProgressMonitor monitor) 
+			throws CoreException{
 		// read plugin.xml to verify the plugin
 		readPluginXML(directory);
-		IStatus status = CordovaProjectCLI.newCLIforProject(project)
-			.plugin(Command.ADD, monitor, directory.toString(), CordovaProjectCLI.OPTION_SAVE)
-			.convertTo(PluginMessagesCLIResult.class)
-			.asStatus();
-		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-		if(!status.isOK()){
-			throw new CoreException(status);
-		}
+		installPlugin(directory.toString(), monitor, true);
 	}
 	
 	/**
-	 * Installs a Cordova plug-in from registry. This method 
-	 * delegates to {@link #doInstallPlugin()} after downloading the plugin from registry. 
+	 * Installs a Cordova plug-in from registry.
 	 * 
 	 * @param plugin
-	 * @param overwrite
-	 * @param isDependency 
 	 * @param monitor
 	 * @throws CoreException
 	 *<ul>
@@ -107,52 +93,54 @@ public class CordovaPluginManager {
 	 *<li>if an error occurs during installation</li>
 	 *</ul>
 	 */
-	public void installPlugin(RegistryPluginVersion plugin, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor ) throws CoreException{
+	public void installPlugin(RegistryPluginVersion plugin, IProgressMonitor monitor) throws CoreException{
+		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
+		installPlugin(pluginCoords, monitor, true);
+	}
+	
+	/**
+	 * Installs a specified plugin.
+	 * 
+	 * @param plugin
+	 * @param monitor
+	 * @param save
+	 * @throws CoreException
+	 */
+	public void installPlugin(Plugin plugin, IProgressMonitor monitor, boolean save) throws CoreException {
+		if (isPluginInstalled(plugin.getName())){
+			return;
+		}
+		String pluginVersion = plugin.getSpec().replaceAll("~", "");
+		String pluginCoords = plugin.getName() + "@" + pluginVersion;
+		installPlugin(pluginCoords, monitor, save);
+	}
+
+	/**
+	 * Installs a Cordova plug-in from a git repository.
+	 * 
+	 * @param uri
+	 * @param monitor 
+	 * @throws CoreException
+	 */
+	public void installPlugin(URI uri, IProgressMonitor monitor) throws CoreException{
+		installPlugin(uri.toString(), monitor, true);
+	}
+	
+	private void installPlugin(String plugin, IProgressMonitor monitor, boolean save) throws CoreException{
 		if(monitor == null ) {
 			monitor = new NullProgressMonitor();
 		}
 		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
-		subMonitor.setTaskName("Installing plugin: "+plugin.getName());
-		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
-		IStatus status = CordovaProjectCLI.newCLIforProject(this.project)
-				.plugin(Command.ADD, subMonitor.split(50), pluginCoords, CordovaProjectCLI.OPTION_SAVE )
-				.convertTo(PluginMessagesCLIResult.class)
-				.asStatus();
-		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(50, SubMonitor.SUPPRESS_ALL_LABELS));
-		if(!status.isOK()){
-			throw new CoreException(status);
+		subMonitor.setTaskName("Installing plugin: " + plugin);	
+		String options ="";
+		if(save){
+			options = CordovaProjectCLI.OPTION_SAVE;
 		}
-	}
-
-	/**
-	 * Installs a Cordova plug-in from a git repository. 
-	 * This method delegates to {@link #doInstallPlugin(File)} after cloning the
-	 * repository to a temporary location to complete the installation of the 
-	 * plug-in. 
-	 * <br/>
-	 * If commit is not null the cloned repository will be checked out to 
-	 * commit. 
-	 * <br/>
-	 * If subdir is not null it is assumed that the subdir path exists and installation 
-	 * will be done from that location. 
-	 * 
-	 * @param uri
-	 * @param overwrite
-	 * @param isDependency 
-	 * @param monitor 
-	 * @param commit 
-	 * @param subdir
-	 * @throws CoreException
-	 */
-	public void installPlugin(URI uri, FileOverwriteCallback overwrite, boolean isDependency, IProgressMonitor monitor) throws CoreException{
-		if(monitor == null )
-			monitor = new NullProgressMonitor();
-		if(monitor.isCanceled()) return;	
 		IStatus status = CordovaProjectCLI.newCLIforProject(project)
-			.plugin(Command.ADD, monitor, uri.toString(), CordovaProjectCLI.OPTION_SAVE)
+			.plugin(Command.ADD, subMonitor.split(90), plugin, options)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
-		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(10, SubMonitor.SUPPRESS_ALL_LABELS));
 		if(!status.isOK()){
 			throw new CoreException(status);
 		}
@@ -180,15 +168,7 @@ public class CordovaPluginManager {
 		return doc;
 	}
 	
-	/**
-	 * Removes the plug-in with given id
-	 * @param id
-	 * @param overwrite
-	 * @param monitor
-	 * 
-	 * @throws CoreException
-	 */
-	public void unInstallPlugin(String id, IProgressMonitor monitor) throws CoreException{
+	private void unInstallPlugin(String id, IProgressMonitor monitor, boolean save) throws CoreException{
 		
 		if(id == null || !isPluginInstalled(id))
 			return;
@@ -199,9 +179,15 @@ public class CordovaPluginManager {
 		if( !pluginFile.exists() ){
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Not a valid plugin id , no plugin.xml exists"));
 		}
-		if(monitor.isCanceled()) return;
+		if(monitor.isCanceled()){
+			return;
+		}
+		String options ="";
+		if(save){
+			options = CordovaProjectCLI.OPTION_SAVE;
+		}
 		IStatus status = CordovaProjectCLI.newCLIforProject(project)
-			.plugin(Command.REMOVE, monitor, id, CordovaProjectCLI.OPTION_SAVE)
+			.plugin(Command.REMOVE, monitor, id, options)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, monitor);
@@ -209,6 +195,31 @@ public class CordovaPluginManager {
 		if(!status.isOK()){
 			throw new CoreException(status);
 		}
+	}
+	
+	/**
+	 * Removes the plug-in with given id.
+	 * 
+	 * @param id
+	 * @param monitor
+	 * 
+	 * @throws CoreException
+	 */
+	public void unInstallPlugin(String id, IProgressMonitor monitor) throws CoreException{
+		unInstallPlugin(id, monitor, true);
+	}
+	
+	/**
+	 * Removes the given plug-in.
+	 * 
+	 * @param id
+	 * @param monitor
+	 * @param if save param should be added to cordova cli
+	 * 
+	 * @throws CoreException
+	 */
+	public void unInstallPlugin(Plugin plugin, IProgressMonitor monitor, boolean save) throws CoreException{
+		unInstallPlugin(plugin.getName(), monitor, save);
 	}
 
 	

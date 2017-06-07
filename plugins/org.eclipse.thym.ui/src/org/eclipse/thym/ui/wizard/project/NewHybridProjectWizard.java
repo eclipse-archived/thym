@@ -36,7 +36,6 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
@@ -134,28 +133,23 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 		SubMonitor subMonitor = SubMonitor.convert(monitor);
 		Assert.isNotNull(project);
 		HybridProject hybridProject = HybridProject.getHybridProject(project);
-		FileOverwriteCallback cb = new FileOverwriteCallback() {
-			@Override
-			public boolean isOverwiteAllowed(String[] files) {
-				return true;
-			}
-		};
+		
 		CordovaPluginManager pm = new CordovaPluginManager(hybridProject);
 		switch (pageThree.getPluginSourceType()){
 		case PLUGIN_SOURCE_DIRECTORY:
 			File directory = new File(pageThree.getSelectedDirectory());
-			pm.installPlugin(directory,cb, subMonitor);
+			pm.installPlugin(directory, subMonitor);
 			break;
 		case PLUGIN_SOURCE_GIT:
 			URI uri = URI.create(pageThree.getSpecifiedGitURL());
-			pm.installPlugin(uri,cb,false, subMonitor);
+			pm.installPlugin(uri, subMonitor);
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
 			List<RegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
 			if(!plugins.isEmpty()){
 				subMonitor.setWorkRemaining(plugins.size());
 				for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
-					pm.installPlugin(cordovaRegistryPluginVersion,cb,false, subMonitor.split(1));
+					pm.installPlugin(cordovaRegistryPluginVersion, subMonitor.split(1));
 				}
 			}
 			break;

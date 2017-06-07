@@ -24,24 +24,30 @@ import static org.eclipse.thym.core.config.WidgetModelConstants.WIDGET_TAG_ENGIN
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Plugin;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
@@ -77,6 +83,7 @@ public class WidgetModel implements IModelStateListener{
 	private Widget editableWidget;
 	private Widget readonlyWidget;
 	private long readonlyTimestamp;
+	private Widget lastWidget;
 
 	public IStructuredModel underLyingModel;
 	
@@ -197,6 +204,7 @@ public class WidgetModel implements IModelStateListener{
 						underLyingModel.addModelStateListener(this);
 						IDOMModel domModel = (IDOMModel) underLyingModel;
 						editableWidget = load(domModel.getDocument());
+						lastWidget = load(domModel.getDocument());
 					}
 				} catch (IOException e) {
 					throw new CoreException(new Status(IStatus.ERROR,
@@ -417,10 +425,17 @@ public class WidgetModel implements IModelStateListener{
 		this.editableWidget = null;
 		this.readonlyWidget = null;
 	}
+	
+	/**
+	 * Returns hybrid project associated with this WigetModel
+	 * @return hybrid project
+	 */
+	public HybridProject getProject(){
+		return HybridProject.getHybridProject(configXMLtoIFile().getProject());
+	}
 
 	@Override
 	public void modelAboutToBeChanged(IStructuredModel model) {
-		
 	}
 
 	@Override
@@ -431,15 +446,91 @@ public class WidgetModel implements IModelStateListener{
 	public void modelDirtyStateChanged(IStructuredModel model, boolean isDirty) {
 		if(!isDirty){
 			synchronized (this) {
-				HybridProject project =
-						HybridProject.getHybridProject(configXMLtoIFile().getProject());
+				final HybridProject project =getProject();
 				project.getEngineManager().resyncWithConfigXml();
-				reloadEditableWidget();
-				//release the readOnly model to be reloaded
-				this.readonlyWidget = null;
-				this.readonlyTimestamp = -1;
+				
+				final IDOMModel domModel = (IDOMModel) model;
+					
+				Job updatePlugins = new Job("Update cordova plugins") {
+					
+					@Override
+					protected IStatus run(IProgressMonitor monitor) {
+						Widget newWidget = load(domModel.getDocument());
+							
+						final List<Plugin> oldPlugins = lastWidget.getPlugins();
+						final List<Plugin> newPlugins = newWidget.getPlugins();
+							
+						SubMonitor subMonitor = SubMonitor.convert(monitor);
+						List<Plugin> toInstall = new ArrayList<>(newPlugins);
+						List<Plugin> toUninstall = new ArrayList<>(oldPlugins);
+						toInstall.removeAll(oldPlugins);
+						toUninstall.removeAll(newPlugins);
+						
+						List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins,newPlugins);
+						
+						subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + pluginsToUpdate.size()*2);
+						for(Plugin uninstall: toUninstall){
+							try{
+								project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
+							} catch (CoreException e) {
+								HybridCore.log(Status.ERROR, "Unable to uninstall plugin "+uninstall.getName(), e);
+							}
+						}
+						for(Plugin install: toInstall){
+							try {
+								project.getPluginManager().installPlugin(install, subMonitor.split(1), false);
+							} catch (CoreException e) {
+								HybridCore.log(Status.ERROR, "Unable to install plugin "+install.getName(), e);
+							}
+						}
+						
+						
+						//update versions
+						for(Plugin plugin: pluginsToUpdate){
+							int index = newPlugins.indexOf(plugin);
+							if(index != -1){ //not really needed but just in case..
+								try{
+									project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
+									project.getPluginManager().installPlugin(newPlugins.get(index), subMonitor.split(1), false);
+								} catch (CoreException e) {
+									HybridCore.log(Status.ERROR, "Unable to update plugin "+plugin.getName(), e);
+								}
+							}
+						}
+						return Status.OK_STATUS;
+					}
+				};
+				
+				updatePlugins.addJobChangeListener(new JobChangeAdapter(){
+					
+					@Override
+					public void done(IJobChangeEvent event) {
+						lastWidget = load(domModel.getDocument());
+						reloadEditableWidget();
+						readonlyWidget = null;
+						readonlyTimestamp = -1;
+					}
+				});
+				ISchedulingRule rule = ResourcesPlugin.getWorkspace().getRuleFactory().modifyRule(project.getProject());
+				updatePlugins.setRule(rule);
+				updatePlugins.schedule();
 			}	
 		}
+	}
+	
+	private List<Plugin> getPluginsToUpdate(List<Plugin> oldPlugins, List<Plugin> newPlugins){
+		List<Plugin> pluginsToUpdate = new ArrayList<>();
+		for(Plugin plugin: oldPlugins){
+			int index = newPlugins.indexOf(plugin);
+			if(index != -1){
+				String newSpec = newPlugins.get(index).getSpec();
+				if(!newSpec.equals(plugin.getSpec())){
+					pluginsToUpdate.add(plugin);
+				}
+			}
+		}
+		return pluginsToUpdate;
+		
 	}
 
 	@Override
