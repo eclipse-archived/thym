@@ -40,7 +40,6 @@ import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
-import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXParseException;
@@ -138,7 +137,7 @@ public class CordovaPluginManager {
 		if(save){
 			options = CordovaProjectCLI.OPTION_SAVE;
 		}
-		IStatus status = CordovaProjectCLI.newCLIforProject(project)
+		IStatus status = project.getProjectCLI()
 			.plugin(Command.ADD, subMonitor.split(90), plugin, options)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
@@ -188,7 +187,7 @@ public class CordovaPluginManager {
 		if(save){
 			options = CordovaProjectCLI.OPTION_SAVE;
 		}
-		IStatus status = CordovaProjectCLI.newCLIforProject(project)
+		IStatus status = project.getProjectCLI()
 			.plugin(Command.REMOVE, monitor, id, options)
 			.convertTo(PluginMessagesCLIResult.class)
 			.asStatus();
@@ -351,7 +350,6 @@ public class CordovaPluginManager {
 	
 	private void addInstalledPlugin(IFile pluginxml) throws CoreException{
 		CordovaPlugin plugin = CordovaPluginXMLHelper.createCordovaPlugin(pluginxml.getContents());
-		plugin.setFolder((IFolder)pluginxml.getParent().getAdapter(IFolder.class));
 		int index = installedPlugins.indexOf(plugin);
 		if(index>-1){
 			installedPlugins.set(index, plugin);

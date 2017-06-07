@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 
 public class CordovaPluginCatalogViewer extends Composite {

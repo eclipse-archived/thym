@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2017 Red Hat, Inc. 
+ * Copyright (c) 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,31 +10,26 @@
  *******************************************************************************/
 package org.eclipse.thym.ui.internal;
 
-
-import static org.eclipse.thym.core.plugin.CordovaPluginXMLHelper.*;
-
-import org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder;
+import org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
 
-public class CordovaPluginProperties implements IPropertySource {
+public class CordovaPlatformProperties implements IPropertySource {
 	
-	private HybridPluginFolder source;
+	private HybridPlatformFolder source;
 	private static IPropertyDescriptor[] descriptors;
+	private static final String PLATFORM_NAME="name";
+	private static final String PLATFORM_SPEC="spec";
 	
 	static{
 		descriptors = new IPropertyDescriptor[6];
-		descriptors[0] = createPropertyDescriptor(PLGN_PROPERTY_NAME, "Name");
-		descriptors[1] = createPropertyDescriptor(PLGN_PROPERTY_ID, "ID");
-		descriptors[2] = createPropertyDescriptor(PLGN_PROPERTY_VERSION, "Version");
-		descriptors[3] = createPropertyDescriptor(PLGN_PROPERTY_LICENSE, "License");
-		descriptors[4] = createPropertyDescriptor(PLGN_PROPERTY_AUTHOR, "Author");
-		descriptors[5] = createPropertyDescriptor(PLGN_PROPERTY_INFO, "Info");
+		descriptors[0] = createPropertyDescriptor(PLATFORM_NAME, "Name");
+		descriptors[1] = createPropertyDescriptor(PLATFORM_SPEC, "Spec");
 	}
 	
-	public CordovaPluginProperties(HybridPluginFolder plugin){
-		this.source = plugin;
+	public CordovaPlatformProperties(HybridPlatformFolder platform){
+		this.source = platform;
 	}
 
 	@Override
@@ -49,23 +44,11 @@ public class CordovaPluginProperties implements IPropertySource {
 
 	@Override
 	public Object getPropertyValue(Object id) {
-		if(PLGN_PROPERTY_NAME.equals(id)){
-			return source.getPlugin().getName();
+		if(PLATFORM_NAME.equals(id)){
+			return source.getPlatform().getName();
 		}
-		if(PLGN_PROPERTY_ID.equals(id)){
-			return source.getPlugin().getId();
-		}
-		if(PLGN_PROPERTY_VERSION.equals(id)){
-			return source.getPlugin().getVersion();
-		}
-		if(PLGN_PROPERTY_LICENSE.equals(id)){
-			return source.getPlugin().getLicense();
-		}
-		if(PLGN_PROPERTY_AUTHOR.equals(id)){
-			return source.getPlugin().getAuthor();
-		}
-		if(PLGN_PROPERTY_INFO.equals(id)){
-			return source.getPlugin().getInfo();
+		if(PLATFORM_SPEC.equals(id)){
+			return source.getPlatform().getSpec();
 		}
 		return null;
 	}
@@ -85,10 +68,11 @@ public class CordovaPluginProperties implements IPropertySource {
 	
 	private static IPropertyDescriptor createPropertyDescriptor(String field, String label){
 		PropertyDescriptor descriptor = new PropertyDescriptor(field, label);
-		descriptor.setCategory("Cordova Plugin");
+		descriptor.setCategory("Cordova Platform");
 		descriptor.setAlwaysIncompatible(true);
 		return descriptor;
 
 		
 	}
+
 }

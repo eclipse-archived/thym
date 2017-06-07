@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -43,6 +44,7 @@ import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.PlatformConstants;
+import org.eclipse.thym.core.plugin.PluginMessagesCLIResult;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
@@ -106,6 +108,26 @@ public class HybridMobileEngineManager {
 		}
 		return new HybridMobileEngine[0];
 	}
+	
+	public void removeEngine(HybridMobileEngine engine, IProgressMonitor monitor, boolean save) throws OperationCanceledException, CoreException {
+		if(monitor == null ) {
+			monitor = new NullProgressMonitor();
+		}
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
+		subMonitor.setTaskName("Removing platform: " + engine);	
+		String options ="";
+		if(save){
+			options = CordovaProjectCLI.OPTION_SAVE;
+		}
+		IStatus status = project.getProjectCLI()
+			.platform(Command.REMOVE, subMonitor.split(90), engine.getName(), options)
+			.convertTo(PluginMessagesCLIResult.class)
+			.asStatus();
+		project.getProject().refreshLocal(IResource.DEPTH_INFINITE, subMonitor.split(10, SubMonitor.SUPPRESS_ALL_LABELS));
+		if(!status.isOK()){
+			throw new CoreException(status);
+		}
+	}
 
 	/**
 	 * Returns the active engines for the project by looking at
@@ -168,7 +190,7 @@ public class HybridMobileEngineManager {
 				WidgetModel model = WidgetModel.getModel(project);
 				Widget w = model.getWidgetForEdit();
 				List<Engine> existingEngines = w.getEngines();
-				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
+				CordovaProjectCLI cordova = project.getProjectCLI();
 				SubMonitor sm = SubMonitor.convert(monitor,100);
 				if(existingEngines != null ){
 					List<HybridMobileEngine> enginesList = Arrays.asList(engines);
@@ -216,7 +238,7 @@ public class HybridMobileEngineManager {
 					return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, err);
 				}
 				HybridMobileEngine[] activeEngines = getEnginesFromPlatformsJson();
-				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
+				CordovaProjectCLI cordova = project.getProjectCLI();
 				MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, 
 						"Errors updating engines from config.xml", null);
 				IStatus subStatus = Status.OK_STATUS;
