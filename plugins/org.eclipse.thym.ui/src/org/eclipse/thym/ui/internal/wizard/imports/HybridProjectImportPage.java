@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -62,11 +62,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.eclipse.thym.core.plugin.CordovaPlugin;
-import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
@@ -509,14 +505,6 @@ public class HybridProjectImportPage extends WizardPage implements IOverwriteQue
 	
 	boolean createProjects(){
 		saveInHistroy();
-		
-		final FileOverwriteCallback cb = new FileOverwriteCallback() {
-			
-			@Override
-			public boolean isOverwiteAllowed(String[] files) {
-				return true;
-			}
-		};
 		
 		final Object[] selectedCandidates = projectList.getCheckedElements();
 		WorkspaceModifyOperation wop = new WorkspaceModifyOperation() {

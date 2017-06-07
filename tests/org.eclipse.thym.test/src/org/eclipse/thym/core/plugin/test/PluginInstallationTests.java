@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,7 +33,6 @@ import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.FileOverwriteCallback;
 import org.eclipse.thym.hybrid.test.Activator;
 import org.eclipse.thym.hybrid.test.RequiresCordovaCLICategory;
 import org.eclipse.thym.hybrid.test.TestProject;
@@ -194,13 +193,7 @@ public class PluginInstallationTests {
 	public void installPluginFromGit() throws CoreException{
 		CordovaPluginManager pm = getCordovaPluginManager();
 		URI uri = URI.create("https://github.com/apache/cordova-plugin-console.git#r0.2.0");
-		pm.installPlugin(uri, new FileOverwriteCallback() {
-				
-			@Override
-			public boolean isOverwiteAllowed(String[] files) {
-				return true;
-			}
-		}, false, new NullProgressMonitor());
+		pm.installPlugin(uri, new NullProgressMonitor());
 		List<CordovaPlugin> plugins = pm.getInstalledPlugins();
 		boolean found = false;
 		for (CordovaPlugin cordovaPlugin : plugins) {
@@ -220,13 +213,7 @@ public class PluginInstallationTests {
 		CordovaPluginManager pm = getCordovaPluginManager();
 		File directory = new File(pluginsDirectroy, pluginsSubdir);
 		assertTrue(pluginsSubdir+ " does not exist", directory.exists());
-		pm.installPlugin(directory,new FileOverwriteCallback() {
-			
-			@Override
-			public boolean isOverwiteAllowed(String[] files) {
-				return true;
-			}
-		}, new NullProgressMonitor());
+		pm.installPlugin(directory, new NullProgressMonitor());
 		return pm;
 	}
 	
