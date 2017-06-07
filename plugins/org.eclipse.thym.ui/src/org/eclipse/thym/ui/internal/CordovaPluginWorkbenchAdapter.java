@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2014 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,8 @@
 package org.eclipse.thym.ui.internal;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
+import org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 
 public class CordovaPluginWorkbenchAdapter implements IWorkbenchAdapter {
@@ -31,21 +31,24 @@ public class CordovaPluginWorkbenchAdapter implements IWorkbenchAdapter {
 
 	@Override
 	public String getLabel(Object o) {
-		if(o instanceof CordovaPlugin){
-			CordovaPlugin plugin = (CordovaPlugin) o;
-			String label = plugin.getName();
-			if(label == null || label.isEmpty()){
-				label = plugin.getId();
-			}
-			return label;
+		if(o instanceof HybridPluginFolder){
+			HybridPluginFolder plugin = (HybridPluginFolder) o;
+			if(plugin.getPlugin() != null) {
+				String label = plugin.getPlugin().getName();
+				if(label == null || label.isEmpty()){
+					label = plugin.getPlugin().getId();
+				}
+				return label;
+			} 
+			return plugin.getFolder().getName();
 		}
 		return null;
 	}
 
 	@Override
 	public Object getParent(Object o) {
-		if(o instanceof CordovaPlugin){
-			CordovaPlugin plugin = (CordovaPlugin) o;
+		if(o instanceof HybridPluginFolder){
+			HybridPluginFolder plugin = (HybridPluginFolder) o;
 			return plugin.getFolder();
 		}
 		return null;

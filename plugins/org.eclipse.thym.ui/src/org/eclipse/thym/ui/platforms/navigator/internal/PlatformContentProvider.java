@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2017 Red Hat, Inc. 
+ * Copyright (c) 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.thym.ui.plugins.navigator.internal;
+package org.eclipse.thym.ui.platforms.navigator.internal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +25,15 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
 
-public class PluginContentProvider implements ITreeContentProvider, IResourceChangeListener {
+public class PlatformContentProvider implements ITreeContentProvider, IResourceChangeListener {
 
 	private Viewer viewer;
 
-	public PluginContentProvider() {
+	public PlatformContentProvider() {
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 	}
 
@@ -59,29 +59,31 @@ public class PluginContentProvider implements ITreeContentProvider, IResourceCha
 			return new Object[0];
 		}
 		IFolder folder = (IFolder) parentElement;
-		if (folder.getProjectRelativePath().segmentCount() > 1) {// only plugins folder at the root of the project
+		if (folder.getProjectRelativePath().segmentCount() > 1) {// only platforms folder at the root of the project
 			return new Object[0];
 		}
-		List<HybridPluginFolder> plugins = new ArrayList<>();
-		HybridProject project = HybridProject.getHybridProject(folder.getProject());
+		List<HybridPlatformFolder> platformFolders = new ArrayList<>();
 		try {
+			HybridProject project = HybridProject.getHybridProject(folder.getProject());
 			for (IResource member : folder.members()) {
 				if (member instanceof IFolder) {
-					IFolder pluginFolder = (IFolder) member;
-					plugins.add(new HybridPluginFolder(pluginFolder, getPlugin(pluginFolder.getName(), project)));
+					IFolder platformFolder = (IFolder) member;
+					platformFolders.add(
+							new HybridPlatformFolder((IFolder) member, getPlatform(project, platformFolder.getName())));
 				}
 			}
+			
 		} catch (CoreException e) {
-			HybridUI.log(IStatus.ERROR, "Error retrieving the installed plugins", e);
+			HybridUI.log(IStatus.ERROR, "Error reading cordova platforms", e);
 		}
-
-		return plugins.toArray();
+		return platformFolders.toArray();
 	}
 
-	private CordovaPlugin getPlugin(String name, HybridProject project) throws CoreException {
-		for (CordovaPlugin plugin : project.getPluginManager().getInstalledPlugins()) {
-			if (plugin.getId().equals(name)) {
-				return plugin;
+	private HybridMobileEngine getPlatform(HybridProject project, String name) {
+		HybridMobileEngine[] engines = project.getEngineManager().getEngines();
+		for (HybridMobileEngine engine : engines) {
+			if (engine.getName().equals(name)) {
+				return engine;
 			}
 		}
 		return null;
@@ -101,12 +103,10 @@ public class PluginContentProvider implements ITreeContentProvider, IResourceCha
 		if (folder.getProjectRelativePath().segmentCount() > 1) {// folder at the root of the project?
 			return false;
 		}
-		HybridProject project = HybridProject.getHybridProject(folder.getProject());
 		try {
-			List<CordovaPlugin> plugins = project.getPluginManager().getInstalledPlugins();
-			return plugins.isEmpty();
+			return folder.members().length > 0;
 		} catch (CoreException e) {
-			HybridUI.log(IStatus.ERROR, "Error determining the installed plugins", e);
+			HybridUI.log(IStatus.ERROR, "Error reading cordova platforms", e);
 		}
 		return false;
 	}
@@ -118,7 +118,7 @@ public class PluginContentProvider implements ITreeContentProvider, IResourceCha
 			return;
 		IResourceDelta[] deltas = delta.getAffectedChildren();
 		for (int i = 0; i < deltas.length; i++) {
-			if (deltas[i].findMember(new Path(PlatformConstants.DIR_PLUGINS)) != null) {
+			if (deltas[i].findMember(new Path(PlatformConstants.DIR_PLATFORMS)) != null) {
 				viewer.getControl().getDisplay().asyncExec(new Runnable() {
 					@Override
 					public void run() {

@@ -125,10 +125,18 @@
         </actionProvider>
         <actionProvider
               class="org.eclipse.thym.ui.plugins.navigator.internal.CordovaPluginActionProvider">
-           <enablement>
-              <instanceof
-                    value="org.eclipse.thym.core.plugin.CordovaPlugin">
-              </instanceof>
+              <enablement>
+           		<and>
+          			<instanceof
+                    	value="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
+             	 	</instanceof>
+             	 	<adapt
+                      type="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
+                      <test
+                            property="org.eclipse.thym.ui.pluginActionTester">
+                      </test>
+             	 	</adapt>
+           		</and>
            </enablement>
         </actionProvider>
      </navigatorContent>
@@ -141,6 +149,53 @@
            visibleInUI="true">
      </commonFilter>
   </extension>
+  
+  
+    <extension
+        point="org.eclipse.ui.navigator.navigatorContent">
+     <navigatorContent
+           contentProvider="org.eclipse.thym.ui.platforms.navigator.internal.PlatformContentProvider"
+           icon="icons/icon32/plug32.png"
+           id="org.eclipse.thym.ui.platformavigatorContent"
+           labelProvider="org.eclipse.ui.model.WorkbenchLabelProvider"
+           name="Cordova Platform Content"
+           priority="normal">
+        <enablement>
+        	<and>
+	        	<adapt type="org.eclipse.core.resources.IFolder">
+                    <test property="org.eclipse.core.resources.name" value="platforms" />
+                    <test property="org.eclipse.core.resources.path" value="/*/platforms" />
+					<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.thym.core.HybridAppNature"/>
+            	</adapt>
+            </and>
+        </enablement>
+        <actionProvider
+              class="org.eclipse.thym.ui.platforms.navigator.internal.PlatformActionProvider">
+              <enablement>
+           		<and>
+          			<instanceof
+                    	value="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
+             	 	</instanceof>
+             	 	<adapt
+                      type="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
+                      <test
+                            property="org.eclipse.thym.ui.platformActionTester">
+                      </test>
+             	 	</adapt>
+           		</and>
+           </enablement>
+        </actionProvider>
+     </navigatorContent>
+     <commonFilter
+           activeByDefault="true"
+           class="org.eclipse.thym.ui.platforms.navigator.internal.PlatformsFolderContentFilter"
+           description="Filters the contents of the folders for the installed Cordova Platforms"
+           id="org.eclipse.thym.ui.platformsFolderFilter"
+           name="Cordova Platform Folder Filter"
+           visibleInUI="true">
+     </commonFilter>
+  </extension>
+  
   <extension
         point="org.eclipse.ui.navigator.viewer">
      <viewerContentBinding
@@ -155,8 +210,21 @@
   <extension
         point="org.eclipse.core.runtime.adapters">
      <factory
-           adaptableType="org.eclipse.thym.core.plugin.CordovaPlugin"
+           adaptableType="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder"
            class="org.eclipse.thym.ui.internal.CordovaPluginAdapterFactory">
+        <adapter
+              type="org.eclipse.ui.views.properties.IPropertySource">
+        </adapter>
+        <adapter
+              type="org.eclipse.ui.model.IWorkbenchAdapter">
+        </adapter>
+        <adapter
+              type="org.eclipse.core.resources.IResource">
+        </adapter>
+     </factory>
+     <factory
+           adaptableType="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder"
+           class="org.eclipse.thym.ui.internal.CordovaPlatformAdapterFactory">
         <adapter
               type="org.eclipse.ui.views.properties.IPropertySource">
         </adapter>
@@ -294,6 +362,20 @@
             namespace="org.eclipse.thym.ui"
             properties="canConvertToThym"
             type="org.eclipse.core.resources.IProject">
+      </propertyTester>
+      <propertyTester
+            class="org.eclipse.thym.ui.plugins.navigator.internal.PluginActionProperyTester"
+            id="org.eclipse.thym.ui.PluginActionPropertyTester"
+            namespace="org.eclipse.thym.ui"
+            properties="pluginActionTester"
+            type="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
+      </propertyTester>
+      <propertyTester
+            class="org.eclipse.thym.ui.platforms.navigator.internal.PlatformActionPropertyTester"
+            id="org.eclipse.thym.ui.PlatformActionPropertyTester"
+            namespace="org.eclipse.thym.ui"
+            properties="platformActionTester"
+            type="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
       </propertyTester>
    </extension>
    <extension

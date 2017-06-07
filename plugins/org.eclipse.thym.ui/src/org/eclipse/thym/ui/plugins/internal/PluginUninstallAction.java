@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -30,71 +31,76 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.cordova.RequirementsUtility;
+import org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public class PluginUninstallAction extends Action{
-	
+public class PluginUninstallAction extends Action {
+
 	private static final String CONFIRM_DIALOG_TITLE = "Uninstall Cordova plug-in(s)";
+	private static final String UNINSTALL_ICON = "/icons/obj16/plug16_obj.png";
 	private CordovaPlugin plugin;
+	private HybridProject project;
+
 	public PluginUninstallAction() {
 		super("Uninstall Cordova plug-in");
 	}
-	
-	public PluginUninstallAction(CordovaPlugin cordovaPlugin) {
+
+	public PluginUninstallAction(HybridProject project, CordovaPlugin cordovaPlugin) {
 		this();
 		this.plugin = cordovaPlugin;
+		this.project = project;
 	}
 
 	@Override
 	public void run() {
 		final ArrayList<CordovaPlugin> pluginsToRemove = new ArrayList<CordovaPlugin>();
-		if(this.plugin != null ){
+		if (this.plugin != null) {
 			pluginsToRemove.add(plugin);
-		}else{
+		} else {
 			IStructuredSelection selection = getSelection();
-			if(selection.isEmpty())
+			if (selection.isEmpty()) {
 				return;
+			}
 			@SuppressWarnings("rawtypes")
 			Iterator it = selection.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				Object o = it.next();
-				if(o instanceof CordovaPlugin ){
-					pluginsToRemove.add((CordovaPlugin)o);
+				if (o instanceof HybridPluginFolder) {
+					HybridPluginFolder folder = (HybridPluginFolder) o;
+					pluginsToRemove.add(folder.getPlugin());
+					project = HybridProject.getHybridProject(folder.getFolder().getProject());
 				}
 			}
 		}
-		if(pluginsToRemove.isEmpty()){
+		if (pluginsToRemove.isEmpty()) {
 			return;
 		}
-		
-		HybridProject project = HybridProject.getHybridProject(pluginsToRemove.get(0).getFolder().getProject());
-		if(!RequirementsUtility.checkCordovaRequirements()){
+		if (!RequirementsUtility.checkCordovaRequirements()) {
 			return;
 		}
-	
-		String message =null;
-		if(pluginsToRemove.size() == 1){
+
+		String message = null;
+		if (pluginsToRemove.size() == 1) {
 			message = NLS.bind("Are you sure you want to uninstall {0} plug-in?",
-					new String[]{ pluginsToRemove.get(0).getId()});
-		}else{
+					new String[] { pluginsToRemove.get(0).getId() });
+		} else {
 			message = NLS.bind("Are you sure you want to uninstall the selected {0} plug-ins?",
-					new String[]{Integer.toString(pluginsToRemove.size())});
+					new String[] { Integer.toString(pluginsToRemove.size()) });
 		}
-		
-		if( !MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), CONFIRM_DIALOG_TITLE, message)){
+
+		if (!MessageDialog.openConfirm(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+				CONFIRM_DIALOG_TITLE, message)) {
 			return;
 		}
-		
+
 		try {
 			PlatformUI.getWorkbench().getProgressService().busyCursorWhile(new IRunnableWithProgress() {
 
 				@Override
-				public void run(IProgressMonitor monitor) throws InvocationTargetException,
-				InterruptedException {
+				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
 						for (CordovaPlugin cordovaPlugin : pluginsToRemove) {
-							HybridProject project = HybridProject.getHybridProject(cordovaPlugin.getFolder().getProject());
 							monitor.subTask(NLS.bind("Uninstalling {0}", cordovaPlugin.getId()));
 							project.getPluginManager().unInstallPlugin(cordovaPlugin.getId(), monitor);
 						}
@@ -106,24 +112,30 @@ public class PluginUninstallAction extends Action{
 			});
 		} catch (InvocationTargetException e) {
 			Throwable t = e;
-			if(e.getTargetException() != null ){
-				t =e.getTargetException();
+			if (e.getTargetException() != null) {
+				t = e.getTargetException();
 			}
-			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error removing Cordova plug-in",null, 
-					new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, "Error when removing the Cordova plug-in", t ));
+			ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+					"Error removing Cordova plug-in", null,
+					new Status(IStatus.ERROR, HybridUI.PLUGIN_ID, "Error when removing the Cordova plug-in", t));
 		} catch (InterruptedException e) {
-			HybridUI.log(IStatus.ERROR, "Error while removing a Cordova plugin " ,e);
+			HybridUI.log(IStatus.ERROR, "Error while removing a Cordova plugin ", e);
 		}
 	}
-	
-	private IStructuredSelection getSelection(){
+
+	private IStructuredSelection getSelection() {
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		if(window != null ){
+		if (window != null) {
 			ISelection selection = window.getSelectionService().getSelection();
-			if(selection instanceof IStructuredSelection)
-				return (IStructuredSelection)selection;
+			if (selection instanceof IStructuredSelection)
+				return (IStructuredSelection) selection;
 		}
 		return StructuredSelection.EMPTY;
 	}
 	
+	@Override
+	public ImageDescriptor getImageDescriptor() {
+		return HybridUI.getImageDescriptor(HybridUI.PLUGIN_ID, UNINSTALL_ICON);
+	}
+
 }

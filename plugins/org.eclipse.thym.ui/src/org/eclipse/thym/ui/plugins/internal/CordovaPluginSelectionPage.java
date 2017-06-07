@@ -62,7 +62,6 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
 import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 /**
  * A wizard page that allows users to view cordova plug-in registry and select plug-ins either 

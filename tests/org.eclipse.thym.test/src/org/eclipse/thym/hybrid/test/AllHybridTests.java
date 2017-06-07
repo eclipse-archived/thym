@@ -12,6 +12,7 @@ package org.eclipse.thym.hybrid.test;
 
 import org.eclipse.thym.core.HybridProjectTest;
 import org.eclipse.thym.core.config.WidgetModelTest;
+import org.eclipse.thym.core.internal.cordova.CordovaCLITest;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLITest;
 import org.eclipse.thym.core.plugin.test.CordovaPluginRegistryTest;
 import org.eclipse.thym.core.plugin.test.PluginInstallationTests;
@@ -21,6 +22,7 @@ import org.eclipse.thym.core.test.HybridMobileEngineTests;
 import org.eclipse.thym.core.test.HybridProjectConventionsTest;
 import org.eclipse.thym.core.test.TestBundleHttpStorage;
 import org.eclipse.thym.hybrid.test.ios.pbxproject.PBXProjectTest;
+import org.eclipse.thym.ui.platforms.PlatformRemovalActionTest;
 import org.eclipse.thym.ui.wizard.project.HybridProjectConvertTest;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreatorTest;
 import org.junit.runner.RunWith;
@@ -28,11 +30,25 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ FileUtilsTest.class, HybridProjectCreatorTest.class,HybridProjectConvertTest.class, 
-	WidgetModelTest.class, CordovaPluginRegistryTest.class,HybridProjectConventionsTest.class, HybridMobileEngineTests.class,
-	PluginInstallationTests.class,PBXProjectTest.class,IntegrityTest.class,
-	TestBundleHttpStorage.class,PluginXMLHelperTests.class,ExternalProcessUtilityTest.class,CordovaProjectCLITest.class, 
-	HybridProjectTest.class})
+@SuiteClasses({ 
+	FileUtilsTest.class,
+	HybridProjectCreatorTest.class,
+	HybridProjectConvertTest.class, 
+	WidgetModelTest.class,
+	CordovaPluginRegistryTest.class,
+	HybridProjectConventionsTest.class,
+	HybridMobileEngineTests.class,
+	PluginInstallationTests.class,
+	PBXProjectTest.class,
+	IntegrityTest.class,
+	TestBundleHttpStorage.class,
+	PluginXMLHelperTests.class,
+	ExternalProcessUtilityTest.class,
+	CordovaProjectCLITest.class, 
+	HybridProjectTest.class,
+	PlatformRemovalActionTest.class,
+	CordovaCLITest.class
+})
 public class AllHybridTests {
 
 }

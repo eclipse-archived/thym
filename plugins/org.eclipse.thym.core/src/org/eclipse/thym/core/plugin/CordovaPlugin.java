@@ -14,10 +14,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
@@ -25,8 +23,8 @@ import org.eclipse.thym.core.engine.HybridMobileEngine;
 
 import com.github.zafarkhaja.semver.Version;
 
-public class CordovaPlugin extends PlatformObject{
-	
+public class CordovaPlugin {
+
 	private class EngineDefinition {
 		String name;
 		String version;
@@ -43,7 +41,6 @@ public class CordovaPlugin extends PlatformObject{
 	private List<EngineDefinition> supportedEngines;
 	private String info;
 	private List<PluginJavaScriptModule> modules;
-	private IFolder folder;
 
 	public String getVersion() {
 		return version;
@@ -109,10 +106,9 @@ public class CordovaPlugin extends PlatformObject{
 		engine.name = name;
 		engine.version = version;
 		engine.platform = platform;
-		
+
 		supportedEngines.add(engine);
 	}
-	
 
 	public List<PluginJavaScriptModule> getModules() {
 		if (modules == null)
@@ -134,67 +130,63 @@ public class CordovaPlugin extends PlatformObject{
 	public void setInfo(String info) {
 		this.info = info;
 	}
-	
-	public IFolder getFolder(){
-		return folder;
-	}
 
-	public void setFolder(IFolder adapter) {
-		this.folder = adapter;
-	}
-	
 	/**
-	 * Checks if the given engine is compatible with this plug-in. 
-	 * Returns a {@link MultiStatus} as there may be more than one 
-	 * reason for an engine to fail. 
+	 * Checks if the given engine is compatible with this plug-in. Returns a
+	 * {@link MultiStatus} as there may be more than one reason for an engine to
+	 * fail.
 	 * 
 	 * @param engine
 	 * @return A WARNING or OK level status
 	 * 
 	 */
 	public IStatus isEngineCompatible(HybridMobileEngine engine) {
-		if(supportedEngines == null || supportedEngines.isEmpty() )
+		if (supportedEngines == null || supportedEngines.isEmpty())
 			return Status.OK_STATUS;
-		MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, NLS.bind("Plug-in {0} is not compatible with {1} version {2}" , new Object[] {getLabel(), engine.getName(), engine.getSpec()}),null);
+		MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0,
+				NLS.bind("Plug-in {0} is not compatible with {1} version {2}",
+						new Object[] { getLabel(), engine.getName(), engine.getSpec() }),
+				null);
 		for (EngineDefinition definition : supportedEngines) {
 			status.add(isDefinitionSatisfied(definition, engine));
 		}
 		return status;
 	}
-	
-	private IStatus isDefinitionSatisfied(EngineDefinition definition, HybridMobileEngine engine){
+
+	private IStatus isDefinitionSatisfied(EngineDefinition definition, HybridMobileEngine engine) {
 		String reason;
-		if(engine.getName().equals(definition.name)){// Engine ids match 
+		if (engine.getName().equals(definition.name)) {// Engine ids match
 			Version engineVer = Version.valueOf(engine.getSpec());
-			if(engineVer.satisfies(definition.version)){ // version is satisfied
-						return Status.OK_STATUS;
-			}else{
-				reason = "engine version: "+definition.version;
+			if (engineVer.satisfies(definition.version)) { // version is satisfied
+				return Status.OK_STATUS;
+			} else {
+				reason = "engine version: " + definition.version;
 			}
-			
-		}else{
-			reason = "engine id: "+definition.name;
+
+		} else {
+			reason = "engine id: " + definition.name;
 		}
-		return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, 
-				NLS.bind("Plug-in {0} does not support {1} version {2}. Fails version requirement: {3}",new Object[]{getLabel(),engine.getName(), engine.getSpec(), reason}));
+		return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID,
+				NLS.bind("Plug-in {0} does not support {1} version {2}. Fails version requirement: {3}",
+						new Object[] { getLabel(), engine.getName(), engine.getSpec(), reason }));
 	}
-	
+
 	/**
-	 * Returns a label for the plug-in that can best be 
-	 * presented. 
+	 * Returns a label for the plug-in that can best be presented.
 	 * 
 	 * @return a label string
 	 */
-	public String getLabel(){
-		return getName() != null ?getName() : getId();
+	public String getLabel() {
+		return getName() != null ? getName() : getId();
 	}
-	
+
 	@Override
 	public String toString() {
-		if(getId() == null )
+		if (getId() == null)
 			return super.toString();
-		return getId()+(getVersion() ==null?"":"("+ getVersion()+")");
+		return getId() + (getVersion() == null ? "" : "(" + getVersion() + ")");
 	}
+
 	@Override
 	public int hashCode() {
 		return this.getId().hashCode();
@@ -208,7 +200,5 @@ public class CordovaPlugin extends PlatformObject{
 		}
 		return super.equals(obj);
 	}
-
-
 
 }
