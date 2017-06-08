@@ -18,6 +18,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Matchers.anyInt;
 
@@ -39,7 +41,9 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy2;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -62,8 +66,9 @@ public class HybridProjectTest {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				HybridProjectCreator creator = new HybridProjectCreator();
+				List<HybridMobileEngine> defaultEngines = CordovaEngineProvider.getInstance().defaultEngines();
 				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
-						HybridMobileEngineManager.defaultEngines(),new NullProgressMonitor());
+						defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]) ,new NullProgressMonitor());
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);

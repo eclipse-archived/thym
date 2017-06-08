@@ -13,11 +13,9 @@
    <extension
          point="org.eclipse.thym.core.platformSupport">
       <platform
-            projectGenerator="org.eclipse.thym.android.core.adt.AndroidProjectGenerator"
             id="org.eclipse.thym.android.core.platformSupport"
             platform="Android"
             platformID="android"
-            pluginInstallActionFactory="org.eclipse.thym.android.core.adt.AndroidPluginInstallationActionsFactory"
             libraryResolver="org.eclipse.thym.android.core.adt.AndroidLibraryResolver">       
       </platform>
    </extension>

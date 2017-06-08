@@ -207,12 +207,8 @@ public class HybridProjectCreator {
             		}
             		for (HybridMobileEngine hybridMobileEngine : engines) {
             			Engine e = model.createEngine(w);
-            			e.setName(hybridMobileEngine.getId());
-            			if (hybridMobileEngine.isManaged()) {
-            				e.setSpec(hybridMobileEngine.getVersion());
-            			} else {
-            				e.setSpec(hybridMobileEngine.getLocation().toString());
-            			}
+            			e.setName(hybridMobileEngine.getName());
+            			e.setSpec(hybridMobileEngine.getSpec());
             			w.addEngine(e);
             		}
             	}

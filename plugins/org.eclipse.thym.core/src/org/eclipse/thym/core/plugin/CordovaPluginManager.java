@@ -36,6 +36,7 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.config.Plugin;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
+import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
@@ -110,7 +111,7 @@ public class CordovaPluginManager {
 		if (isPluginInstalled(plugin.getName())){
 			return;
 		}
-		String pluginVersion = plugin.getSpec().replaceAll("~", "");
+		String pluginVersion = EngineUtils.getExactVersion(plugin.getSpec());
 		String pluginCoords = plugin.getName() + "@" + pluginVersion;
 		installPlugin(pluginCoords, monitor, save);
 	}

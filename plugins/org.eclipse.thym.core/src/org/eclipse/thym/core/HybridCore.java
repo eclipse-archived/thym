@@ -239,7 +239,7 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 	 */
 	public static List<HybridMobileEngineLocator> getEngineLocators(){
 		ArrayList<HybridMobileEngineLocator> locators = new ArrayList<HybridMobileEngineLocator>();
-		locators.add(new CordovaEngineProvider());
+		locators.add(CordovaEngineProvider.getInstance());
 		return locators;
 	}
 	

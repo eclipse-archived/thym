@@ -18,7 +18,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
@@ -38,7 +37,7 @@ public class HybridMobileEngineTests {
 	private TestProject testProjectWithoutEngine;
 	private HybridMobileEngineManager manager;
 	private HybridMobileEngineManager managerWithoutEngine;
-	private static CordovaEngineProvider provider = new CordovaEngineProvider();
+	private static CordovaEngineProvider provider = CordovaEngineProvider.getInstance();
 	private HybridMobileEngine testEngine;
 	
 	public static final String PROJECT_NAME1 = "HybridToolsTest1";
@@ -47,8 +46,7 @@ public class HybridMobileEngineTests {
 
 	@Before 
 	public void setUpHybridMobileManager() throws CoreException{
-		testEngine = provider.createEngine("android", "1.0.0", null, null);
-		testEngine.setLocation(new Path("/temporary/test/location"));
+		testEngine = provider.createEngine("android", "1.0.0");
 		// CordovaEngineProvider.engineFound() just places the provided engine in the
 		// static installed engines list.
 		provider.engineFound(testEngine);
@@ -78,27 +76,24 @@ public class HybridMobileEngineTests {
 		}
 		// deleteEngineLibraries() has the side effect of clearing the engineList in
 		// CordovaEngineProvider (this is also why testEngine needs to have a path set).
-		provider.deleteEngineLibraries(testEngine);
+		provider.deleteEngine(testEngine);
 	}
 	
 	@Test
 	public void testHybridMobileManagerActiveEngines() throws CoreException{
 		//Test project is created with default engines so we expect them to be equal.
-		assertArrayEquals(HybridMobileEngineManager.defaultEngines(), manager.getActiveEngines());
+		List<HybridMobileEngine> defaultEngines = provider.defaultEngines();
+		assertArrayEquals(defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]), manager.getEngines());
 		
 		//Project has no engine
-		assertTrue(managerWithoutEngine.getActiveEngines().length == 0);
+		assertTrue(managerWithoutEngine.getEngines().length == 0);
 	}
 	
 	@Test
 	public void testHybridMobileManagerUpdateEngines() throws CoreException{
 		final HybridMobileEngine[] engines = new HybridMobileEngine[2];
-		engines[0] = new HybridMobileEngine(); 
-		engines[0].setId("platform_0");
-		engines[0].setVersion("0.0.0");
-		engines[1] = new HybridMobileEngine();
-		engines[1].setId("platform_1");
-		engines[1].setVersion("1.1.1");
+		engines[0] = new HybridMobileEngine("platform_0", "0.0.0", null); 
+		engines[1] = new HybridMobileEngine("platform_1","1.1.1", null);
 		manager.updateEngines(engines);
 		//Run on a IWorkspaceRunnable because it needs to sync with the udpateEngines call.
 		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
@@ -127,8 +122,8 @@ public class HybridMobileEngineTests {
 		for (HybridMobileEngine hybridMobileEngine : engines) {
 			boolean enginePersisted =false;
 			for (Engine engine : persistedEngines) {
-				if(hybridMobileEngine.getId().equals(engine.getName()) &&
-						hybridMobileEngine.getVersion().equals(engine.getSpec())){
+				if(hybridMobileEngine.getName().equals(engine.getName()) &&
+						hybridMobileEngine.getSpec().equals(engine.getSpec())){
 					enginePersisted= true;
 					break;
 				}
@@ -139,33 +134,15 @@ public class HybridMobileEngineTests {
 	
 	@Test
 	public void testHybridMobileEngineEquals(){
-		HybridMobileEngine engine_0 = new HybridMobileEngine(); 
-		engine_0.setId("platform_0");
-		engine_0.setVersion("0.0.0");
-		HybridMobileEngine engine_1 = new HybridMobileEngine(); 
-		engine_1.setId("platform_0");
-		engine_1.setVersion("0.0.0");
+		HybridMobileEngine engine_0 = new HybridMobileEngine("platform_0", "0.0.0",null); 
+		HybridMobileEngine engine_1 = new HybridMobileEngine("platform_0", "0.0.0",null);  
 		assertEquals(engine_0, engine_1);
-	}
-	
-	@Test
-	public void testHybridMobileEngineIsManaged(){
-		HybridMobileEngine engine_0 = new HybridMobileEngine(); 
-		engine_0.setId("platform_0");
-		engine_0.setVersion("0.0.0");
-		engine_0.setLocation(CordovaEngineProvider.getLibFolder().append("myplatform"));
-		assertTrue(engine_0.isManaged());
-		HybridMobileEngine engine_1 = new HybridMobileEngine(); 
-		engine_1.setId("platform_0");
-		engine_1.setVersion("0.0.0");
-		engine_1.setLocation(new Path("/some/location"));
-		assertFalse(engine_1.isManaged());
 	}
 
 	@Test
 	public void testManagerGetActiveFromJsonNoFile() throws CoreException {
 		testproject.deletePlatformsJson();
-		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		HybridMobileEngine[] engines = manager.getEnginesFromPlatformsJson();
 		assertTrue("GetActiveEnginesFromPlatformsJson() should return empty array if platforms.json does not exist",
 				engines.length == 0);
 	}
@@ -174,7 +151,7 @@ public class HybridMobileEngineTests {
 	public void testManagerGetActiveFromJsonInvalidJson() throws CoreException {
 		// Currently, a malformed platforms.json file is simply ignored.
 		testproject.writePlatformsJson("{ android: ");
-		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		HybridMobileEngine[] engines = manager.getEnginesFromPlatformsJson();
 		assertTrue(engines.length == 0);
 	}
 	
@@ -187,34 +164,29 @@ public class HybridMobileEngineTests {
 	@Test
 	public void testManagerGetActiveFromJsonOnePlatform() throws CoreException {
 		testproject.writePlatformsJson("{ \"android\" : \"/temporary/test/location\" }");
-		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
+		HybridMobileEngine[] engines = manager.getEnginesFromPlatformsJson();
 		assertTrue("Returned array should contain one engine.", engines.length == 1);
-		assertEquals(engines[0].getId(), "android");
-		assertEquals(engines[0].getVersion(), "1.0.0");
+		assertEquals(engines[0].getName(), "android");
+		assertEquals(engines[0].getSpec(), "/temporary/test/location");
 	}
 	
 	@Test
 	public void testManagerGetActiveFromJsonNoPlatform() throws CoreException {
 		testProjectWithoutEngine.writePlatformsJson("{}");
-		HybridMobileEngine[] engines = managerWithoutEngine.getActiveEnginesFromPlatformsJson();
+		HybridMobileEngine[] engines = managerWithoutEngine.getEnginesFromPlatformsJson();
 		assertTrue(engines.length == 0);
 	}
 
 	@Test
-	public void testManagerGetActiveFromJsonBadVersion() throws CoreException {
-		testproject.writePlatformsJson("{ \"android\" : \"1.9.0\" }");
-		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
-		assertTrue("Only engines added to Thym should be returned", engines.length == 0);
-	}
-
-	@Test
-	public void testManagerGetActiveFromJsonIgnoresUnsupported() throws CoreException {
+	public void testManagerGetActiveFromJsonWithUnknownEngine() throws CoreException {
 		testproject.writePlatformsJson(
 				"{ \"android\" : \"/temporary/test/location\", "
-				+ "\"unsupported\" : \"3.8.0\" }");
-		HybridMobileEngine[] engines = manager.getActiveEnginesFromPlatformsJson();
-		assertTrue(engines.length == 1);
-		assertEquals(engines[0].getId(), "android");
-		assertEquals(engines[0].getVersion(), "1.0.0");
+				+ "\"unknown\" : \"3.8.0\" }");
+		HybridMobileEngine[] engines = manager.getEnginesFromPlatformsJson();
+		assertTrue(engines.length == 2);
+		assertEquals(engines[0].getName(), "android");
+		assertEquals(engines[0].getSpec(), "/temporary/test/location");
+		assertEquals(engines[1].getName(), "unknown");
+		assertEquals(engines[1].getSpec(), "3.8.0");
 	}
 }

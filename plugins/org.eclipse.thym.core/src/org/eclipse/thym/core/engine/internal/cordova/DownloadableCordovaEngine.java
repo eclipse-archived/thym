@@ -35,4 +35,8 @@ public class DownloadableCordovaEngine {
 		this.downloadURL = downloadURI;
 	}
 	
+	public boolean isNightlyBuild(){
+		return getVersion() != null && (getVersion().contains("nightly") || getVersion().contains("-dev"));
+	}
+	
 }

@@ -25,9 +25,15 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.thym.core.internal.cordova.CordovaCLIErrors;
 import org.eclipse.thym.core.internal.util.FileUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -86,7 +92,7 @@ public class PluginInstallationTests {
 				this.project = null;
 			}
 		} catch (CoreException err) {
-			System.out.println(err.getMessage());
+			fail(err.getMessage());
 		}
 	}
 
@@ -146,7 +152,7 @@ public class PluginInstallationTests {
 	public void listNoPluginsTest() throws CoreException{
 		CordovaPluginManager pm = getCordovaPluginManager();
 		List<CordovaPlugin> plugins = pm.getInstalledPlugins();
-		assertTrue(plugins.isEmpty());
+		assertTrue(plugins.toString(),plugins.isEmpty());
 	}
 	
 	@Test
@@ -210,12 +216,42 @@ public class PluginInstallationTests {
 	
 
 	private CordovaPluginManager installPlugin(String pluginsSubdir) throws CoreException {
-		CordovaPluginManager pm = getCordovaPluginManager();
-		File directory = new File(pluginsDirectroy, pluginsSubdir);
+		final CordovaPluginManager pm = getCordovaPluginManager();
+		final File directory = new File(pluginsDirectroy, pluginsSubdir);
 		assertTrue(pluginsSubdir+ " does not exist", directory.exists());
-		pm.installPlugin(directory, new NullProgressMonitor());
+		Job installJob = new Job("Install plugin") {
+			
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					pm.installPlugin(directory, new NullProgressMonitor());
+				} catch (CoreException e) {
+					return e.getStatus();
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		IWorkspace ws= ResourcesPlugin.getWorkspace();
+		ISchedulingRule rule = ws.getRuleFactory().modifyRule(project.getProject());
+		
+		installJob.setRule(rule);
+		installJob.schedule();
+		
+		try {
+			installJob.join();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		if(installJob.getResult() != Status.OK_STATUS){
+			if(installJob.getResult().getException() != null){
+				installJob.getResult().getException().printStackTrace();
+			}
+			throw new CoreException(installJob.getResult());
+		}
+		
 		return pm;
 	}
-	
 
 }

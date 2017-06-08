@@ -22,7 +22,6 @@ import java.util.Properties;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.android.core.AndroidCore;
@@ -50,7 +49,7 @@ public class AndroidProjectUtils {
 	 */
 	public static AndroidSDK selectBestValidTarget(HybridMobileLibraryResolver resolver) throws CoreException {
 		
-		String file = resolver.getTemplateFile(new Path("framework/project.properties")).getFile();
+		String file = resolver.getTemplateFile(AndroidLibraryResolver.PROPERTIES);
 		if(file == null){
 			throw new CoreException(new Status(IStatus.ERROR, AndroidCore.PLUGIN_ID,
 					"Active Cordova engine does not have a project.properties file"));

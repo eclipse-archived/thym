@@ -34,7 +34,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
@@ -77,6 +81,7 @@ import org.xml.sax.SAXException;
 public class WidgetModel implements IModelStateListener{
 	
 	private static Map<HybridProject, WidgetModel> widgetModels = new HashMap<HybridProject, WidgetModel>();
+	private static ResourceChangeListener resourceChangeListener;
 	public static final String[] ICON_EXTENSIONS = {"gif", "ico", "jpeg", "jpg", "png","svg" };
 	
 	private File configFile;
@@ -94,6 +99,9 @@ public class WidgetModel implements IModelStateListener{
 	
 	private WidgetModel(File file){
 		this.configFile = file; 
+		if(resourceChangeListener == null){
+			resourceChangeListener = new ResourceChangeListener();
+		}
 	}
 	
 	
@@ -446,6 +454,7 @@ public class WidgetModel implements IModelStateListener{
 	public void modelDirtyStateChanged(IStructuredModel model, boolean isDirty) {
 		if(!isDirty){
 			synchronized (this) {
+				reloadEditableWidget();
 				final HybridProject project =getProject();
 				project.getEngineManager().resyncWithConfigXml();
 				
@@ -455,45 +464,47 @@ public class WidgetModel implements IModelStateListener{
 					
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
-						Widget newWidget = load(domModel.getDocument());
+						if(project.getProject().exists()){
+							Widget newWidget = load(domModel.getDocument());
 							
-						final List<Plugin> oldPlugins = lastWidget.getPlugins();
-						final List<Plugin> newPlugins = newWidget.getPlugins();
+							final List<Plugin> oldPlugins = lastWidget.getPlugins();
+							final List<Plugin> newPlugins = newWidget.getPlugins();
 							
-						SubMonitor subMonitor = SubMonitor.convert(monitor);
-						List<Plugin> toInstall = new ArrayList<>(newPlugins);
-						List<Plugin> toUninstall = new ArrayList<>(oldPlugins);
-						toInstall.removeAll(oldPlugins);
-						toUninstall.removeAll(newPlugins);
+							SubMonitor subMonitor = SubMonitor.convert(monitor);
+							List<Plugin> toInstall = new ArrayList<>(newPlugins);
+							List<Plugin> toUninstall = new ArrayList<>(oldPlugins);
+							toInstall.removeAll(oldPlugins);
+							toUninstall.removeAll(newPlugins);
 						
-						List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins,newPlugins);
+							List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins,newPlugins);
 						
-						subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + pluginsToUpdate.size()*2);
-						for(Plugin uninstall: toUninstall){
-							try{
-								project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
-							} catch (CoreException e) {
-								HybridCore.log(Status.ERROR, "Unable to uninstall plugin "+uninstall.getName(), e);
-							}
-						}
-						for(Plugin install: toInstall){
-							try {
-								project.getPluginManager().installPlugin(install, subMonitor.split(1), false);
-							} catch (CoreException e) {
-								HybridCore.log(Status.ERROR, "Unable to install plugin "+install.getName(), e);
-							}
-						}
-						
-						
-						//update versions
-						for(Plugin plugin: pluginsToUpdate){
-							int index = newPlugins.indexOf(plugin);
-							if(index != -1){ //not really needed but just in case..
+							subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + pluginsToUpdate.size()*2);
+							for(Plugin uninstall: toUninstall){
 								try{
-									project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
-									project.getPluginManager().installPlugin(newPlugins.get(index), subMonitor.split(1), false);
+									project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
 								} catch (CoreException e) {
-									HybridCore.log(Status.ERROR, "Unable to update plugin "+plugin.getName(), e);
+									HybridCore.log(Status.ERROR, "Unable to uninstall plugin "+uninstall.getName(), e);
+								}
+							}
+							for(Plugin install: toInstall){
+								try {
+								project.getPluginManager().installPlugin(install, subMonitor.split(1), false);
+								} catch (CoreException e) {
+									HybridCore.log(Status.ERROR, "Unable to install plugin "+install.getName(), e);
+								}
+							}
+						
+						
+							//update versions
+							for(Plugin plugin: pluginsToUpdate){
+								int index = newPlugins.indexOf(plugin);
+								if(index != -1){ //not really needed but just in case..
+									try{
+										project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
+										project.getPluginManager().installPlugin(newPlugins.get(index), subMonitor.split(1), false);
+									} catch (CoreException e) {
+										HybridCore.log(Status.ERROR, "Unable to update plugin "+plugin.getName(), e);
+									}
 								}
 							}
 						}
@@ -550,6 +561,27 @@ public class WidgetModel implements IModelStateListener{
 
 	@Override
 	public void modelReinitialized(IStructuredModel structuredModel) {
+	}
+	
+	class ResourceChangeListener implements IResourceChangeListener {
+
+		ResourceChangeListener() {
+			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			workspace.addResourceChangeListener(this, IResourceChangeEvent.PRE_DELETE);
+		}
+		
+		public void resourceChanged(IResourceChangeEvent event) {
+			IResource resource = event.getResource();
+			if(resource instanceof IProject){
+				HybridProject prj = HybridProject.getHybridProject(resource.getProject());
+				if(prj != null){
+					WidgetModel model = widgetModels.remove(prj);
+					if(model != null){
+						model.dispose();
+					}
+				}	
+			}
+		}
 	}
 	
 }
