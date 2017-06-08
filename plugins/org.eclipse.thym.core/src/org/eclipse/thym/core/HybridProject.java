@@ -261,7 +261,8 @@ public class HybridProject implements IAdaptable {
 	}
 
 	@Override
-	public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object getAdapter(Class adapter) {
 		if( kernelProject == null )
 			return null;
 		if(adapter.isInstance(IProject.class))

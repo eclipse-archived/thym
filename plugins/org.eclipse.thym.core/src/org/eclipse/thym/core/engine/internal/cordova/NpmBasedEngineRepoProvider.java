@@ -41,13 +41,20 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
 		List<DownloadableCordovaEngine> allEngines = new ArrayList<DownloadableCordovaEngine>();
 		for (PlatformSupport support : platforms) {
-			List<DownloadableCordovaEngine> platEngines = getPlatformEngines(support.getPlatformId());
-			if(platEngines != null && !platEngines.isEmpty()){
-				allEngines.addAll(platEngines);
-			}
+			allEngines.addAll(getEngines(support.getPlatformId()));
 		}
 		return allEngines;
 	}
+	
+	@Override
+	public List<DownloadableCordovaEngine> getEngines(String engineId) throws CoreException {
+		List<DownloadableCordovaEngine> platEngines = getPlatformEngines(engineId);
+		if(platEngines == null){
+			return new ArrayList<>();
+		}
+		return platEngines;
+	}
+	
 	
 	private List<DownloadableCordovaEngine> getPlatformEngines(String platformId) throws CoreException{
 		try {

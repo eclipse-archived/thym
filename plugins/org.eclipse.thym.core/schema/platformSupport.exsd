@@ -54,16 +54,6 @@
          <sequence minOccurs="0" maxOccurs="1">
             <element ref="enablement"/>
          </sequence>
-         <attribute name="projectGenerator" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.thym.core.platform.AbstractPlatformProjectGenerator:"/>
-               </appinfo>
-            </annotation>
-         </attribute>
          <attribute name="platform" type="string" use="required">
             <annotation>
                <documentation>
@@ -76,16 +66,6 @@
                <documentation>
                   
                </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="pluginInstallActionFactory" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="org.eclipse.thym.core.platform.AbstractPluginInstallationActionsFactory:"/>
-               </appinfo>
             </annotation>
          </attribute>
          <attribute name="platformID" type="string" use="required">

@@ -24,7 +24,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection.EngineListChangeListener;
 
@@ -86,8 +86,8 @@ public class EngineConfigurationPage extends WizardPage {
 	}
 	
 	private void setDefaultEngine() {
-		HybridMobileEngine[] engines = HybridMobileEngineManager.defaultEngines();
-		if(engines != null && engines.length > 0 ){
+		List<HybridMobileEngine> engines = CordovaEngineProvider.getInstance().defaultEngines();
+		if(engines != null && engines.size() > 0 ){
 			engineSection.setSelection(new StructuredSelection(engines));
 		}
 	}

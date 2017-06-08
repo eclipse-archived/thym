@@ -13,11 +13,9 @@
    <extension
          point="org.eclipse.thym.core.platformSupport">
       <platform
-            projectGenerator="org.eclipse.thym.ios.core.xcode.XcodeProjectGenerator"
             id="org.eclipse.thym.ios.core.platformSupport"
             platform="iOS (XCode)"
             platformID="ios"
-            pluginInstallActionFactory="org.eclipse.thym.ios.core.xcode.IOSPluginInstallationActionsFactory"
             libraryResolver="org.eclipse.thym.ios.core.xcode.IosLibraryResolver">
          <enablement>
             <systemTest

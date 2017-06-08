@@ -10,41 +10,7 @@
  *******************************************************************************/
 package org.eclipse.thym.core.engine;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.net.URL;
-
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.platform.PlatformConstants;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
-
 public abstract class HybridMobileLibraryResolver {
-	
-	public static final IPath PATH_CORDOVA_JS = new Path(PlatformConstants.FILE_JS_CORDOVA);
-	public static final String PACKAGE_JSON = "package.json";
-	
-	public static final String VAR_PACKAGE_NAME = "$package";
-	public static final String VAR_APP_NAME = "$appname";
-	protected IPath libraryRoot;
-	protected String version;
-	
-	/**
-	 * 
-	 * @param engine
-	 */
-	public void init(IPath libraryRoot){
-		this.libraryRoot = libraryRoot;
-		this.version = detectVersion();
-	}
 	
 	/**
 	 * Returns the URL of the file requested from engine. Destination 
@@ -55,54 +21,6 @@ public abstract class HybridMobileLibraryResolver {
 	 * @param destination relative path on target structure
 	 * @return URL to the corresponding file on the engine or null
 	 */
-	public abstract URL getTemplateFile(IPath destination);
-	
-	/**
-	 * Checks if the underlying library compatible and 
-	 * can support the platform.
-	 * @return
-	 */
-	public abstract IStatus isLibraryConsistent();
-	
-	/**
-	 * Pre-compiles the library so that it is ready to be used.
-	 * @param monitor
-	 * @throws CoreException
-	 */
-	public abstract void preCompile(IProgressMonitor monitor) throws CoreException;
-	
-	/**
-	 * Returns true if this library needs to be precompiled before it can be used. 
-	 * @return
-	 */
-	public abstract boolean needsPreCompilation();
-	
-	/**
-	 * Detects the version of the engine from layout
-	 * @return
-	 */
-	public abstract String detectVersion();
-	
-	/**
-	 * Reads library name from package.json file 
-	 * @return library name or null if name cannot be determined
-	 * @throws FileNotFoundException if package.json file does not exist
-	 */
-	public String readLibraryName() {
-		try{
-			FileReader packageJson = new FileReader(libraryRoot.append(PACKAGE_JSON).toFile());
-			JsonReader reader = new JsonReader(packageJson);
-			JsonParser parser = new JsonParser();
-			JsonObject root = parser.parse(reader).getAsJsonObject();
-			JsonElement nameElement = root.get("name");
-			if(nameElement != null){
-				return nameElement.getAsString();
-			}
-			return null;
-		} catch (Exception e) {
-			HybridCore.log(IStatus.ERROR, "Error occured while reading "+PACKAGE_JSON, e);
-			return null;
-		}
-	}
+	public abstract String getTemplateFile(String key);
 	
 }

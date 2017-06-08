@@ -32,7 +32,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.thym.core.HybridCore;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
@@ -62,8 +64,9 @@ public class HybridProjectCreatorTest {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				HybridProjectCreator creator = new HybridProjectCreator();
+				List<HybridMobileEngine> defaultEngines = CordovaEngineProvider.getInstance().defaultEngines();
 				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
-						HybridMobileEngineManager.defaultEngines(),new NullProgressMonitor());
+						defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]),new NullProgressMonitor());
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);

@@ -12,8 +12,10 @@ package org.eclipse.thym.core.engine;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -24,8 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
@@ -36,13 +37,14 @@ import org.eclipse.thym.core.config.Engine;
 import org.eclipse.thym.core.config.Widget;
 import org.eclipse.thym.core.config.WidgetModel;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
-import org.eclipse.thym.core.extensions.PlatformSupport;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIResult;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
+import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.osgi.framework.Version;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -78,8 +80,8 @@ public class HybridMobileEngineManager {
 	 * @see HybridMobileEngineManager#defaultEngines()
 	 * @return possibly empty array of {@link HybridMobileEngine}s
 	 */
-	public HybridMobileEngine[] getActiveEngines(){
-		HybridMobileEngine[] platformJsonEngines = getActiveEnginesFromPlatformsJson();
+	public HybridMobileEngine[] getEngines(){
+		HybridMobileEngine[] platformJsonEngines = getEnginesFromPlatformsJson();
 		if (platformJsonEngines.length > 0) {
 			return platformJsonEngines;
 		}
@@ -87,49 +89,22 @@ public class HybridMobileEngineManager {
 		try{
 			WidgetModel model = WidgetModel.getModel(project);
 			Widget w = model.getWidgetForRead();
-			List<Engine> engines = null; 
 			if(w != null ){
-				engines = w.getEngines();
-			}
-			if(engines != null && !engines.isEmpty() ){
-				CordovaEngineProvider engineProvider = new CordovaEngineProvider();
-				ArrayList<HybridMobileEngine> activeEngines = new ArrayList<HybridMobileEngine>();
-				final List<HybridMobileEngine> availableEngines = engineProvider.getAvailableEngines();
-				for (Engine engine : engines) {
-					for (HybridMobileEngine hybridMobileEngine : availableEngines) {
-						if(engineMatches(engine, hybridMobileEngine)){
-							activeEngines.add(hybridMobileEngine);
-							break;
-						}
+				List<HybridMobileEngine> engines = new ArrayList<HybridMobileEngine>();
+				List<Engine> configEngines = w.getEngines();
+				if(configEngines != null){
+					for(Engine e: configEngines){
+						HybridMobileEngine engine = CordovaEngineProvider.getInstance()
+								.createEngine(e.getName(), EngineUtils.getExactVersion(e.getSpec()));
+						engines.add(engine);
 					}
 				}
-				return activeEngines.toArray(new HybridMobileEngine[activeEngines.size()]);
+				return engines.toArray(new HybridMobileEngine[engines.size()]);
 			}
 		} catch (CoreException e) {
 			HybridCore.log(IStatus.WARNING, "Engine information can not be read", e);
 		}
 		return new HybridMobileEngine[0];
-	}
-
-	private boolean engineMatches(Engine configEngine, HybridMobileEngine engine){
-		//null checks needed: sometimes we encounter engines without a name or version attribute.
-		if(engine.isManaged()){
-
-			// Since cordova uses semver, version numbers in config.xml can begin with '~' or '^'.
-			if (configEngine.getSpec() != null) {
-				String spec = configEngine.getSpec();
-				if (spec.startsWith("~") || spec.startsWith("^")) {
-					spec = spec.substring(1);
-				}
-				return configEngine.getName() != null && configEngine.getName().equals(engine.getId())
-						&& spec.equals(engine.getVersion());
-			} else {
-				return false;
-			}
-		}else{
-			return engine.getLocation().isValidPath(configEngine.getSpec()) 
-					&& engine.getLocation().equals(new Path(configEngine.getSpec()));
-		}
 	}
 
 	/**
@@ -145,28 +120,25 @@ public class HybridMobileEngineManager {
 	 * @see HybridMobileEngineManager#getActiveEngines()
 	 * @return possibly empty array of {@link HybridMobileEngine}s
 	 */
-	public HybridMobileEngine[] getActiveEnginesFromPlatformsJson(){
+	public HybridMobileEngine[] getEnginesFromPlatformsJson(){
 		try {
 			IFile file = project.getProject().getFile(PlatformConstants.PLATFORMS_JSON_PATH);
 			if (!file.exists()) {
 				return new HybridMobileEngine[0];
 			}
 
-			List<HybridMobileEngine> activeEngines = new ArrayList<HybridMobileEngine>();
+			List<HybridMobileEngine> engines = new ArrayList<HybridMobileEngine>();
 
 			JsonParser parser = new JsonParser();
 			JsonObject root = parser.parse(new InputStreamReader(file.getContents())).getAsJsonObject();
-			for (PlatformSupport support : HybridCore.getPlatformSupports()) {
-				String platform = support.getPlatformId();
-				if (root.has(platform)) {
-					HybridMobileEngine engine =
-							getHybridMobileEngine(platform, root.get(platform).getAsString());
-					if (engine != null) {
-						activeEngines.add(engine);
-					}
-				}
+			Set<Entry<String, JsonElement>> elements = root.entrySet();
+			for(Entry<String, JsonElement> element: elements){
+				String key = element.getKey();
+				JsonElement valueElement = element.getValue();
+				HybridMobileEngine engine = CordovaEngineProvider.getInstance().createEngine(key, valueElement.getAsString());
+				engines.add(engine);
 			}
-			return activeEngines.toArray(new HybridMobileEngine[activeEngines.size()]);
+			return engines.toArray(new HybridMobileEngine[engines.size()]);
 
 		} catch (JsonIOException e) {
 			HybridCore.log(IStatus.WARNING, "Error reading input stream from platforms.json", e);
@@ -176,93 +148,6 @@ public class HybridMobileEngineManager {
 			HybridCore.log(IStatus.WARNING, "Error while opening platforms.json", e);
 		}
 		return new HybridMobileEngine[0];
-	}
-
-	/**
-	 * Returns the HybridMobileEngine that corresponds to the provide name and spec.
-	 * Searches through available engines for a match, and may return null if no
-	 * matching engine is found.
-	 *
-	 * @return The HybridMobileEngine corresponding to name and spec, or null if
-	 * a match cannot be found.
-	 */
-	private HybridMobileEngine getHybridMobileEngine(String name, String spec) {
-		CordovaEngineProvider engineProvider = new CordovaEngineProvider();
-		final List<HybridMobileEngine> availableEngines = engineProvider.getAvailableEngines();
-		for (HybridMobileEngine engine : availableEngines) {
-			if (engine.isManaged()) {
-				if (engine.getId().equals(name) && engine.getVersion().equals(spec)) {
-					return engine;
-				}
-			} else {
-				if (engine.getId().equals(name) && engine.getLocation().toString().equals(spec)) {
-					return engine;
-				}
-			}
-		}
-		return null;
-	}
-
-	/**
-	 * Returns the {@link HybridMobileEngine}s specified within Thym preferences.
-	 *
-	 * </p>
-	 * If no engines have been added, returns an empty array. Otherwise returns
-	 * either the user's preference, or, by default, the most recent version
-	 * available for each platform.
-	 *
-	 * @see HybridMobileEngineManager#getActiveEngines()
-	 * @return possibly empty array of {@link HybridMobileEngine}s
-	 */
-	public static HybridMobileEngine[] defaultEngines() {
-		CordovaEngineProvider engineProvider = new CordovaEngineProvider();
-		List<HybridMobileEngine> availableEngines = engineProvider.getAvailableEngines();
-		if(availableEngines == null || availableEngines.isEmpty() ){
-			return new HybridMobileEngine[0];
-		}
-		ArrayList<HybridMobileEngine> defaults = new ArrayList<HybridMobileEngine>();
-		
-		String pref =  Platform.getPreferencesService().getString(PlatformConstants.HYBRID_UI_PLUGIN_ID, PlatformConstants.PREF_DEFAULT_ENGINE, null, null);
-		if(pref != null && !pref.isEmpty()){
-			String[] engineStrings = pref.split(",");
-			for (String engineString : engineStrings) {
-				String[] engineInfo = engineString.split(":");
-				for (HybridMobileEngine hybridMobileEngine : availableEngines) {
-					if (hybridMobileEngine.isManaged()) {
-						if (engineInfo[0].equals(hybridMobileEngine.getId())
-								&& engineInfo[1].equals(hybridMobileEngine.getVersion())) {
-							defaults.add(hybridMobileEngine);
-						}
-					} else {
-						if (engineInfo[0].equals(hybridMobileEngine.getId())
-								&& engineInfo[1].equals(hybridMobileEngine.getLocation().toString())) {
-							defaults.add(hybridMobileEngine);
-						}
-					}
-				}
-			}
-		}else{
-			HashMap<String, HybridMobileEngine> platforms = new HashMap<String, HybridMobileEngine>();
-			for (HybridMobileEngine hybridMobileEngine : availableEngines) {
-				if(platforms.containsKey(hybridMobileEngine.getId())){
-					HybridMobileEngine existing = platforms.get(hybridMobileEngine.getId());
-					try{
-						Version ev = Version.parseVersion(existing.getVersion());
-						Version hv = Version.parseVersion(hybridMobileEngine.getVersion());
-						if(hv.compareTo(ev) >0 ){
-							platforms.put(hybridMobileEngine.getId(), hybridMobileEngine);
-						}
-					}catch(IllegalArgumentException e){
-						//catch the version parse errors because version field may actually contain 
-						//git urls and local paths.
-					}
-				}else{
-					platforms.put(hybridMobileEngine.getId(),hybridMobileEngine);
-				}
-			}
-			defaults.addAll(platforms.values());
-		}
-		return defaults.toArray(new HybridMobileEngine[defaults.size()]);
 	}
 
 	/**
@@ -286,8 +171,9 @@ public class HybridMobileEngineManager {
 				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
 				SubMonitor sm = SubMonitor.convert(monitor,100);
 				if(existingEngines != null ){
+					List<HybridMobileEngine> enginesList = Arrays.asList(engines);
 					for (Engine existingEngine : existingEngines) {
-						if(isEngineRemoved(existingEngine, engines)){
+						if(enginesList.contains(existingEngine)){
 							cordova.platform(Command.REMOVE, sm,existingEngine.getName());
 						}
 						w.removeEngine(existingEngine);
@@ -296,12 +182,8 @@ public class HybridMobileEngineManager {
 				sm.worked(30);
 				for (HybridMobileEngine engine : engines) {
 					Engine e = model.createEngine(w);
-					e.setName(engine.getId());
-					if(!engine.isManaged()){
-						e.setSpec(engine.getLocation().toString());
-					}else{
-						e.setSpec(engine.getVersion());
-					}
+					e.setName(engine.getName());
+					e.setSpec(engine.getSpec());
 					w.addEngine(e);
 				}
 				model.save();
@@ -333,7 +215,7 @@ public class HybridMobileEngineManager {
 					HybridCore.log(IStatus.WARNING, err, null);
 					return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, err);
 				}
-				HybridMobileEngine[] activeEngines = getActiveEnginesFromPlatformsJson();
+				HybridMobileEngine[] activeEngines = getEnginesFromPlatformsJson();
 				CordovaProjectCLI cordova = CordovaProjectCLI.newCLIforProject(project);
 				MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, 
 						"Errors updating engines from config.xml", null);
@@ -349,24 +231,23 @@ public class HybridMobileEngineManager {
 						}
 						SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(activeEngines.length);
 						for(HybridMobileEngine engine: activeEngines){
-							subStatus = cordova.platform(Command.REMOVE, loopMonitor.newChild(1), engine.getId())
+							subStatus = cordova.platform(Command.REMOVE, loopMonitor.newChild(1), engine.getName())
 									.convertTo(ErrorDetectingCLIResult.class).asStatus();
 							status.add(subStatus);
 						}
 					} else {
 						SubMonitor loopMonitor = sm.newChild(70).setWorkRemaining(configEngines.size());
 						for (Engine e : configEngines) {
-							String platformSpec = e.getName() + "@" + e.getSpec();
-							if (!checkPlatformInstalled(activeEngines, e.getName())) {
+							String platformVersion = EngineUtils.getExactVersion(e.getSpec());
+							String platformSpec = e.getName() + "@" + platformVersion;
+							CliPlatform p = checkPlatformInstalled(e.getName());
+							if (p == null) {
 								subStatus = cordova.platform(Command.ADD, loopMonitor.newChild(1), platformSpec)
 										.convertTo(ErrorDetectingCLIResult.class).asStatus();
-							} else {
-								String engineVersion = e.getSpec().replaceAll("~", "");
+							} else if (p != null && !p.version.equals(platformVersion)){
 								//update only if version of installed platform changed
-								if(!engineVersion.equals(getInstalledPlatformVersion(activeEngines, e.getName()))){
 									subStatus = cordova.platform(Command.UPDATE, loopMonitor.newChild(1), platformSpec)
-											.convertTo(ErrorDetectingCLIResult.class).asStatus();
-								}	
+											.convertTo(ErrorDetectingCLIResult.class).asStatus();	
 							}
 							status.add(subStatus);
 						}
@@ -385,54 +266,38 @@ public class HybridMobileEngineManager {
 	}
 	
 	/**
-	 * Returns the active engine for the platform id or null if there is not one.
-	 * 
-	 * @param platformId
-	 * @return active engine or null
-	 */
-	public HybridMobileEngine getActiveEngineForPlatform(String platformId){
-		HybridMobileEngine[] engines = getActiveEngines();
-		for (HybridMobileEngine hybridMobileEngine : engines) {
-			if(platformId.equals(hybridMobileEngine.getId())){
-				return hybridMobileEngine;
-			}
-		}
-		return null;
-	}
-	
-	/**
 	 * Checks if project has at least one active engine
 	 * @return true if project has active engine, false otherwise
 	 */
 	public boolean hasActiveEngine(){
-		return getActiveEngines().length > 0;
+		return getEngines().length > 0;
 	}
 
-	private boolean checkPlatformInstalled(HybridMobileEngine[] activeEngines, String engineName) {
-		for (HybridMobileEngine engine : activeEngines) {
-			if (engine.getId().equals(engineName)) {
-				return true;
+	private CliPlatform checkPlatformInstalled(String engineName) throws CoreException {
+		CordovaProjectCLI cli = project.getProjectCLI();
+		CordovaCLIResult result = cli.platform(Command.LIST, new NullProgressMonitor(), "");
+		String message = result.getMessage();
+		int index = message.indexOf("Installed platforms:");
+		int endIndex = message.indexOf("Available platforms:");
+		if(index != -1 && endIndex != -1){
+			String installedPlatformsMessage = message.substring(index, endIndex);
+			String[] installedPlatforms = installedPlatformsMessage.split("\\r?\\n");
+			for(String installedPlatform: installedPlatforms){
+				String[] platformVersion = installedPlatform.split(" ");
+				if(platformVersion.length > 3 && engineName.equals(platformVersion[2])){
+					CliPlatform platform = new CliPlatform();
+					platform.name = platformVersion[2];
+					platform.version =platformVersion[3];
+					return platform;
+				}
 			}
-		}
-		return false;
-	}
-	
-	private String getInstalledPlatformVersion(HybridMobileEngine[] activeEngines, String engineName) {
-		for (HybridMobileEngine engine : activeEngines) {
-			if (engine.getId().equals(engineName)) {
-				return engine.getVersion();
-			}
-		}
+		} 
 		return null;
 	}
-
-	private boolean isEngineRemoved(final Engine engine, final HybridMobileEngine[] engines){
-		for (HybridMobileEngine hybridMobileEngine : engines) {
-			if(hybridMobileEngine.getId().equals(engine.getName()) && hybridMobileEngine.getVersion().equals(engine.getSpec())){
-				return false;
-			}
-		}
-		return true;
+	
+	private class CliPlatform {
+		String name;
+		String version;
 	}
 
 }

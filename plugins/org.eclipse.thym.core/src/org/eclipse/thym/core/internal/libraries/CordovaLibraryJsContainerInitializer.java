@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,15 +119,23 @@ public class CordovaLibraryJsContainerInitializer extends JsGlobalScopeContainer
 			if (!cordovaJS.exists()) {
 				HybridProject prj = HybridProject.getHybridProject(project.getProject());
 				
-				HybridMobileEngine[] activeEngines = prj.getEngineManager().getActiveEngines();
+				HybridMobileEngine[] activeEngines = prj.getEngineManager().getEngines();
 				if(activeEngines == null || activeEngines.length <1){
 					return null;
 				}
 				HybridMobileLibraryResolver resolver = activeEngines[0].getResolver();
-				URL templateCordovaJS = resolver.getTemplateFile(HybridMobileLibraryResolver.PATH_CORDOVA_JS);
+				if(resolver != null){
+					String templateCordovaJS = resolver.getTemplateFile(PlatformConstants.FILE_JS_CORDOVA);
+				
+					File jsFile = new File(project.getProject().getFile(new Path("platforms/"+templateCordovaJS.toString())).getRawLocation().toOSString());
+				
+					if(jsFile.exists()){
+						org.eclipse.thym.core.internal.util.FileUtils.fileCopy(
+								org.eclipse.thym.core.internal.util.FileUtils.toURL(jsFile),
+								org.eclipse.thym.core.internal.util.FileUtils.toURL(cordovaJS));
 
-				org.eclipse.thym.core.internal.util.FileUtils.fileCopy(templateCordovaJS,
-						org.eclipse.thym.core.internal.util.FileUtils.toURL(cordovaJS));
+					}
+				}
 			}
 			return JavaScriptCore.newLibraryEntry(cordovaJSRuntimePath.makeAbsolute(),null, null);
 			
@@ -169,6 +176,11 @@ public class CordovaLibraryJsContainerInitializer extends JsGlobalScopeContainer
 
 	@Override
 	public String getDescription(IPath containerPath, IJavaScriptProject project) {
+		if(containerPath.toOSString().endsWith(PlatformConstants.FILE_JS_CORDOVA)){
+			return "Cordova Engine Library";
+		} else if(containerPath.toOSString().endsWith(PlatformConstants.FILE_JS_CORDOVA_PLUGIN)){
+			return "Cordova Plugin Library";
+		}
 		return "Cordova JS Library";
 	}
 

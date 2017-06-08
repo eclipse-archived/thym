@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.thym.hybrid.test;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,6 +22,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -27,9 +31,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
@@ -46,6 +52,7 @@ public class TestProject {
 	private String projectName;
 	private String appName;
 	private String appId;
+	private HybridMobileEngine[] engines = null;
 	
 	public static final String PROJECT_NAME = "HybridToolsTest";
 	public static final String APPLICATION_NAME = "Test applciation";
@@ -56,28 +63,71 @@ public class TestProject {
 	}
 	
 	@SuppressWarnings("restriction")
-	public TestProject(boolean withEngine, String projectName, String appName, String id){
+	public TestProject(final boolean withEngine, String pName, String aName, String id){
+		
+		this.projectName = pName;
+		this.appName = aName;
+		this.appId = id;
+		
+		Job createJob = new Job("create project") {
+			
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					if(withEngine){
+						List<HybridMobileEngine> dEngines = CordovaEngineProvider.getInstance().defaultEngines();
+						engines = dEngines.toArray(new HybridMobileEngine[dEngines.size()]);
+					}
+					HybridProjectCreator projectCreator = new HybridProjectCreator();
+					projectCreator.createBasicTemplatedProject(projectName, null, appName, appId, 
+							engines, new NullProgressMonitor());
+
+					// Ensure the platforms folder exists; tests that write platforms.json fail otherwise.
+					IFolder platformsFolder = getProject().getFolder("/platforms");
+					if (!platformsFolder.exists()) {
+						platformsFolder.create(true, true, null);
+					}
+
+				} catch (CoreException e) {
+					return e.getStatus();
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		
+		IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		
+		ISchedulingRule rule = workspace.getRuleFactory().modifyRule(workspace.getRoot());
+		
+		createJob.setRule(rule);
+		createJob.schedule();
+		
 		try {
-			this.projectName = projectName;
-			this.appName = appName;
-			this.appId = id;
-			HybridMobileEngine[] engines = null;
-			if(withEngine){
-				engines = HybridMobileEngineManager.defaultEngines();
-			}
-			HybridProjectCreator projectCreator = new HybridProjectCreator();
-			projectCreator.createBasicTemplatedProject(projectName, null, appName, id, 
-					engines, new NullProgressMonitor());
+			createJob.join();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+		if(createJob.getResult() != Status.OK_STATUS){
+			fail(createJob.getResult().getMessage());
+		}
+		
+		//wait for createJob
+		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 
-			// Ensure the platforms folder exists; tests that write platforms.json fail otherwise.
-			IFolder platformsFolder = getProject().getFolder("/platforms");
-			if (!platformsFolder.exists()) {
-				platformsFolder.create(true, true, null);
+			@Override
+			public void run(IProgressMonitor monitor) throws CoreException {
+				// TODO Auto-generated method stub
+				
 			}
-
+			
+		};
+		
+		try {
+			workspace.run(runnable, rule, 0,new NullProgressMonitor());
 		} catch (CoreException e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			fail(e.getMessage());
 		}
 	}
 	

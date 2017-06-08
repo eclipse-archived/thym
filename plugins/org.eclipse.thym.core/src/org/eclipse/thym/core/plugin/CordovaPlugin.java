@@ -155,7 +155,7 @@ public class CordovaPlugin extends PlatformObject{
 	public IStatus isEngineCompatible(HybridMobileEngine engine) {
 		if(supportedEngines == null || supportedEngines.isEmpty() )
 			return Status.OK_STATUS;
-		MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, NLS.bind("Plug-in {0} is not compatible with {1} version {2}" , new Object[] {getLabel(), engine.getName(), engine.getVersion()}),null);
+		MultiStatus status = new MultiStatus(HybridCore.PLUGIN_ID, 0, NLS.bind("Plug-in {0} is not compatible with {1} version {2}" , new Object[] {getLabel(), engine.getName(), engine.getSpec()}),null);
 		for (EngineDefinition definition : supportedEngines) {
 			status.add(isDefinitionSatisfied(definition, engine));
 		}
@@ -164,8 +164,8 @@ public class CordovaPlugin extends PlatformObject{
 	
 	private IStatus isDefinitionSatisfied(EngineDefinition definition, HybridMobileEngine engine){
 		String reason;
-		if(engine.getId().equals(definition.name)){// Engine ids match 
-			Version engineVer = Version.valueOf(engine.getVersion());
+		if(engine.getName().equals(definition.name)){// Engine ids match 
+			Version engineVer = Version.valueOf(engine.getSpec());
 			if(engineVer.satisfies(definition.version)){ // version is satisfied
 						return Status.OK_STATUS;
 			}else{
@@ -176,7 +176,7 @@ public class CordovaPlugin extends PlatformObject{
 			reason = "engine id: "+definition.name;
 		}
 		return new Status(IStatus.WARNING, HybridCore.PLUGIN_ID, 
-				NLS.bind("Plug-in {0} does not support {1} version {2}. Fails version requirement: {3}",new Object[]{getLabel(),engine.getName(), engine.getVersion(), reason}));
+				NLS.bind("Plug-in {0} does not support {1} version {2}. Fails version requirement: {3}",new Object[]{getLabel(),engine.getName(), engine.getSpec(), reason}));
 	}
 	
 	/**

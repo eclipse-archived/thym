@@ -76,10 +76,7 @@ public class CordovaCLI {
 				try{
 					streamProxy.write("exit\n");
 				} catch (IOException e) {
-					if(process.isTerminated()){ //ok, if process is terminated
-						break;
-					}
-					throw e;
+					//ignore
 				}
 				if (monitor.isCanceled()) {
 					process.terminate();

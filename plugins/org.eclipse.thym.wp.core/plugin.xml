@@ -7,9 +7,7 @@
             id="org.eclipse.thym.wp.core.platformSupport"
             libraryResolver="org.eclipse.thym.wp.core.WPLibraryResolver"
             platform="Windows Phone 8 (Visual Studio)"
-            platformID="wp8"
-            pluginInstallActionFactory="org.eclipse.thym.wp.internal.core.vstudio.WPPluginInstallationActionsFactory"
-            projectGenerator="org.eclipse.thym.wp.internal.core.vstudio.WPProjectGenerator">
+            platformID="wp8">
       </platform>
    </extension>
    <extension

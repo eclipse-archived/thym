@@ -31,5 +31,15 @@ public abstract class AbstractEngineRepoProvider {
 	 */
 	public abstract List<DownloadableCordovaEngine> getEngines()
 			throws CoreException;
+	
+	/**
+	 * Returns a list of all {@link DownloadableCordovaEngine}s with specified id that are
+	 * available from this repository.
+	 * 
+	 * @return list of Cordova engines
+	 * @throws CoreException
+	 */
+	public abstract List<DownloadableCordovaEngine> getEngines(String engineId)
+			throws CoreException;
 
 }

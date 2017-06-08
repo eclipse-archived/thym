@@ -13,6 +13,7 @@ package org.eclipse.thym.core.internal.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -60,7 +61,8 @@ public class HttpUtil {
 	private static CloseableHttpClient getHttpClient(URI url){
 		CacheConfig cacheConfig = CacheConfig.custom()
         	.setMaxCacheEntries(1000)
-        	.setMaxObjectSize(120*1024)
+        	.setMaxObjectSize(120*1024).setHeuristicCachingEnabled(true)
+        	.setHeuristicDefaultLifetime(TimeUnit.HOURS.toSeconds(12))
         	.build();
 		
 		CachingHttpClientBuilder builder = CachingHttpClients.custom()

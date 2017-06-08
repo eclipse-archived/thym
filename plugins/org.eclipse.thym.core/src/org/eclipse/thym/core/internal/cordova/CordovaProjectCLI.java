@@ -45,7 +45,8 @@ public class CordovaProjectCLI extends CordovaCLI{
 	public enum Command{
 		ADD("add"), 
 		REMOVE("remove"),
-		UPDATE("update");
+		UPDATE("update"),
+		LIST("list");
 		
 		private final String cliCommand;
 		Command(String cli){

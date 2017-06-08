@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
@@ -34,7 +35,9 @@ import org.eclipse.debug.core.IStreamListener;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy2;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;
 import org.junit.BeforeClass;
@@ -54,8 +57,9 @@ public class CordovaProjectCLITest {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				HybridProjectCreator creator = new HybridProjectCreator();
+				List<HybridMobileEngine> defaultEngines = CordovaEngineProvider.getInstance().defaultEngines();
 				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
-						HybridMobileEngineManager.defaultEngines(),new NullProgressMonitor());
+						defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]),new NullProgressMonitor());
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);

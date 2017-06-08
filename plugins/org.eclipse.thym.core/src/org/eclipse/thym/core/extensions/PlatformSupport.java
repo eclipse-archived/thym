@@ -17,7 +17,6 @@ import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.expressions.ExpressionConverter;
 import org.eclipse.core.expressions.ExpressionTagNames;
 import org.eclipse.core.expressions.IEvaluationContext;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -26,7 +25,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
-import org.eclipse.thym.core.platform.AbstractProjectGeneratorDelegate;
 import org.osgi.framework.Bundle;
 
 /**
@@ -67,34 +65,6 @@ public class PlatformSupport extends ExtensionPointProxy {
 		} catch (CoreException e) {
 			HybridCore.log(IStatus.ERROR, "Error while reading the enablement", e);
 		}
-	}
-
-	/**
-	 * Creates a project generator delegate for the given project and destination. 
-	 * 
-	 * @param project
-	 * @param generationFolder
-	 * @return
-	 * @throws CoreException - if the extension point has changed and no longer valid
-	 */
-	public AbstractProjectGeneratorDelegate createDelegate(IProject project, File generationFolder) throws CoreException{
-		if(generationFolder == null ){
-			generationFolder = new File(getTempGenerationDirectory(),getPlatformId());
-		}
-		IExtension[] extensions = getContributorExtensions();
-		for (int i = 0; i < extensions.length; i++) {
-			if(extensions[i].getExtensionPointUniqueIdentifier().equals(EXTENSION_POINT_ID)){
-				IConfigurationElement[] configs = extensions[i].getConfigurationElements();
-				for (int j = 0; j < configs.length; j++) {
-					if(configs[j].getAttribute(ATTR_PLATFORM_ID).equals(getPlatformId())){
-						AbstractProjectGeneratorDelegate delegate = (AbstractProjectGeneratorDelegate) configs[j].createExecutableExtension(ATTR_PROJECT_GENERATOR);
-						delegate.init(project, generationFolder, platformId);
-						return delegate;
-					}
-				}
-			}
-		}
-		throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID,"Contributing platform has changed"));
 	}
 
 	private IExtension[] getContributorExtensions() throws CoreException {

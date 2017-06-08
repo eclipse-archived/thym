@@ -24,7 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
+import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
@@ -75,7 +75,7 @@ public class EnginePreferencesPage extends PreferencePage implements
 	}
 
 	private void initDefaultEngine() {
-		HybridMobileEngine[] defaultEngines = HybridMobileEngineManager.defaultEngines(); 
+		List<HybridMobileEngine> defaultEngines = CordovaEngineProvider.getInstance().defaultEngines(); 
 		if(defaultEngines != null ){
 			engineSection.setSelection(new StructuredSelection(defaultEngines));
 		}else{
@@ -106,13 +106,9 @@ public class EnginePreferencesPage extends PreferencePage implements
 			Object[] selections = sel.toArray();
 			for(int i=0; i< selections.length; i++){
 				HybridMobileEngine engine =(HybridMobileEngine) selections[i];
-				prefVal.append(engine.getId());
+				prefVal.append(engine.getName());
 				prefVal.append(":");
-				if (engine.isManaged()) {
-					prefVal.append(engine.getVersion());
-				} else {
-					prefVal.append(engine.getLocation());
-				}
+				prefVal.append(engine.getSpec());
 				prefVal.append(",");
 			}
 			getPreferenceStore().setValue(PlatformConstants.PREF_DEFAULT_ENGINE, prefVal.toString());

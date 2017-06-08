@@ -78,7 +78,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 	public boolean performFinish() {
 		HybridMobileEngine[] selectedEngines = pageTwo.getSelectedEngines();
 		for(HybridMobileEngine selectedEngine: selectedEngines){
-			List<PlatformRequirementsExtension> extensions = HybridUI.getPlatformRequirementExtensions(selectedEngine.getId());
+			List<PlatformRequirementsExtension> extensions = HybridUI.getPlatformRequirementExtensions(selectedEngine.getName());
 			for(PlatformRequirementsExtension extension: extensions){
 				extension.getHandler().checkPlatformRequirements();
 			}

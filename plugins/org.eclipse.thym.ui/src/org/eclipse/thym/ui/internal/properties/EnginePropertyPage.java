@@ -62,7 +62,7 @@ public class EnginePropertyPage extends PropertyPage {
 		});
 		noDefaultAndApplyButton();
 		HybridProject hybridProject = getProject();
-		HybridMobileEngine[] activeEngines = hybridProject.getEngineManager().getActiveEngines();
+		HybridMobileEngine[] activeEngines = hybridProject.getEngineManager().getEngines();
 		if(activeEngines != null){
 			engineSection.setSelection(new StructuredSelection(activeEngines));
 		}
@@ -86,21 +86,6 @@ public class EnginePropertyPage extends PropertyPage {
 		if(sel != null){
 			for (Iterator<?> iterator = sel.iterator(); iterator.hasNext();) {
 				HybridMobileEngine engine = (HybridMobileEngine) iterator.next();
-				IStatus consistentStatus = engine.isLibraryConsistent();
-				if(!consistentStatus.isOK()){
-					IStatus[] statusArray = consistentStatus.getChildren();
-					int severity = consistentStatus.getSeverity();
-					String message = consistentStatus.getMessage();
-					//Replace the message with child status message
-					for (int i = 0; i < statusArray.length; i++) {
-						if(statusArray[i].getSeverity() == severity){
-							message = statusArray[i].getMessage();
-						}
-					}
-					setMessage(message, severity);
-					return severity != IStatus.ERROR;
-				}
-				//TODO: 
 				try {
 					List<CordovaPlugin> installedPlugins = getProject().getPluginManager().getInstalledPlugins();
 					for (CordovaPlugin cordovaPlugin : installedPlugins) {

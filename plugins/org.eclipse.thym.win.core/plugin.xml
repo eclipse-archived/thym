@@ -7,9 +7,7 @@
             id="org.eclipse.thym.win.core.platformSupport"
             libraryResolver="org.eclipse.thym.win.core.WinLibraryResolver"
             platform="Windows Universal"
-            platformID="windows"
-            pluginInstallActionFactory="org.eclipse.thym.win.internal.core.vstudio.WinPluginInstallationActionsFactory"
-            projectGenerator="org.eclipse.thym.win.internal.core.vstudio.WinProjectGenerator">
+            platformID="windows">
       </platform>
    </extension>
    <extension

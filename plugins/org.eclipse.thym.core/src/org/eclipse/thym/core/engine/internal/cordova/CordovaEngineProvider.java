@@ -12,9 +12,15 @@ package org.eclipse.thym.core.engine.internal.cordova;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.Assert;
@@ -26,21 +32,31 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.ecf.filetransfer.IncomingFileTransferException;
 import org.eclipse.ecf.filetransfer.identity.FileCreateException;
 import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.AbstractEngineRepoProvider;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator;
+import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListener;
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
+import org.eclipse.thym.core.platform.PlatformConstants;
+import org.osgi.service.prefs.BackingStoreException;
+
+import com.github.zafarkhaja.semver.Version;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineSearchListener {
 	
@@ -50,16 +66,45 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	public static final String CORDOVA_ENGINE_ID = "cordova";
 	public static final String CUSTOM_CORDOVA_ENGINE_ID = "custom_cordova";
 	
-	private volatile static ArrayList<HybridMobileEngine> engineList;
-
+	private volatile static Set<HybridMobileEngine> engineList;
+	private static CordovaEngineProvider instance;
+	
+	private CordovaEngineProvider(){
+	}
+	
+	public static CordovaEngineProvider getInstance(){
+		if(instance == null){
+			instance = new CordovaEngineProvider();
+		}
+		return instance;
+	}
 	
 	/**
-	 * List of engines that are locally available. This is the list of engines that 
-	 * can be used by the projects.
-	 * 
-	 * @return 
+	 * Initialize engine list with latest stable version for all supported platforms
 	 */
-	public List<HybridMobileEngine> getAvailableEngines() {
+	private void initEngineList(){
+		if(engineList == null ) {
+			engineList = new LinkedHashSet<HybridMobileEngine>();
+			List<DownloadableCordovaEngine> downloadableEngines = null;
+			List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
+			for(PlatformSupport support: platforms){
+				try {
+					downloadableEngines = getDownloadableEngines(support.getPlatformId());
+				} catch (CoreException e) {
+					HybridCore.log(IStatus.ERROR, "Error retrieving downloadable engines", e);
+				}
+				if(downloadableEngines != null){
+					DownloadableCordovaEngine latestEngine = getLatestVersion(downloadableEngines);
+					if(latestEngine != null){
+						engineList.add(createEngine(latestEngine.getPlatformId(), latestEngine.getVersion()));
+					}
+				}
+			}
+			engineList.addAll(getPreferencesEngines());
+		}
+	}
+
+	public Set<HybridMobileEngine> getAvailableEngines() {
 		initEngineList();
 		return engineList;
 	}
@@ -67,27 +112,6 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	
 	private void resetEngineList(){
 		engineList = null;
-	}
-	
-	private void initEngineList() {
-		if(engineList != null ) 
-			return;
-		engineList = new ArrayList<HybridMobileEngine>();
-		
-		File libFolder = getLibFolder().toFile();
-		if( !libFolder.isDirectory()){
-			//engine folder does not exist
-			return;
-		}
-		//search for engines on default location.
-		searchForRuntimes(new Path(libFolder.toString()), this, new NullProgressMonitor());
-		//Now the custom locations 
-		String[] locs = HybridCore.getDefault().getCustomLibraryLocations();
-		if(locs != null ){
-			for (int i = 0; i < locs.length; i++) {
-				searchForRuntimes(new Path(locs[i]), this,  new NullProgressMonitor());
-			}
-		}
 	}
 	
 	/**
@@ -99,35 +123,14 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return "Apache Cordova";
 	}
 
-	public HybridMobileEngine getEngine(String id, String version){
+	public HybridMobileEngine getEngine(String name, String spec){
 		initEngineList();
 		for (HybridMobileEngine engine : engineList) {
-			if(engine.getVersion().equals(version) && engine.getId().equals(id)){
+			if(engine.getSpec().equals(spec) && engine.getName().equals(name)){
 				return engine;
 			}
 		}
 		return null;
-	}
-	
-	/**
-	 * Helper method for creating engines.. Clients should not 
-	 * use this method but use {@link #getAvailableEngines()} or 
-	 * {@link #getEngine(String)}. This method is left public 
-	 * mainly to help with testing.
-	 * 
-	 * @param version
-	 * @param platforms
-	 * @param resolver
-	 * @return
-	 */
-	public HybridMobileEngine createEngine(String id, String version, HybridMobileLibraryResolver resolver, IPath location){
-		HybridMobileEngine engine = new HybridMobileEngine();
-		engine.setId(id);
-		engine.setName(NLS.bind("{0}-{1}", new String[]{CORDOVA_ENGINE_ID,id}));
-		engine.setResolver(resolver);
-		engine.setVersion(version);
-		engine.setLocation(location);
-		return engine;
 	}
 	
 	public static IPath getLibFolder(){
@@ -136,14 +139,12 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		return path;
 	}
 	
-	public List<DownloadableCordovaEngine> getDownloadableVersions()
-			throws CoreException {
+	public List<DownloadableCordovaEngine> getDownloadableEngines() throws CoreException {
 		AbstractEngineRepoProvider provider = new NpmBasedEngineRepoProvider();
 		IProduct product = Platform.getProduct();
 		if (product != null) {
 			String productId = Platform.getProduct().getId();
-			List<CordovaEngineRepoProvider> providerProxies = HybridCore
-					.getCordovaEngineRepoProviders();
+			List<CordovaEngineRepoProvider> providerProxies = HybridCore.getCordovaEngineRepoProviders();
 			for (CordovaEngineRepoProvider providerProxy : providerProxies) {
 				if (productId.equals(providerProxy.getProductId())) {
 					provider = providerProxy.createProvider();
@@ -151,6 +152,59 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 			}
 		}
 		return provider.getEngines();
+	}
+	
+	public List<DownloadableCordovaEngine> getDownloadableEngines(String platformId) throws CoreException {
+		AbstractEngineRepoProvider provider = new NpmBasedEngineRepoProvider();
+		IProduct product = Platform.getProduct();
+		if (product != null) {
+			String productId = Platform.getProduct().getId();
+			List<CordovaEngineRepoProvider> providerProxies = HybridCore.getCordovaEngineRepoProviders();
+			for (CordovaEngineRepoProvider providerProxy : providerProxies) {
+				if (productId.equals(providerProxy.getProductId())) {
+					provider = providerProxy.createProvider();
+				}
+			}
+		}
+		return provider.getEngines(platformId);
+	}
+	
+	private DownloadableCordovaEngine getLatestVersion(List<DownloadableCordovaEngine> engines){
+		if(engines == null || engines.isEmpty()){
+			return null;
+		}
+		List<DownloadableCordovaEngine> stableEngines = new ArrayList<>();
+		for(DownloadableCordovaEngine e: engines){
+			if(!e.isNightlyBuild()){
+				stableEngines.add(e);
+			}
+		}
+		Collections.sort(stableEngines, new VersionComparator());
+		return stableEngines.get(0);
+	}
+	
+	public DownloadableCordovaEngine getLatestVersion(String platformId){
+		List<DownloadableCordovaEngine> downloadableEngines = null;
+		try {
+			downloadableEngines = getDownloadableEngines(platformId);
+		} catch (CoreException e) {
+			HybridCore.log(Status.ERROR, "Error while retrieving downloadable engines", e);
+		}
+		if(downloadableEngines != null){
+			return getLatestVersion(downloadableEngines);
+		}
+		return null;
+	}
+	
+	private class VersionComparator implements Comparator<DownloadableCordovaEngine>{
+
+		@Override
+		public int compare(DownloadableCordovaEngine o1, DownloadableCordovaEngine o2) {
+			Version v1 = Version.valueOf(o1.getVersion());
+			Version v2 = Version.valueOf(o2.getVersion());
+			return v2.compareTo(v1);
+		}
+		
 	}
 
 
@@ -207,7 +261,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 		Assert.isNotNull( version);
 		List<DownloadableCordovaEngine> engines = null;
 		try {
-			engines = getDownloadableVersions();
+			engines = getDownloadableEngines();
 		} catch (CoreException e) {
 			HybridCore.log(IStatus.ERROR, "Error retrieving downloadable engines", e);
 		}
@@ -225,29 +279,42 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 
 
 	@Override
-	public void searchForRuntimes(IPath path, EngineSearchListener listener,
-			IProgressMonitor monitor) {
-		if( path == null ) return;
-		File root = path.toFile();
-		if(!root.isDirectory()) return;
-		searchDir(root, listener, monitor);	
+	public void searchForRuntimes(IPath path, EngineSearchListener listener, IProgressMonitor monitor) {
+		if(path != null){
+			File root = path.toFile();
+			if(root.isDirectory()){
+				searchDir(root, listener, monitor);	
+			}
+		}
 	}
 	
 	private void searchDir(File dir, EngineSearchListener listener, IProgressMonitor monitor){
+		if(monitor.isCanceled()){
+			return;
+		}
 		if("bin".equals(dir.getName())){
 			File createScript = new File(dir,"create");
 			if(createScript.exists()){
-				Path libraryRoot = new Path(dir.getParent());
-				List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
-				for (PlatformSupport platformSupport : platforms) {
+				File packageJson = new File(dir.getParent()+"/package.json");
+				if(packageJson.exists()){
+					JsonParser parser = new JsonParser();
+					JsonReader reader = null;
 					try {
-						HybridMobileLibraryResolver resolver = platformSupport.getLibraryResolver();
-						resolver.init(libraryRoot);
-						if(resolver.isLibraryConsistent().isOK()){
-							HybridMobileEngine engine = createEngine(platformSupport.getPlatformId(),resolver.detectVersion(), resolver,libraryRoot);
-							listener.engineFound(engine);
-							return;
-						}
+						reader = new JsonReader(new FileReader(packageJson));
+					} catch (FileNotFoundException e) {
+						HybridCore.log(IStatus.ERROR, "package.json was not found", e);
+					}
+					JsonObject root = parser.parse(reader).getAsJsonObject();
+					String name = root.get("name").getAsString();
+					if(name.startsWith("cordova-")){
+						name=name.replace("cordova-", "");
+					}
+					PlatformSupport support = HybridCore.getPlatformSupport(name);
+					try {
+						HybridMobileEngine engine = 
+								createEngine(name, dir.getParent(), support.getLibraryResolver());
+						listener.engineFound(engine);
+						return;
 					} catch (CoreException e) {
 						HybridCore.log(IStatus.WARNING, "Error on engine search", e);
 					}
@@ -277,13 +344,109 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	@Override
 	public void engineFound(HybridMobileEngine engine) {
 		initEngineList();
-		engineList.add(engine);
+		if(engineList.add(engine)){
+			IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(HybridCore.PLUGIN_ID);
+			preferences.put(engine.getName(), engine.getSpec());
+		}
 	}
-
-	public void deleteEngineLibraries(HybridMobileEngine selectedEngine) {
-		IPath path = selectedEngine.getLocation();
-		FileUtils.deleteQuietly(path.toFile());
-		resetEngineList();
+	
+	/**
+	 * Returns the {@link HybridMobileEngine}s specified within Thym preferences.
+	 *
+	 * </p>
+	 * If no engines have been added, returns an empty array. Otherwise returns
+	 * either the user's preference, or, by default, the most recent version
+	 * available for each platform.
+	 *
+	 * @see HybridMobileEngineManager#getActiveEngines()
+	 * @return possibly empty array of {@link HybridMobileEngine}s
+	 */
+	public List<HybridMobileEngine> defaultEngines() {
+		List<HybridMobileEngine> defaultEngines = new ArrayList<>();
+		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
+		for(PlatformSupport support: platforms){
+			DownloadableCordovaEngine latestDownloadable = getLatestVersion(support.getPlatformId());
+			if(latestDownloadable != null){
+				HybridMobileEngine engine = createEngine(latestDownloadable.getPlatformId(), latestDownloadable.getVersion());
+				defaultEngines.add(engine);
+			}
+		}
+		
+		List<HybridMobileEngine> userEngines = getUserDefaultEngines();
+		for(HybridMobileEngine userEngine: userEngines){
+			//user preferences overrides latest engine
+			int engineFoundIndex = -1;
+			for(HybridMobileEngine e: defaultEngines){
+				if(e.getName().equals(userEngine.getName())){
+					engineFoundIndex = defaultEngines.indexOf(e);
+					break;
+				}
+			}
+			if(engineFoundIndex != -1){
+				defaultEngines.remove(engineFoundIndex);
+			}
+			defaultEngines.add(userEngine);
+		}
+		return defaultEngines;
+	}
+	
+	private List<HybridMobileEngine> getUserDefaultEngines(){
+		List<HybridMobileEngine> userEngines = new ArrayList<>();
+		String pref =  Platform.getPreferencesService().getString(PlatformConstants.HYBRID_UI_PLUGIN_ID, PlatformConstants.PREF_DEFAULT_ENGINE, null, null);
+		if(pref != null && !pref.isEmpty()){
+			String[] engineStrings = pref.split(",");
+			for (String engineString : engineStrings) {
+				String[] engineInfo = engineString.split(":");
+				HybridMobileEngine engine = createEngine(engineInfo[0], engineInfo[1]);
+				userEngines.add(engine);
+			}
+		}
+		return userEngines;
+	}
+	
+	private List<HybridMobileEngine> getPreferencesEngines(){
+		List<HybridMobileEngine> preferencesEngines = new ArrayList<>();
+		IEclipsePreferences preferences = InstanceScope.INSTANCE.getNode(HybridCore.PLUGIN_ID);
+		try {
+			for(String key: preferences.keys()){
+				String value = preferences.get(key, "");
+				preferencesEngines.add(createEngine(key, value));
+				
+			}
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return preferencesEngines;
+	}
+	
+	public HybridMobileEngine createEngine(String name, String spec){
+		HybridMobileEngine existingEngine = getEngine(name, spec);
+		if(existingEngine != null){
+			return existingEngine;
+		}
+		PlatformSupport support = HybridCore.getPlatformSupport(name);
+		if(support == null){
+			return new HybridMobileEngine(name, spec, null);
+		}
+		try {
+			return new HybridMobileEngine(name, spec, support.getLibraryResolver());
+		} catch (CoreException e) {
+			HybridCore.log(Status.ERROR, "Error occured when getting library resolver", e);
+		}
+		return null;
+	}
+	
+	public HybridMobileEngine createEngine(String name, String spec, HybridMobileLibraryResolver resolver){
+		HybridMobileEngine existingEngine = getEngine(name, spec);
+		if(existingEngine != null){
+			return existingEngine;
+		}
+		return new HybridMobileEngine(name, spec, resolver);
+	}
+	
+	public void deleteEngine(HybridMobileEngine engine){
+		engineList.remove(engine);
 	}
 	
 }

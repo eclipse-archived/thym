@@ -12,9 +12,11 @@ package org.eclipse.thym.ui.config.internal;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
@@ -351,63 +353,80 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				IStructuredSelection newSelection =
-						(IStructuredSelection) engineSection.getSelection();
+						(IStructuredSelection) event.getSelection();
 				WidgetModel model = getWidgetModel();
 				Widget w = getWidget();
 				// Null check is required since w.getEngines() will return null
 				// when there are no engine tags in config.xml.
-				if (w.getEngines() != null) {
-					for (Engine e : w.getEngines()) {
-						w.removeEngine(e);
-					}
-				}
-				if (newSelection != null && !newSelection.isEmpty()) {
-					HybridMobileEngine hybridEngine;
-					Engine engine;
-					for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
-						hybridEngine = (HybridMobileEngine) iter.next();
-						engine = model.createEngine(w);
-						engine.setName(hybridEngine.getId());
-						if (hybridEngine.isManaged()) {
-							engine.setSpec(hybridEngine.getVersion());
-						} else {
-							engine.setSpec(hybridEngine.getLocation().toString());
+				if (w.getEngines() != null){
+					
+					if (newSelection == null || newSelection.isEmpty()) {
+						for (Engine e : w.getEngines()) {
+							w.removeEngine(e);
 						}
+					} else {
+						for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
+							HybridMobileEngine hybridEngine = (HybridMobileEngine) iter.next();
+							Engine definedEngine = engineIsDefined(w, hybridEngine.getName());
+							boolean engineRemoved = false;
+							if(definedEngine != null){
+								if(!definedEngine.getSpec().equals(hybridEngine.getSpec())){
+									w.removeEngine(definedEngine);
+									engineRemoved = true;
+								}
+							}
+							if(engineRemoved){
+								Engine engine = model.createEngine(w);
+								engine.setName(hybridEngine.getName());
+								engine.setSpec(hybridEngine.getSpec());
+								w.addEngine(engine);
+							}
+							
+						}
+					}
+				} else {
+					for (Iterator<?> iter = newSelection.iterator(); iter.hasNext(); ) {
+						HybridMobileEngine hybridEngine = (HybridMobileEngine) iter.next();
+						Engine engine = model.createEngine(w);
+						engine.setName(hybridEngine.getName());
+						engine.setSpec(hybridEngine.getSpec());
 						w.addEngine(engine);
 					}
 				}
 			}
 		});
 	}
+	
+	private Engine engineIsDefined(Widget widget, String platformId){
+		for(Engine e : widget.getEngines()) {
+			if(e.getName().equals(platformId)){
+				return e;
+			}
+		}
+		return null;
+	}
 
 	private void getEnginesFromWidget() {
-		List<Engine> activeEngines = getWidget().getEngines();
+		List<Engine> widgetEngines = getWidget().getEngines();
 		// getEngines() can return null; property change fires when engine is removed
-		if (activeEngines == null || activeEngines.size() == 0) {
+		if (widgetEngines == null || widgetEngines.size() == 0) {
 			engineSection.setSelection(new StructuredSelection());
 			return;
 		}
-		List<HybridMobileEngine> engines = new ArrayList<HybridMobileEngine>();
-		List<HybridMobileEngine> availableEngines =
-				new CordovaEngineProvider().getAvailableEngines();
-		for (HybridMobileEngine availEngine : availableEngines) {
-			for (Engine activeEngine : activeEngines) {
-				if (availEngine.isManaged()) {
-					if (availEngine.getId().equals(activeEngine.getName()) &&
-						availEngine.getVersion().equals(activeEngine.getSpec())) {
-
-						engines.add(availEngine);
-					}
-				} else {
-					if (availEngine.getId().equals(activeEngine.getName()) &&
-						availEngine.getLocation().equals(activeEngine.getSpec())) {
-
-						engines.add(availEngine);
-					}
+		Set<HybridMobileEngine> engines = new HashSet<HybridMobileEngine>();
+		CordovaEngineProvider enginesProvider = CordovaEngineProvider.getInstance();
+		Set<HybridMobileEngine> availableEngines = enginesProvider.getAvailableEngines();
+		for(Engine widgetEngine : widgetEngines){
+			HybridMobileEngine e = enginesProvider.createEngine(widgetEngine.getName(), widgetEngine.getSpec());
+			if(e.isValid()){
+				engines.add(e);
+				if(!availableEngines.contains(e)){
+					enginesProvider.engineFound(e);
 				}
 			}
 		}
 		if (engines.size() != 0) {
+			engineSection.updateAvailableEngines(null);
 			engineSection.setSelection(new StructuredSelection(engines.toArray()));
 		}
 	}
@@ -415,8 +434,9 @@ public class EssentialsPage extends AbstactConfigEditorPage implements IHyperlin
 	private void updateActiveEngines() {
 		IFile file = (IFile) getEditor().getEditorInput().getAdapter(IFile.class);
 		HybridProject project = HybridProject.getHybridProject(file.getProject());
-		HybridMobileEngine[] activeEngines = project.getEngineManager().getActiveEngines();
+		HybridMobileEngine[] activeEngines = project.getEngineManager().getEngines();
 		if (activeEngines != null) {
+			engineSection.updateAvailableEngines(new HashSet<>(Arrays.asList(activeEngines)));
 			engineSection.setSelection(new StructuredSelection(activeEngines));
 		}
 	}
