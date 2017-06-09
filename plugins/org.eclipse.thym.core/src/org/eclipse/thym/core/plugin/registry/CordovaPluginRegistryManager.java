@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Red Hat, Inc. 
+ * Copyright (c) 2013, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,21 +15,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.CacheConfig;
-import org.apache.http.impl.client.cache.CachingHttpClient;
-import org.apache.http.impl.client.cache.HeapResourceFactory;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -42,7 +32,6 @@ import org.eclipse.ecf.filetransfer.identity.FileIDFactory;
 import org.eclipse.ecf.filetransfer.identity.IFileID;
 import org.eclipse.ecf.filetransfer.service.IRetrieveFileTransfer;
 import org.eclipse.thym.core.HybridCore;
-import org.eclipse.thym.core.internal.util.BundleHttpCacheStorage;
 import org.eclipse.thym.core.internal.util.HttpUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
@@ -53,7 +42,7 @@ import com.google.gson.stream.JsonToken;
 public class CordovaPluginRegistryManager {
 	
 	private static final String REGISTRY_URL = "http://registry.npmjs.org/";
-//    private static final String PLUGIN_LIST_URL = 
+	private static final String PLUGIN_LIST_URL = "-/_view/byKeyword?startkey=%5B%22ecosystem:cordova%22%5D&endkey=%5B%22ecosystem:cordova1%22%5D&group_level=3";
 	
 	private final File cacheHome;
 	private HashMap<String, CordovaRegistryPlugin> detailedPluginInfoCache = new HashMap<String, CordovaRegistryPlugin>();
@@ -65,29 +54,27 @@ public class CordovaPluginRegistryManager {
 	public CordovaRegistryPlugin getCordovaPluginInfo(String name) throws CoreException {
 		
 		CordovaRegistryPlugin plugin = detailedPluginInfoCache.get(name);
-		if(plugin != null )
+		if(plugin != null ) {
 			return plugin;
-		DefaultHttpClient defHttpClient = new DefaultHttpClient();
-		HttpUtil.setupProxy(defHttpClient);
-		HttpClient client =new CachingHttpClient(defHttpClient,
-				new HeapResourceFactory(), 
-				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig()); 
-		
-		HttpGet get = new HttpGet(REGISTRY_URL+name);
-		HttpResponse response;
+		}
+		JsonReader reader = null;
 		try {
-			response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			InputStream stream = entity.getContent();
-			JsonReader reader = new JsonReader(new InputStreamReader(stream));
+			InputStream stream = HttpUtil.getHttpStream(REGISTRY_URL+name);
+			reader = new JsonReader(new InputStreamReader(stream));
 			plugin = new CordovaRegistryPlugin();
 			readPluginInfo(reader, plugin);
 			this.detailedPluginInfoCache.put(name, plugin);
 			return plugin;
-		} catch (ClientProtocolException e) {
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin information for " + name, e));
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin information for " + name, e));
+		} finally{
+			if(reader != null ) {
+				try {
+					reader.close();
+				} catch (IOException e) { 
+					HybridCore.log(Status.ERROR, "Error occured when closing json reader", e);
+				}
+			}
 		}
 	}
 	
@@ -120,11 +107,7 @@ public class CordovaPluginRegistryManager {
 		    	transfer.sendRetrieveRequest(remoteFileID, receiver, null);
 		    	lock.wait();
 			}
-		} catch (FileCreateException e) {
-			HybridCore.log(IStatus.ERROR, "Cordova plugin fetch error", e);
-		} catch (IncomingFileTransferException e) {
-			HybridCore.log(IStatus.ERROR, "Cordova plugin fetch error", e);
-		} catch (InterruptedException e) {
+		} catch (FileCreateException | IncomingFileTransferException | InterruptedException e) {
 			HybridCore.log(IStatus.ERROR, "Cordova plugin fetch error", e);
 		}
 		return new File(newCacheDir, "package");
@@ -149,36 +132,20 @@ public class CordovaPluginRegistryManager {
 		return cachedPluginDir;
 	}
 	
-	private static CacheConfig getCacheConfig(){
-		CacheConfig config = new CacheConfig();
-		config.setMaxObjectSize(120 *1024);
-		return config;
-	}
-	
-	public List<CordovaRegistryPluginInfo> retrievePluginInfos(IProgressMonitor monitor) throws CoreException
-	{
-		
-		if(monitor == null )
+	public List<CordovaRegistryPluginInfo> retrievePluginInfos(IProgressMonitor monitor) throws CoreException {	
+		if(monitor == null ) {
 			monitor = new NullProgressMonitor();
+		}
 		
 		monitor.beginTask("Retrieve plug-in registry catalog", 10);
-		DefaultHttpClient theHttpClient = new DefaultHttpClient();
-		HttpUtil.setupProxy(theHttpClient);
-		HttpClient client = new CachingHttpClient(theHttpClient, 
-				new HeapResourceFactory(), 
-				new BundleHttpCacheStorage(HybridCore.getContext().getBundle()), getCacheConfig());
-		JsonReader reader= null;
+		JsonReader reader = null;
 		try {
 			if(monitor.isCanceled()){
 				return null;
 			}
-			String url = REGISTRY_URL + "-/_view/byKeyword?startkey=%5B%22ecosystem:cordova%22%5D&endkey=%5B%22ecosystem:cordova1%22%5D&group_level=3";
-			HttpGet get = new HttpGet(URI.create(url));
-			HttpResponse response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			InputStream stream = entity.getContent();
-			monitor.worked(7);
+			InputStream stream = HttpUtil.getHttpStream(REGISTRY_URL + PLUGIN_LIST_URL);
 			reader = new JsonReader(new InputStreamReader(stream));
+			monitor.worked(7);
 			reader.beginObject();//start the Registry
 			final ArrayList<CordovaRegistryPluginInfo> plugins = new ArrayList<CordovaRegistryPluginInfo>();
 			while(reader.hasNext()){
@@ -198,15 +165,16 @@ public class CordovaPluginRegistryManager {
 			}
 			return plugins;
 
-		} catch (ClientProtocolException e) {
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin catalog",e));
 		} catch (IOException e) {
-			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin catalog", e));
-		}finally{
-			if(reader != null )
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Can not retrieve plugin catalog",e));
+		} finally{
+			if(reader != null ) { 
 				try {
 					reader.close();
-				} catch (IOException e) { /*ignored*/ }
+				} catch (IOException e) {
+					HybridCore.log(Status.ERROR, "Error occured when closing json reader", e);
+				}
+			}
 			monitor.done();
 		}
 	}
