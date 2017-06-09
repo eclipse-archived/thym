@@ -45,7 +45,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
 final public class HybridCore implements BundleActivator, DebugOptionsListener {
@@ -133,24 +132,17 @@ final public class HybridCore implements BundleActivator, DebugOptionsListener {
 	}
 	
 	private boolean startBundle(String bundleId) {
-		ServiceTracker<PackageAdmin, PackageAdmin> packageAdminTracker = new ServiceTracker<PackageAdmin, PackageAdmin>(getContext(), PackageAdmin.class.getName(),null);
-		packageAdminTracker.open();
-		PackageAdmin packageAdmin = packageAdminTracker.getService();
-		
-		if (packageAdmin == null)
-			return false;
-
-		Bundle[] bundles = packageAdmin.getBundles(bundleId, null);
-		if (bundles != null && bundles.length > 0) {
-			for (int i = 0; i < bundles.length; i++) {
-				try {
-					if ((bundles[i].getState() & Bundle.INSTALLED) == 0) {
-						bundles[i].start(Bundle.START_ACTIVATION_POLICY);
-						bundles[i].start(Bundle.START_TRANSIENT);
+		Bundle[] bundles = context.getBundles();
+		for(Bundle bundle: bundles){
+			if(bundle.getSymbolicName().equals(bundleId)){
+				if ((bundle.getState() & Bundle.INSTALLED) == 0) {
+					try {
+						bundle.start(Bundle.START_ACTIVATION_POLICY);
+						bundle.start(Bundle.START_TRANSIENT);
 						return true;
+					} catch (BundleException e) {
+						return false;
 					}
-				} catch (BundleException e) {
-					// failed, try next bundle
 				}
 			}
 		}
