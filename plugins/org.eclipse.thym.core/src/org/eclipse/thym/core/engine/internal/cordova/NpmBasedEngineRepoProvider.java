@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Red Hat, Inc. 
+ * Copyright (c) 2015, 2017 Red Hat, Inc. 
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,24 +13,11 @@ package org.eclipse.thym.core.engine.internal.cordova;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLContext;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpParams;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -49,33 +36,6 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 
 	private static final String NPM_URL ="https://registry.npmjs.org/cordova-{0}";
 	
-	private InputStream getRemoteJSonStream(String url) throws IOException{
-		try {
-			// SSLSocketFactory to patch HTTPClient's that are earlier than 4.3.2
-			// to enable SNI support.
-			SSLSocketFactory factory = new SSLSocketFactory(SSLContext.getDefault()){
-				@Override
-				public Socket createSocket() throws IOException {
-					return SocketFactory.getDefault().createSocket();
-				}
-				@Override
-				public Socket createSocket(HttpParams params) throws IOException {
-					return SocketFactory.getDefault().createSocket();
-				}
-			};
-			DefaultHttpClient client = new DefaultHttpClient();
-			HttpUtil.setupProxy(client);
-			client.getConnectionManager().getSchemeRegistry().register(new Scheme("https", 443, factory));
-			HttpGet get = new HttpGet(url);
-			HttpResponse response = client.execute(get);
-			HttpEntity entity = response.getEntity();
-			return entity.getContent();
-		} catch (NoSuchAlgorithmException e) {
-			HybridCore.log(IStatus.ERROR, "Error creating the SSL Factory ", e);
-		}
-		return null;
-	}
-	
 	@Override
 	public List<DownloadableCordovaEngine> getEngines() throws CoreException {
 		List<PlatformSupport> platforms = HybridCore.getPlatformSupports();
@@ -91,25 +51,26 @@ public class NpmBasedEngineRepoProvider extends AbstractEngineRepoProvider{
 	
 	private List<DownloadableCordovaEngine> getPlatformEngines(String platformId) throws CoreException{
 		try {
-			InputStream stream = getRemoteJSonStream(NLS.bind(NPM_URL, platformId));
-			if (stream != null) {
-				return parseEngines(stream, platformId);
-			}else{
-				return null;
-			}
+			InputStream stream = HttpUtil.getHttpStream(NLS.bind(NPM_URL, platformId));
+			return parseEngines(stream, platformId);
 		} catch (IOException e) {
 			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, NLS.bind(
 					"Could not retrieve and parse downloadable platform information for ({0})", platformId),e));
 		}
 	}
 	
-	private List<DownloadableCordovaEngine> parseEngines(InputStream stream, String platformId) throws IOException{
+	private List<DownloadableCordovaEngine> parseEngines(InputStream stream, String platformId) throws IOException, CoreException{
 		List<DownloadableCordovaEngine> engines = new ArrayList<DownloadableCordovaEngine>();
 		JsonReader reader = null;
 		try {
 			reader = new JsonReader(new InputStreamReader(stream));
 			JsonParser parser = new JsonParser();
-			final JsonObject root = (JsonObject) parser.parse(reader);
+			JsonElement jsonElement = parser.parse(reader);
+			if(!jsonElement.isJsonObject()){
+				throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, 
+						"cannot parse object bacuse it is not a Json object"));
+			}
+			final JsonObject root = jsonElement.getAsJsonObject();
 			final JsonElement element = root.get("versions");
 			final JsonObject topVersions = element.getAsJsonObject();
 			final Set<Entry<String, JsonElement>> versions =  topVersions.entrySet();
