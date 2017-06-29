@@ -13,7 +13,6 @@ package org.eclipse.thym.ui.wizard.project;
 import static org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_WARNING;
 import static org.eclipse.jface.dialogs.Dialog.DLG_IMG_MESSAGE_ERROR;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,6 +26,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -40,6 +41,7 @@ import org.eclipse.ui.dialogs.WorkingSetGroup;
 import org.osgi.framework.Version;
 import org.eclipse.thym.core.HybridProjectConventions;
 import org.eclipse.thym.core.internal.cordova.CordovaCLI;
+import org.eclipse.thym.core.internal.cordova.CordovaCLIErrors;
 import org.eclipse.thym.core.internal.cordova.ErrorDetectingCLIResult;
 import org.eclipse.thym.ui.HybridUI;
 
@@ -139,7 +141,7 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 			return false;
 		}
 		if(!cordovaFound){
-			setMessage("Cordova not found, please run 'npm install -g cordova' on a command line", ERROR);
+			setMessage(ErrorDetectingCLIResult.CORDOVA_NOT_FOUND, ERROR);
 			this.getContainer().updateMessage();
 			return false;
 		}
@@ -228,13 +230,17 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 		protected IStatus run(IProgressMonitor monitor) {
 			try {
 				ErrorDetectingCLIResult result = new CordovaCLI().version(monitor).convertTo(ErrorDetectingCLIResult.class);
+				if(result.asStatus().getCode() == CordovaCLIErrors.ERROR_COMMAND_MISSING){
+					return Status.OK_STATUS;
+				}
 				if(result.asStatus().isOK()){
 					cordovaVersion = Version.parseVersion(result.getMessage()).toString();
+					return Status.OK_STATUS;
 				}
-			} catch (CoreException e) {
+			} catch (Exception e) {
 				HybridUI.log(WARNING, "Unable to determine if cordova is available", e);
 			}
-			return Status.OK_STATUS;
+			return new Status(Status.WARNING, HybridUI.PLUGIN_ID, "");
 			
 		}
 		
@@ -254,19 +260,29 @@ public class WizardNewHybridProjectCreationPage extends WizardNewProjectCreation
 			public void done(IJobChangeEvent event) {
 				if(!getControl().isDisposed()){
 					final Display display = getControl().getDisplay();
+					final int severity = event.getJob().getResult().getSeverity();
 					display.syncExec(new Runnable() {
 						@Override
 						public void run() {
-							if(cordovaIsAvailableJob.getCordovaVersion() != null){
-								cordovaLabel.setText(cordovaIsAvailableJob.getCordovaVersion());
-								cordovaLabel.setImage(null);
-								cordovaFound = true;
+							if(severity == Status.OK){
+								if(cordovaIsAvailableJob.getCordovaVersion() != null){
+									updateCordovaLabel(cordovaIsAvailableJob.getCordovaVersion(), null, null, true);
+								} else {
+									updateCordovaLabel(ErrorDetectingCLIResult.CORDOVA_NOT_FOUND, 
+											JFaceResources.getImage(DLG_IMG_MESSAGE_ERROR), 
+											getControl().getDisplay().getSystemColor(SWT.COLOR_RED), false);
+								}
 							} else {
-								cordovaLabel.setText("Cordova not found, please run 'npm install -g cordova' on a command line");
-								cordovaLabel.setImage(JFaceResources.getImage(DLG_IMG_MESSAGE_ERROR));
-								cordovaLabel.setForeground(getControl().getDisplay().getSystemColor(SWT.COLOR_RED));
-								cordovaFound = false;
+								updateCordovaLabel("Unable to determine if cordova is available", 
+										JFaceResources.getImage(DLG_IMG_MESSAGE_WARNING), null, true);
 							}
+						}
+						
+						private void updateCordovaLabel(String text, Image image, Color foreground , boolean found){
+							cordovaLabel.setText(text);
+							cordovaLabel.setImage(image);
+							cordovaLabel.setForeground(foreground);
+							cordovaFound = found;
 							setPageComplete(validatePage());
 						}
 					});
