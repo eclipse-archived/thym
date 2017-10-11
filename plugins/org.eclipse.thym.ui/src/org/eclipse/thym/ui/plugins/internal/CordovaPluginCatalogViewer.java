@@ -47,7 +47,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.thym.core.HybridProject;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 
 public class CordovaPluginCatalogViewer extends Composite {
 
@@ -62,7 +63,7 @@ public class CordovaPluginCatalogViewer extends Composite {
 
 	private HybridProject project;
 	
-	private List<CordovaRegistryPluginInfo> pluginsToInstall = new ArrayList<CordovaRegistryPluginInfo>();
+	private List<CordovaRegistrySearchPlugin> pluginsToInstall = new ArrayList<CordovaRegistrySearchPlugin>();
 
 	public CordovaPluginCatalogViewer(Composite parent, int style) {
 		super(parent, style);
@@ -129,7 +130,7 @@ public class CordovaPluginCatalogViewer extends Composite {
 			@Override
 			public void checkStateChanged(CheckStateChangedEvent event) {
 				//disable checking/unchecking installed plugins
-				if(isPluginInstalled((CordovaRegistryPluginInfo)event.getElement())){
+				if(isPluginInstalled((CordovaRegistrySearchPlugin)event.getElement())){
 					Object obj = event.getSource();
 					if(obj instanceof CheckboxTreeViewer){
 						((CheckboxTreeViewer)obj).setChecked(event.getElement(), true);
@@ -137,9 +138,9 @@ public class CordovaPluginCatalogViewer extends Composite {
 					}
 				}
 				if(event.getChecked()){
-					pluginsToInstall.add((CordovaRegistryPluginInfo)event.getElement());
+					pluginsToInstall.add((CordovaRegistrySearchPlugin)event.getElement());
 				} else {
-					pluginsToInstall.remove((CordovaRegistryPluginInfo)event.getElement());
+					pluginsToInstall.remove((CordovaRegistrySearchPlugin)event.getElement());
 				}
 				
 			}
@@ -151,7 +152,7 @@ public class CordovaPluginCatalogViewer extends Composite {
 			public void selectionChanged(SelectionChangedEvent event) {
 				if(event.getSelection() != null &&  ((IStructuredSelection)event.getSelection()).getFirstElement() != null){
 					String desc = 
-							((CordovaRegistryPluginInfo)((IStructuredSelection)event.getSelection()).getFirstElement()).getDescription();
+							((CordovaRegistrySearchPlugin)((IStructuredSelection)event.getSelection()).getFirstElement()).getDescription();
 					if(desc != null && !desc.isEmpty()){
 						descriptionText.setText(desc.trim());
 					} else {
@@ -178,7 +179,7 @@ public class CordovaPluginCatalogViewer extends Composite {
 
 	}
 
-	public List<CordovaRegistryPluginInfo> getPluginsToInstall() {
+	public List<CordovaRegistrySearchPlugin> getPluginsToInstall() {
 		return pluginsToInstall;
 	}
 
@@ -203,7 +204,7 @@ public class CordovaPluginCatalogViewer extends Composite {
 		pluginTreeViewer.addCheckStateListener(listener);
 	}
 	
-	private boolean isPluginInstalled(CordovaRegistryPluginInfo plugin){
+	private boolean isPluginInstalled(CordovaRegistrySearchPlugin plugin){
 		if (project != null) {
 			if (project.getPluginManager().isPluginInstalled(plugin.getName())) {
 				return true;
@@ -257,8 +258,8 @@ public class CordovaPluginCatalogViewer extends Composite {
 			case 0:
 				return null;
 			case 1:
-				if(element instanceof CordovaRegistryPluginInfo){
-					return ((CordovaRegistryPluginInfo) element).getName();
+				if(element instanceof CordovaRegistrySearchPlugin){
+					return ((CordovaRegistrySearchPlugin) element).getName();
 				} else {
 					return (String)element;
 				}
@@ -268,13 +269,13 @@ public class CordovaPluginCatalogViewer extends Composite {
 
 		@Override
 		public boolean isChecked(Object element) {
-			return isPluginInstalled((CordovaRegistryPluginInfo) element) || pluginsToInstall.contains(element);
+			return isPluginInstalled((CordovaRegistrySearchPlugin) element) || pluginsToInstall.contains(element);
 		}
 
 		@Override
 		public boolean isGrayed(Object element) {
 			if(pluginsFilter.isShowInstalled()){
-				CordovaRegistryPluginInfo plugin = (CordovaRegistryPluginInfo) element;
+				CordovaRegistrySearchPlugin plugin = (CordovaRegistrySearchPlugin) element;
 				return isPluginInstalled(plugin);
 			}
 			return false;
@@ -303,14 +304,14 @@ public class CordovaPluginCatalogViewer extends Composite {
 		public boolean select(Viewer viewer, Object parentElement, Object element) {
 			if (searchString == null || searchString.length() == 0) {
 				if(!showInstalled){
-					CordovaRegistryPluginInfo plugin = (CordovaRegistryPluginInfo) element;
+					CordovaRegistrySearchPlugin plugin = (CordovaRegistrySearchPlugin) element;
 					return !isPluginInstalled(plugin);
 				}
 				return true;
 			}
 			try{
 				Pattern pattern = Pattern.compile(searchString, Pattern.CASE_INSENSITIVE);
-				CordovaRegistryPluginInfo plugin = (CordovaRegistryPluginInfo) element;
+				CordovaRegistrySearchPlugin plugin = (CordovaRegistrySearchPlugin) element;
 				boolean matchesPattern = pattern.matcher(plugin.getName()).matches();
 				if(!showInstalled){
 					return matchesPattern && !isPluginInstalled(plugin);
@@ -324,12 +325,12 @@ public class CordovaPluginCatalogViewer extends Composite {
 	}
 	
 	class CordovaPluginViewerComparator extends ViewerComparator{
-		private static final String CORDOVA_NAMESPACE = "org.apache.cordova";
+		private static final String CORDOVA_NAMESPACE = "cordova-plugin";
 		private static final int CATEGORY_INSTALLED = 0;
 		private static final int CATEGORY_CORDOVA = 1;
 		private static final int CATEGORY_OTHER = 2;
 		public int category(Object element) {
-			CordovaRegistryPluginInfo info = (CordovaRegistryPluginInfo)element;
+			CordovaRegistrySearchPlugin info = (CordovaRegistrySearchPlugin)element;
 			if(pluginsFilter.isShowInstalled()){
 				if(isPluginInstalled(info)){
 					return CATEGORY_INSTALLED;

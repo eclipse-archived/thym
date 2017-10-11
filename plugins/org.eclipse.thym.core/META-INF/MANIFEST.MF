@@ -37,9 +37,11 @@ Export-Package: com.github.zafarkhaja.semver;x-friends:="org.eclipse.thym.ui,org
    org.eclipse.thym.ui,
    org.eclipse.thym.core,
    org.eclipse.thym.android.core",
- org.eclipse.thym.core.natures;
- org.eclipse.thym.core.platform;
+ org.eclipse.thym.core.natures,
+ org.eclipse.thym.core.platform,
  org.eclipse.thym.core.plugin,
- org.eclipse.thym.core.plugin.registry
+ org.eclipse.thym.core.plugin.registry,
+ org.eclipse.thym.core.plugin.registry.plugin,
+ org.eclipse.thym.core.plugin.registry.repo
 Bundle-ClassPath: lib/java-semver-0.8.0-20131230.170230-3.jar,
  .

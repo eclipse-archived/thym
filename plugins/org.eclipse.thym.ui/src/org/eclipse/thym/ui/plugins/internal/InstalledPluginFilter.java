@@ -14,7 +14,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
 
 public class InstalledPluginFilter extends ViewerFilter {
 
@@ -25,8 +25,8 @@ public class InstalledPluginFilter extends ViewerFilter {
 		if(project == null ) 
 			return false;
 		CordovaPluginManager pm = project.getPluginManager();
-		if(element instanceof CordovaRegistryPluginInfo ){
-			CordovaRegistryPluginInfo plugin = (CordovaRegistryPluginInfo) element;
+		if(element instanceof CordovaRegistryPlugin ){
+			CordovaRegistryPlugin plugin = (CordovaRegistryPlugin) element;
 			return !pm.isPluginInstalled(plugin.getName());
 		}
 		return false;

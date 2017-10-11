@@ -62,7 +62,8 @@ import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 /**
  * A wizard page that allows users to view cordova plug-in registry and select plug-ins either 
  * from registry or through other supported means. This page can be used within a wizard 
@@ -82,7 +83,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	private static final String PAGE_TITLE = "Install Cordova Plug-in";
 	private static final String PAGE_DESCRIPTION = "Discover and Install Cordova Plug-ins";
 
-	private List<CordovaRegistryPluginInfo> cordovaPluginInfos;
+	private List<CordovaRegistrySearchPlugin> cordovaPluginInfos;
 	private HybridProject fixedProject;
 	private boolean noProject;
 	private IStructuredSelection initialSelection;
@@ -351,7 +352,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		if( getSelectedTabItem()!=registryTab){
 			return null;
 		}
-		List<CordovaRegistryPluginInfo> infos = getCheckedCordovaRegistryItems();
+		List<CordovaRegistrySearchPlugin> infos = getCheckedCordovaRegistryItems();
 		if(getPluginWizard().isPluginSelectionOptional() && (infos == null || infos.isEmpty())){
 			return null;
 		}
@@ -388,7 +389,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 		return textProject.getText();
 	}
 	
-	private List<CordovaRegistryPluginInfo> getCheckedCordovaRegistryItems(){
+	private List<CordovaRegistrySearchPlugin> getCheckedCordovaRegistryItems(){
 		return catalogViewer.getPluginsToInstall();
 	}
 	
@@ -457,7 +458,7 @@ public class CordovaPluginSelectionPage extends WizardPage {
 	}
 	
 	private boolean validateRegistryTab() {
-		List<CordovaRegistryPluginInfo> infos = getCheckedCordovaRegistryItems();
+		List<CordovaRegistrySearchPlugin> infos = getCheckedCordovaRegistryItems();
 		if (!getPluginWizard().isPluginSelectionOptional() && infos.isEmpty()){
 			setMessage("Specify Cordova plug-in(s) for installation", ERROR);
 			return false;

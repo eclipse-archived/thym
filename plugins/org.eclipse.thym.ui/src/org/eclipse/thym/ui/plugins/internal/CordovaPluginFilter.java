@@ -12,15 +12,15 @@ package org.eclipse.thym.ui.plugins.internal;
 
 import org.eclipse.equinox.internal.p2.ui.discovery.util.PatternFilter;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
 
 @SuppressWarnings("restriction")
 public class CordovaPluginFilter extends PatternFilter {
 
 	@Override
 	protected boolean isLeafMatch(Viewer viewer, Object element) {
-		if( (element instanceof CordovaRegistryPluginInfo) ){
-			CordovaRegistryPluginInfo pluginInfo = (CordovaRegistryPluginInfo) element;
+		if( (element instanceof CordovaRegistryPlugin) ){
+			CordovaRegistryPlugin pluginInfo = (CordovaRegistryPlugin) element;
 			if(wordMatches(pluginInfo.getName()) || wordMatches(pluginInfo.getDescription()) ){
 				return true;
 			}

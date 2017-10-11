@@ -36,7 +36,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.thym.ui.plugins.internal.CordovaPluginSelectionPage;
@@ -145,10 +145,10 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 			pm.installPlugin(uri, subMonitor);
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
-			List<RegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
+			List<CordovaRegistryPluginVersion> plugins = pageFour.getSelectedPluginVersions();
 			if(!plugins.isEmpty()){
 				subMonitor.setWorkRemaining(plugins.size());
-				for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
+				for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
 					pm.installPlugin(cordovaRegistryPluginVersion, subMonitor.split(1));
 				}
 			}
