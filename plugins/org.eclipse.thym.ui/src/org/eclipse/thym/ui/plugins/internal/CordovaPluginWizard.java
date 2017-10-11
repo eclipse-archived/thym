@@ -31,7 +31,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
 import org.eclipse.thym.ui.HybridUI;
 import org.eclipse.thym.ui.internal.status.StatusManager;
 import org.eclipse.ui.IWorkbench;
@@ -55,7 +55,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, ICo
 		private int opType;
 		private File dir;
 		private URI gitRepo;
-		private List<RegistryPluginVersion> plugins;
+		private List<CordovaRegistryPluginVersion> plugins;
 		
 		private PluginInstallOperation(CordovaPluginManager pm){
 			this.pm = pm;
@@ -73,7 +73,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, ICo
 			opType = PLUGIN_SOURCE_GIT;
 		}
 		
-		public PluginInstallOperation(List<RegistryPluginVersion> plugins, CordovaPluginManager pm){
+		public PluginInstallOperation(List<CordovaRegistryPluginVersion> plugins, CordovaPluginManager pm){
 			this(pm);
 			this.plugins = plugins;
 			opType = PLUGIN_SOURCE_REGISTRY;
@@ -91,7 +91,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, ICo
 				pm.installPlugin(this.gitRepo, monitor );
 				break;
 			case PLUGIN_SOURCE_REGISTRY:
-				for (RegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
+				for (CordovaRegistryPluginVersion cordovaRegistryPluginVersion : plugins) {
 					pm.installPlugin(cordovaRegistryPluginVersion, monitor);
 				}
 				break;
@@ -141,7 +141,7 @@ public class CordovaPluginWizard extends Wizard implements IWorkbenchWizard, ICo
 			op = new PluginInstallOperation(uri, pm);
 			break;
 		case PLUGIN_SOURCE_REGISTRY:
-			List<RegistryPluginVersion> plugins = pageTwo.getSelectedPluginVersions();
+			List<CordovaRegistryPluginVersion> plugins = pageTwo.getSelectedPluginVersions();
 			op = new PluginInstallOperation(plugins, pm);
 			break;
 		default:

@@ -40,7 +40,8 @@ import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.internal.util.XMLUtil;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXParseException;
 
@@ -94,8 +95,8 @@ public class CordovaPluginManager {
 	 *<li>if an error occurs during installation</li>
 	 *</ul>
 	 */
-	public void installPlugin(RegistryPluginVersion plugin, IProgressMonitor monitor) throws CoreException{
-		String pluginCoords = plugin.getName() + "@" + plugin.getVersionNumber();
+	public void installPlugin(CordovaRegistryPluginVersion version, IProgressMonitor monitor) throws CoreException{
+		String pluginCoords = version.getName() + "@" + version.getVersion();
 		installPlugin(pluginCoords, monitor, true);
 	}
 	

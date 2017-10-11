@@ -14,11 +14,11 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryMapper;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 
 import static org.junit.Assert.*;
 
@@ -32,30 +32,30 @@ public class CordovaPluginRegistryTest {
 	@Test
 	public void testRetrievePluginInfosFromCordovaRegistry() throws CoreException{
 		CordovaPluginRegistryManager client = getCordovaIORegistryClient();
-		List<CordovaRegistryPluginInfo> infos = client.retrievePluginInfos(new NullProgressMonitor());
+		List<CordovaRegistrySearchPlugin> infos = client.retrievePluginInfos(new NullProgressMonitor());
 		assertNotNull(infos);
 		assertFalse(infos.isEmpty());
-		CordovaRegistryPluginInfo info = infos.get(0);
+		CordovaRegistrySearchPlugin info = infos.get(0);
 		assertNotNull(info.getName());
 	}
 
 	@Test
 	public void testReadCordovaPluginFromCordovaRegistry() throws CoreException{
 		CordovaPluginRegistryManager client = getCordovaIORegistryClient();
-		List<CordovaRegistryPluginInfo> infos = client.retrievePluginInfos(new NullProgressMonitor());
-		CordovaRegistryPluginInfo info = infos.get(0);
+		List<CordovaRegistrySearchPlugin> infos = client.retrievePluginInfos(new NullProgressMonitor());
+		CordovaRegistrySearchPlugin info = infos.get(0);
 		CordovaRegistryPlugin plugin = client.getCordovaPluginInfo(info.getName());
 		assertNotNull(plugin);
 		assertNotNull(plugin.getName());
 		assertEquals(info.getName(), plugin.getName());
-		List<RegistryPluginVersion> versions = plugin.getVersions();
+		List<CordovaRegistryPluginVersion> versions = plugin.getVersions();
 		assertNotNull(versions);
 		assertFalse(versions.isEmpty());
-		RegistryPluginVersion version = versions.get(0);
+		CordovaRegistryPluginVersion version = versions.get(0);
 		assertNotNull(version.getName());
-		assertNotNull(version.getVersionNumber());
-		assertNotNull(version.getShasum());
-		assertNotNull(version.getTarball());
+		assertNotNull(version.getVersion());
+		assertNotNull(version.getDist().getShasum());
+		assertNotNull(version.getDist().getTarball());
 	}
 	
 	@Test

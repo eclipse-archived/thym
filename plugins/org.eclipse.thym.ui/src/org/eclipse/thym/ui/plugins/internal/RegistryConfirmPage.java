@@ -24,16 +24,16 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.thym.core.plugin.registry.CordovaPluginRegistryManager;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPlugin.RegistryPluginVersion;
-import org.eclipse.thym.core.plugin.registry.CordovaRegistryPluginInfo;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPlugin;
+import org.eclipse.thym.core.plugin.registry.plugin.CordovaRegistryPluginVersion;
+import org.eclipse.thym.core.plugin.registry.repo.CordovaRegistrySearchPlugin;
 import org.eclipse.thym.ui.HybridUI;
 
 @SuppressWarnings("restriction")
 public class RegistryConfirmPage extends WizardPage {
 
 	private CordovaPluginViewer pluginViewer;
-	private List<CordovaRegistryPluginInfo> selected;
+	private List<CordovaRegistrySearchPlugin> selected;
 	final CordovaPluginRegistryManager client = new CordovaPluginRegistryManager();
 	private static final String PAGE_NAME = "Fetch from Registry";
 	private static final String PAGE_TITLE = "Confirm plug-ins to be downloaded from registry";
@@ -93,7 +93,7 @@ public class RegistryConfirmPage extends WizardPage {
 		updatePluginViewerInput();
 	}
 	
-	void setSelectedPlugins(List<CordovaRegistryPluginInfo> selected) {
+	void setSelectedPlugins(List<CordovaRegistrySearchPlugin> selected) {
 		this.selected = selected;
 		updatePluginViewerInput();
 	}
@@ -102,7 +102,7 @@ public class RegistryConfirmPage extends WizardPage {
 		if(pluginViewer == null || selected == null )
 			return;
 		List<String> pluginNames = new ArrayList<String>(selected.size());
-		for (CordovaRegistryPluginInfo cordovaRegistryPluginInfo : selected) {
+		for (CordovaRegistrySearchPlugin cordovaRegistryPluginInfo : selected) {
 			pluginNames.add(cordovaRegistryPluginInfo.getName());
 		}
 		DetailedPluginInfoRetrieveJob job = new DetailedPluginInfoRetrieveJob(pluginNames);
@@ -110,7 +110,7 @@ public class RegistryConfirmPage extends WizardPage {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<RegistryPluginVersion> getSelectedPluginVersions(){
+	public List<CordovaRegistryPluginVersion> getSelectedPluginVersions(){
 			IStructuredSelection selection = (IStructuredSelection) pluginViewer.getSelection();
 			if(selection == null || selection.isEmpty())
 				return Collections.emptyList();
