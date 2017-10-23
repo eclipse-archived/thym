@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;

@@ -34,4 +34,5 @@ Import-Package: org.eclipse.wst.jsdt.core,
  org.junit.runners;version="[4.8.0,5.0.0)"
 Bundle-ClassPath: lib/dd-plist.jar,
  .
-Export-Package: org.eclipse.thym.hybrid.test
+Export-Package: org.eclipse.thym.hybrid.test,
+ org.eclipse.thym.core.jobs

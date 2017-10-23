@@ -55,6 +55,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.thym.core.HybridCore;
 import org.eclipse.thym.core.HybridProject;
+import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.wst.sse.core.StructuredModelManager;
 import org.eclipse.wst.sse.core.internal.provisional.IModelManager;
 import org.eclipse.wst.sse.core.internal.provisional.IModelStateListener;
@@ -460,68 +461,17 @@ public class WidgetModel implements IModelStateListener {
 			synchronized (this) {
 				reloadEditableWidget();
 				final HybridProject project = getProject();
-				project.getEngineManager().resyncWithConfigXml();
 
 				final IDOMModel domModel = (IDOMModel) model;
-
-				Job updatePlugins = new Job("Update cordova plugins") {
+				
+				Job updatePlugins = new Job("Synchronize project "+project.getProject().getName()+" with config.xml") {
 
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						if (project.getProject().exists()) {
 							Widget newWidget = load(domModel.getDocument());
-
-							List<Plugin> oldPlugins = lastWidget.getPlugins();
-							List<Plugin> newPlugins = newWidget.getPlugins();
-							
-							if(oldPlugins == null) {
-								oldPlugins = new ArrayList<>();
-							}
-							if(newPlugins == null) {
-								newPlugins = new ArrayList<>();
-							}
-
-							SubMonitor subMonitor = SubMonitor.convert(monitor);
-
-							List<Plugin> toInstall =  new ArrayList<>(newPlugins);
-							toInstall.removeAll(oldPlugins);
-
-							List<Plugin> toUninstall =  new ArrayList<>(oldPlugins);
-							toUninstall.removeAll(newPlugins);
-
-							List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins, newPlugins);
-
-							subMonitor.setWorkRemaining(
-									toInstall.size() + toUninstall.size() + pluginsToUpdate.size() * 2);
-							for (Plugin uninstall : toUninstall) {
-								try {
-									project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
-								} catch (CoreException e) {
-									HybridCore.log(Status.ERROR, "Unable to uninstall plugin " + uninstall.getName(),
-											e);
-								}
-							}
-							for (Plugin install : toInstall) {
-								try {
-									project.getPluginManager().installPlugin(install, subMonitor.split(1), false);
-								} catch (CoreException e) {
-									HybridCore.log(Status.ERROR, "Unable to install plugin " + install.getName(), e);
-								}
-							}
-
-							// update versions
-							for (Plugin plugin : pluginsToUpdate) {
-								int index = newPlugins.indexOf(plugin);
-								if (index != -1) { // not really needed but just in case..
-									try {
-										project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
-										project.getPluginManager().installPlugin(newPlugins.get(index),
-												subMonitor.split(1), false);
-									} catch (CoreException e) {
-										HybridCore.log(Status.ERROR, "Unable to update plugin " + plugin.getName(), e);
-									}
-								}
-							}
+							syncEngines(project, newWidget, monitor);
+							syncPlugins(project, newWidget, monitor);
 						}
 						return Status.OK_STATUS;
 					}
@@ -543,6 +493,115 @@ public class WidgetModel implements IModelStateListener {
 			}
 		}
 	}
+	
+	private void syncEngines(HybridProject project, Widget newWidget, IProgressMonitor monitor) {
+		List<Engine> oldEngines = lastWidget.getEngines();
+		List<Engine> newEngines = newWidget.getEngines();
+		
+		if(oldEngines == null) {
+			oldEngines = new ArrayList<>();
+		}
+		if(newEngines == null) {
+			newEngines = new ArrayList<>();
+		}
+
+		SubMonitor subMonitor = SubMonitor.convert(monitor);
+
+		List<Engine> toInstall =  new ArrayList<>(newEngines);
+		toInstall.removeAll(oldEngines);
+
+		List<Engine> toUninstall =  new ArrayList<>(oldEngines);
+		toUninstall.removeAll(newEngines);
+
+		List<Engine> enginesToUpdate = getEnginesToUpdate(oldEngines, newEngines);
+
+		subMonitor.setWorkRemaining(
+				toInstall.size() + toUninstall.size() + enginesToUpdate.size() * 2);
+		for (Engine uninstall : toUninstall) {
+			try {
+				project.getEngineManager().removeEngine(uninstall.getName(), subMonitor.split(1), false);
+			} catch (CoreException e) {
+				HybridCore.log(Status.ERROR, "Unable to remove engine " + uninstall.getName(),
+						e);
+			}
+		}
+		for (Engine install : toInstall) {
+			try {
+				project.getEngineManager().addEngine(install.getName(), install.getSpec(), subMonitor.split(1), false);
+			} catch (CoreException e) {
+				HybridCore.log(Status.ERROR, "Unable to add engine " + install.getName(), e);
+			}
+		}
+
+		// update versions
+		for (Engine engine : enginesToUpdate) {
+			int index = newEngines.indexOf(engine);
+			if (index != -1) { // not really needed but just in case..
+				try {
+					//some engines do not support "in place" update. They require platform remove, then platform add 
+					project.getEngineManager().removeEngine(newEngines.get(index).getName(), subMonitor.split(1), false);
+					project.getEngineManager().addEngine(newEngines.get(index).getName(), newEngines.get(index).getSpec(),
+							subMonitor.split(1), false);
+				} catch (CoreException e) {
+					HybridCore.log(Status.ERROR, "Unable to update engine " + engine.getName(), e);
+				}
+			}
+		}
+	}
+	
+	private void syncPlugins(HybridProject project, Widget newWidget, IProgressMonitor monitor) {
+		List<Plugin> oldPlugins = lastWidget.getPlugins();
+		List<Plugin> newPlugins = newWidget.getPlugins();
+		
+		if(oldPlugins == null) {
+			oldPlugins = new ArrayList<>();
+		}
+		if(newPlugins == null) {
+			newPlugins = new ArrayList<>();
+		}
+
+		SubMonitor subMonitor = SubMonitor.convert(monitor);
+
+		List<Plugin> toInstall =  new ArrayList<>(newPlugins);
+		toInstall.removeAll(oldPlugins);
+
+		List<Plugin> toUninstall =  new ArrayList<>(oldPlugins);
+		toUninstall.removeAll(newPlugins);
+
+		List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins, newPlugins);
+
+		subMonitor.setWorkRemaining(
+				toInstall.size() + toUninstall.size() + pluginsToUpdate.size() * 2);
+		for (Plugin uninstall : toUninstall) {
+			try {
+				project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
+			} catch (CoreException e) {
+				HybridCore.log(Status.ERROR, "Unable to uninstall plugin " + uninstall.getName(),
+						e);
+			}
+		}
+		for (Plugin install : toInstall) {
+			try {
+				project.getPluginManager().installPlugin(install, subMonitor.split(1), false);
+			} catch (CoreException e) {
+				HybridCore.log(Status.ERROR, "Unable to install plugin " + install.getName(), e);
+			}
+		}
+
+		// update versions
+		for (Plugin plugin : pluginsToUpdate) {
+			int index = newPlugins.indexOf(plugin);
+			if (index != -1) { // not really needed but just in case..
+				try {
+					project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
+					project.getPluginManager().installPlugin(newPlugins.get(index),
+							subMonitor.split(1), false);
+				} catch (CoreException e) {
+					HybridCore.log(Status.ERROR, "Unable to update plugin " + plugin.getName(), e);
+				}
+			}
+		}
+	}
 
 	private List<Plugin> getPluginsToUpdate(List<Plugin> oldPlugins, List<Plugin> newPlugins) {
 		List<Plugin> pluginsToUpdate = new ArrayList<>();
@@ -556,6 +615,21 @@ public class WidgetModel implements IModelStateListener {
 			}
 		}
 		return pluginsToUpdate;
+
+	}
+	
+	private List<Engine> getEnginesToUpdate(List<Engine> oldEngines, List<Engine> newEngines) {
+		List<Engine> enginesToUpdate = new ArrayList<>();
+		for (Engine engine : oldEngines) {
+			int index = newEngines.indexOf(engine);
+			if (index != -1) {
+				String newSpec = newEngines.get(index).getSpec();
+				if (!EngineUtils.getExactVersion(newSpec).equals(EngineUtils.getExactVersion(engine.getSpec()))) {
+					enginesToUpdate.add(engine);
+				}
+			}
+		}
+		return enginesToUpdate;
 
 	}
 

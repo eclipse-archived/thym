@@ -223,4 +223,14 @@ public class IOSSimOptionsTab extends AbstractLaunchConfigurationTab {
 		}
 	}
 	
+	@Override
+	public boolean isValid(ILaunchConfiguration launchConfig) {
+		setErrorMessage(null);
+		if(!System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+			setErrorMessage("iOS simulator can run only on Mac OS X");
+			return false;
+		}
+		return super.isValid(launchConfig);
+	}
+	
 }

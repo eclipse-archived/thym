@@ -34,14 +34,12 @@ import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.extensions.PlatformSupport;
 import org.eclipse.thym.core.natures.HybridAppNature;
 import org.eclipse.thym.core.platform.PlatformConstants;
-import org.eclipse.thym.hybrid.test.RequiresCordovaCLICategory;
 import org.eclipse.wst.jsdt.core.IIncludePathEntry;
 import org.eclipse.wst.jsdt.core.IJavaScriptProject;
 import org.eclipse.wst.jsdt.core.JavaScriptCore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
@@ -87,7 +85,6 @@ public class HybridProjectConvertTest {
     }
     
     @Test(expected = CoreException.class)
-    @Category(value=RequiresCordovaCLICategory.class)
     public void testCanConvertCausesException() throws CoreException{
         IProject project = getTheProject();
         assertTrue(project.exists());
@@ -96,7 +93,6 @@ public class HybridProjectConvertTest {
     }
     
     @Test
-    @Category(value=RequiresCordovaCLICategory.class)
     public void testNature() throws CoreException{
         IProject project = getTheProject();
         addRequiredResources(project);
@@ -110,7 +106,6 @@ public class HybridProjectConvertTest {
 
     
     @Test
-    @Category(value=RequiresCordovaCLICategory.class)
     public void directoryStructureTest() throws CoreException{
         IProject theProject = getTheProject();
         addRequiredResources(theProject);
@@ -133,7 +128,6 @@ public class HybridProjectConvertTest {
     }
     
     @Test
-    @Category(value=RequiresCordovaCLICategory.class)
     public void testJavaScriptProjectSetup() throws CoreException{
         IProject theProject = getTheProject();
         addRequiredResources(theProject);

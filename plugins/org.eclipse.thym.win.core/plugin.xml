@@ -16,6 +16,12 @@
             delegate="org.eclipse.thym.win.core.build.WinBuild"
             id="org.eclipse.thym.win.core.projectBuilder"
             platform="Windows Universal">
+            <enablement>
+            <systemTest
+                  property="osgi.os"
+                  value="win32">
+            </systemTest>
+         </enablement>
       </builder>
    </extension>
 <extension

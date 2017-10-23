@@ -22,9 +22,12 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate>
-                        <adapt  type="org.eclipse.core.resources.IResource">
-                        	<test property="org.eclipse.thym.projectWithPlatform" value="wp8" forcePluginActivation="true"/>       
-                        </adapt> 
+                    	<and>
+                    		<systemTest property="osgi.os" value="win32" />
+                        	<adapt type="org.eclipse.core.resources.IResource">
+                        		<test property="org.eclipse.thym.projectWithPlatform" value="wp8" forcePluginActivation="true"/>       
+                        	</adapt> 
+                        </and>
                     </iterate>
                 </with>
             </enablement>

@@ -23,9 +23,6 @@
 			<artifactId>tycho-surefire-plugin</artifactId>
 			<configuration>
 				<providerHint>junit47</providerHint>
-				<providerProperties>
-					<excludegroups>${excluded-test-categories}</excludegroups>
-				</providerProperties>
 			</configuration>
 		</plugin>
 	</plugins>

@@ -22,7 +22,6 @@ import org.eclipse.thym.core.platform.AbstractNativeBinaryBuildDelegate;
 import org.eclipse.thym.win.core.WinCore;
 import org.eclipse.thym.win.internal.core.Messages;
 
-@SuppressWarnings("restriction")
 public class WinBuild extends AbstractNativeBinaryBuildDelegate {
 	
 	public static final String WIN = "windows";

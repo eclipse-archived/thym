@@ -13,16 +13,14 @@
 			<enablement>
                 <with variable="selection">
 					<count value="1"/>
-                <iterate>
-				<and>
-				<systemTest
-          			property="os.name"
-          			value="Mac OS X" />
-          		 <adapt  type="org.eclipse.core.resources.IResource">
-          		 	<test property="org.eclipse.thym.projectWithPlatform" value="ios" forcePluginActivation="true"/>    
-                 </adapt>   	
-				</and>
-				</iterate>
+               		<iterate>
+						<and>
+							<systemTest property="os.name" value="Mac OS X" />
+          		 			<adapt type="org.eclipse.core.resources.IResource">
+          		 				<test property="org.eclipse.thym.projectWithPlatform" value="ios" forcePluginActivation="true"/>    
+                 			</adapt>   	
+						</and>
+					</iterate>
          	    </with>
          	</enablement>
          </contextualLaunch>

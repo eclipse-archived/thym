@@ -14,4 +14,3 @@ Bundle-ClassPath: .
 Export-Package: org.eclipse.thym.win.core,
  org.eclipse.thym.win.core.build
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Eclipse-PlatformFilter: (osgi.os=win32)

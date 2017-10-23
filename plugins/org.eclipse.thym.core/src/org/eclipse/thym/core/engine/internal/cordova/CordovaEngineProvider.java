@@ -50,6 +50,7 @@ import org.eclipse.thym.core.engine.HybridMobileEngineLocator.EngineSearchListen
 import org.eclipse.thym.core.engine.HybridMobileLibraryResolver;
 import org.eclipse.thym.core.extensions.CordovaEngineRepoProvider;
 import org.eclipse.thym.core.extensions.PlatformSupport;
+import org.eclipse.thym.core.internal.util.EngineUtils;
 import org.eclipse.thym.core.platform.PlatformConstants;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -126,7 +127,7 @@ public class CordovaEngineProvider implements HybridMobileEngineLocator, EngineS
 	public HybridMobileEngine getEngine(String name, String spec){
 		initEngineList();
 		for (HybridMobileEngine engine : engineList) {
-			if(engine.getSpec().equals(spec) && engine.getName().equals(name)){
+			if(EngineUtils.getExactVersion(engine.getSpec()).equals(EngineUtils.getExactVersion(spec)) && engine.getName().equals(name)){
 				return engine;
 			}
 		}

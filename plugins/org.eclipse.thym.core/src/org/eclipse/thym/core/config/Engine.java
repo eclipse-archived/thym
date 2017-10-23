@@ -55,25 +55,25 @@ public class Engine extends AbstractConfigObject {
 	}
 	
 	@Override
+	public int hashCode() {
+		int hash = super.hashCode();
+		if(getName() != null )
+			hash *= getName().hashCode();
+		return hash;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if(obj == null || !(obj instanceof Engine))
 			return false;
 		if(obj == this )
 			return true;
 		Engine that = (Engine) obj;
-		return equalField(that.getName(), this.getName()) &&
-				equalField(this.getSpec(), that.getSpec());
+		return equalField(that.getName(), this.getName());
 	}
-	
+
 	@Override
-	public int hashCode() {
-		int hash = super.hashCode();
-		if(getName() != null ){
-			hash *= getName().hashCode();
-		}
-		if(getSpec() != null ){
-			hash *= getSpec().hashCode();
-		}
-		return hash;
+	public String toString() {
+		return "name: "+name.getValue() + " spec: "+spec.getValue();
 	}
 }
