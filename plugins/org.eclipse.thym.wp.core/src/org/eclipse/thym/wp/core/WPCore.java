@@ -79,10 +79,13 @@ public class WPCore implements BundleActivator {
 	 * 
 	 * @return path to Windows Phone SDK root folder or <code>null</code> if SDK
 	 *         cannot be retrieved from preferences or detected from Windows
-	 *         registry.
+	 *         registry (or running system is not Windows).
 	 * @throws CoreException 
 	 */
 	public static String getSDKLocation() throws CoreException {
+		if(!System.getProperty("os.name").toLowerCase().startsWith("win")) {
+			return null;
+		}
 		String sdkLocation = Platform.getPreferencesService().getString(
 				THYM_UI_ID, WPConstants.WINDOWS_PHONE_SDK_LOCATION_PREF, null,
 				null);

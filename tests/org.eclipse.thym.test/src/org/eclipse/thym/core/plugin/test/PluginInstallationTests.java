@@ -40,7 +40,6 @@ import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.CordovaPlugin;
 import org.eclipse.thym.core.plugin.CordovaPluginManager;
 import org.eclipse.thym.hybrid.test.Activator;
-import org.eclipse.thym.hybrid.test.RequiresCordovaCLICategory;
 import org.eclipse.thym.hybrid.test.TestProject;
 import org.eclipse.thym.hybrid.test.TestUtils;
 import org.junit.After;
@@ -48,7 +47,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @SuppressWarnings("restriction")
 public class PluginInstallationTests {
@@ -103,7 +101,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void installPluginTest() throws CoreException{
 		installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		IProject prj = project.getProject();
@@ -113,7 +110,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void checkFetchJson() throws CoreException{
 		installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		IProject prj = project.getProject();
@@ -125,7 +121,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void installPluginNamespace() throws CoreException{
 		installPlugin(PLUGIN_DIR_NAMESPACEPLUGIN);
 		IProject prj = project.getProject();
@@ -135,7 +130,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void installVariablePluginTest(){
 		try{
 			installPlugin(PLUGIN_DIR_VARIABLE);
@@ -156,7 +150,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void listPluginsTest() throws CoreException{
 	
 		CordovaPluginManager pm =installPlugin(PLUGIN_DIR_TESTPLUGIN);
@@ -172,7 +165,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void pluginNotInstalledTest() throws CoreException{
 		CordovaPluginManager pm = installPlugin(PLUGIN_DIR_TESTPLUGIN);
 		assertFalse(pm.isPluginInstalled("my.madeup.id"));
@@ -180,7 +172,6 @@ public class PluginInstallationTests {
 	}
 
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void installPluginToProjectWithoutPluginsFolder() throws CoreException{
 		IProject prj = project.getProject();
 		IFolder pluginsFolder  = prj.getFolder(PlatformConstants.DIR_PLUGINS);
@@ -195,7 +186,6 @@ public class PluginInstallationTests {
 	}
 	
 	@Test
-	@Category(value=RequiresCordovaCLICategory.class)
 	public void installPluginFromGit() throws CoreException{
 		CordovaPluginManager pm = getCordovaPluginManager();
 		URI uri = URI.create("https://github.com/apache/cordova-plugin-console.git#r0.2.0");

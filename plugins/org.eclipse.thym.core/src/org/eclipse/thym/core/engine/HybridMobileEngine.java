@@ -16,6 +16,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.engine.internal.cordova.DownloadableCordovaEngine;
+import org.eclipse.thym.core.internal.util.EngineUtils;
 
 import com.github.zafarkhaja.semver.Version;
 
@@ -28,7 +29,7 @@ import com.github.zafarkhaja.semver.Version;
 public class HybridMobileEngine {
 
 	private String name;
-	private String spec;
+	private String spec; //this can be sem Version, path to folder or git
 	private HybridMobileLibraryResolver resolver;
 
 	public HybridMobileEngine(String name, String spec, HybridMobileLibraryResolver resolver) {
@@ -49,6 +50,21 @@ public class HybridMobileEngine {
 	public String getSpec() {
 		return spec;
 	}
+	
+	/**
+	 * Returns version or null of spec is not a sem version
+	 * @return
+	 */
+	public Version getVersionSpec() {
+		String exactVersion = EngineUtils.getExactVersion(spec);
+		Version version;
+		try {
+			version = Version.valueOf(exactVersion);
+		} catch (Exception e) {
+			return null;
+		}
+		return version;
+	}
 
 	public boolean isValid() {
 		if (spec == null) {
@@ -61,9 +77,10 @@ public class HybridMobileEngine {
 		}
 
 		// check downloadable
+		String exactVersion = EngineUtils.getExactVersion(spec);
 		Version version = null;
 		try {
-			version = Version.valueOf(spec);
+			version = Version.valueOf(exactVersion);
 		} catch (Exception e) {
 			return false;
 		}
@@ -72,7 +89,7 @@ public class HybridMobileEngine {
 				List<DownloadableCordovaEngine> downloadableEngines = CordovaEngineProvider.getInstance()
 						.getDownloadableEngines();
 				for (DownloadableCordovaEngine dEngine : downloadableEngines) {
-					if (dEngine.getPlatformId().equals(name) && dEngine.getVersion().equals(spec)) {
+					if (dEngine.getPlatformId().equals(name) && dEngine.getVersion().equals(exactVersion)) {
 						return true;
 					}
 				}
@@ -95,7 +112,8 @@ public class HybridMobileEngine {
 			return false;
 		}
 		HybridMobileEngine that = (HybridMobileEngine) obj;
-		if (this.getName().equals(that.getName()) && this.getSpec().equals(that.getSpec())) {
+		if (this.getName().equals(that.getName()) && 
+				EngineUtils.getExactVersion(this.getSpec()).equals(EngineUtils.getExactVersion(that.getSpec()))){
 			return true;
 		}
 		return super.equals(obj);

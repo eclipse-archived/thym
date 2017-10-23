@@ -9,6 +9,7 @@
             modes="run"
             name="iOS Simulator">
       </launchConfigurationType>
+     
    </extension>
    <extension
          point="org.eclipse.thym.core.platformSupport">
@@ -17,12 +18,6 @@
             platform="iOS (XCode)"
             platformID="ios"
             libraryResolver="org.eclipse.thym.ios.core.xcode.IosLibraryResolver">
-         <enablement>
-            <systemTest
-                  property="os.name"
-                  value="Mac OS X">
-            </systemTest>
-         </enablement>
       </platform>
    </extension>
    <extension
@@ -31,7 +26,7 @@
             delegate="org.eclipse.thym.ios.core.xcode.XCodeBuild"
             id="org.eclipse.thym.ios.core.nativeBuilder"
             platform="iOS (XCode)">
-            <enablement>
+         <enablement>
             <systemTest
                   property="os.name"
                   value="Mac OS X">

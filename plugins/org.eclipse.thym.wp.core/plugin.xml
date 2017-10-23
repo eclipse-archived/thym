@@ -16,6 +16,12 @@
             delegate="org.eclipse.thym.wp.core.vstudio.MSBuild"
             id="org.eclipse.thym.wp.core.projectBuilder"
             platform="Windows Phone 8 (Visual Studio)">
+		<enablement>
+           	<systemTest
+                 property="osgi.os"
+                 value="win32">
+           	</systemTest>
+        </enablement>
       </builder>
    </extension>
 <extension

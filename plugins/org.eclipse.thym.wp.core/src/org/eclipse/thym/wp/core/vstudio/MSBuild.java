@@ -34,7 +34,6 @@ import org.eclipse.thym.wp.internal.core.vstudio.WPProjectUtils;
  * @author Wojciech Galanciak, 2014
  * 
  */
-@SuppressWarnings("restriction")
 public class MSBuild extends AbstractNativeBinaryBuildDelegate {
 
 	private static final String DEBUG_XAP_NAME = "CordovaAppProj_Debug_AnyCPU.xap"; //$NON-NLS-1$

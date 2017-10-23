@@ -180,6 +180,11 @@ public class WinOptionsTab extends AbstractLaunchConfigurationTab {
 
 	@Override
 	public boolean isValid(ILaunchConfiguration launchConfig) {
+		setErrorMessage(null);
+		if(!System.getProperty("os.name").toLowerCase().startsWith("win")) {
+			setErrorMessage("Windows emulator can run only on Windows");
+			return false;
+		}
 		return isTabValid() && super.isValid(launchConfig);
 	}
 

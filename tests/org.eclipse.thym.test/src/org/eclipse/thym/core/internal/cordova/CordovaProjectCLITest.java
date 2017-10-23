@@ -36,7 +36,6 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy2;
 import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
-import org.eclipse.thym.core.engine.HybridMobileEngineManager;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreator;

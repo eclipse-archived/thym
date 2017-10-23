@@ -136,6 +136,8 @@ public class CordovaPluginManager {
 		String options ="";
 		if(save){
 			options = CordovaProjectCLI.OPTION_SAVE;
+		} else {
+			options = CordovaProjectCLI.OPTION_NO_SAVE;
 		}
 		IStatus status = project.getProjectCLI()
 			.plugin(Command.ADD, subMonitor.split(90), plugin, options)
@@ -186,6 +188,8 @@ public class CordovaPluginManager {
 		String options ="";
 		if(save){
 			options = CordovaProjectCLI.OPTION_SAVE;
+		} else {
+			options = CordovaProjectCLI.OPTION_NO_SAVE;
 		}
 		IStatus status = project.getProjectCLI()
 			.plugin(Command.REMOVE, monitor, id, options)

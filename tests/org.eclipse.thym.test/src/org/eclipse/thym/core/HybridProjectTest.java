@@ -51,63 +51,64 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class HybridProjectTest {
-	
+
 	private static final String PROJECT_NAME = "TestProject";
 	private static final String APP_NAME = "Test App";
-    private static final String APP_ID = "Test.id";
-    
+	private static final String APP_ID = "Test.id";
+
 	private IProject mockEclipseProject;
 	private HybridProject mockProject;
-	
+
 	@BeforeClass
-    public static void createTestProject() throws CoreException{
-    	IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
+	public static void createTestProject() throws CoreException {
+		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
 				HybridProjectCreator creator = new HybridProjectCreator();
 				List<HybridMobileEngine> defaultEngines = CordovaEngineProvider.getInstance().defaultEngines();
-				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID, 
-						defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]) ,new NullProgressMonitor());
+				creator.createBasicTemplatedProject(PROJECT_NAME, null, APP_NAME, APP_ID,
+						defaultEngines.toArray(new HybridMobileEngine[defaultEngines.size()]),
+						new NullProgressMonitor());
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);
-	
-    }
-	
+
+	}
+
 	@Test
-	public void testGetProject(){
+	public void testGetProject() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
 		HybridProject hProject = HybridProject.getHybridProject(theProject);
-		assertNotNull(hProject.getProject()); 
+		assertNotNull(hProject.getProject());
 	}
-	
+
 	@Test
-	public void testGetCLI(){
+	public void testGetCLI() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
 		HybridProject hProject = HybridProject.getHybridProject(theProject);
-		assertNotNull(hProject.getProjectCLI()); 
+		assertNotNull(hProject.getProjectCLI());
 	}
-	
+
 	@Test
-	public void testGetPluginManager(){
+	public void testGetPluginManager() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
 		HybridProject hProject = HybridProject.getHybridProject(theProject);
-		assertNotNull(hProject.getPluginManager()); 
+		assertNotNull(hProject.getPluginManager());
 	}
-	
+
 	@Test
-	public void testGetEngineManager(){
+	public void testGetEngineManager() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
 		HybridProject hProject = HybridProject.getHybridProject(theProject);
-		assertNotNull(hProject.getEngineManager()); 
+		assertNotNull(hProject.getEngineManager());
 	}
-	
+
 	@Test
-	public void testGetHybridProject() throws CoreException{
+	public void testGetHybridProject() throws CoreException {
 		IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
 			@Override
 			public void run(IProgressMonitor monitor) throws CoreException {
@@ -123,37 +124,36 @@ public class HybridProjectTest {
 			}
 		};
 		ResourcesPlugin.getWorkspace().run(runnable, null);
-		
+
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject nonHybridProject = workspaceRoot.getProject("basicProject");
 		IProject hybridProject = workspaceRoot.getProject(PROJECT_NAME);
-		
-		
-		assertNull(HybridProject.getHybridProject((IProject)null));
+
+		assertNull(HybridProject.getHybridProject((IProject) null));
 		assertNull(HybridProject.getHybridProject(nonHybridProject)); // does not have hybrid mobile nature
-		assertNull(HybridProject.getHybridProject((String)null));
+		assertNull(HybridProject.getHybridProject((String) null));
 		assertNull(HybridProject.getHybridProject("non-existing-projec"));
 		assertNull(HybridProject.getHybridProject("basicProject")); // does not have hybrid mobile nature
 		assertNotNull(HybridProject.getHybridProject(hybridProject));
 		assertNotNull(HybridProject.getHybridProject(PROJECT_NAME));
 	}
-	
+
 	@Test
-	public void testProjectPrepare() throws CoreException{
+	public void testProjectPrepare() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
 		mockProject.prepare(new NullProgressMonitor(), "");
 		verify(cli).prepare(any(IProgressMonitor.class), eq(""));
 		verify(mockEclipseProject).refreshLocal(anyInt(), any(IProgressMonitor.class));
 	}
-	
+
 	@Test
-	public void testProjectPrepareWithError() throws CoreException{
+	public void testProjectPrepareWithError() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
-		CordovaCLIResult result =  new CordovaCLIResult("Error: some_error");
+		CordovaCLIResult result = new CordovaCLIResult("Error: some_error");
 		doReturn(result).when(cli).prepare(any(IProgressMonitor.class), any(String.class));
-		try{
+		try {
 			mockProject.prepare(new NullProgressMonitor(), "");
 		} catch (CoreException e) {
 			assertEquals("some_error", e.getStatus().getMessage());
@@ -161,23 +161,23 @@ public class HybridProjectTest {
 		}
 		fail("prepare should throw CoreException");
 	}
-	
+
 	@Test
-	public void testProjectBuild() throws CoreException{
+	public void testProjectBuild() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
 		mockProject.build(new NullProgressMonitor(), "");
 		verify(cli).build(any(IProgressMonitor.class), eq(""));
 		verify(mockEclipseProject).refreshLocal(anyInt(), any(IProgressMonitor.class));
 	}
-	
+
 	@Test
-	public void testProjectBuildWithError() throws CoreException{
+	public void testProjectBuildWithError() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
-		CordovaCLIResult result =  new CordovaCLIResult("Error: some_error");
+		CordovaCLIResult result = new CordovaCLIResult("Error: some_error");
 		doReturn(result).when(cli).build(any(IProgressMonitor.class), any(String.class));
-		try{
+		try {
 			mockProject.build(new NullProgressMonitor(), "");
 		} catch (CoreException e) {
 			assertEquals("some_error", e.getStatus().getMessage());
@@ -185,23 +185,23 @@ public class HybridProjectTest {
 		}
 		fail("build should throw CoreException");
 	}
-	
+
 	@Test
-	public void testProjectEmulate() throws CoreException{
+	public void testProjectEmulate() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
 		mockProject.emulate(new NullProgressMonitor(), "");
 		verify(cli).emulate(any(IProgressMonitor.class), eq(""));
 		verify(mockEclipseProject, times(0)).refreshLocal(anyInt(), any(IProgressMonitor.class));
 	}
-	
+
 	@Test
-	public void testProjectEmulateWithError() throws CoreException{
+	public void testProjectEmulateWithError() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
-		CordovaCLIResult result =  new CordovaCLIResult("Error: some_error");
+		CordovaCLIResult result = new CordovaCLIResult("Error: some_error");
 		doReturn(result).when(cli).emulate(any(IProgressMonitor.class), any(String.class));
-		try{
+		try {
 			mockProject.emulate(new NullProgressMonitor(), "");
 		} catch (CoreException e) {
 			assertEquals("some_error", e.getStatus().getMessage());
@@ -209,23 +209,23 @@ public class HybridProjectTest {
 		}
 		fail("emulate should throw CoreException");
 	}
-	
+
 	@Test
-	public void testProjectRun() throws CoreException{
+	public void testProjectRun() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
 		mockProject.run(new NullProgressMonitor(), "");
 		verify(cli).run(any(IProgressMonitor.class), eq(""));
 		verify(mockEclipseProject, times(0)).refreshLocal(anyInt(), any(IProgressMonitor.class));
 	}
-	
+
 	@Test
-	public void testProjectRunWithError() throws CoreException{
+	public void testProjectRunWithError() throws CoreException {
 		setupProjectMock();
 		CordovaProjectCLI cli = setupMockCLI(mockProject);
-		CordovaCLIResult result =  new CordovaCLIResult("Error: some_error");
+		CordovaCLIResult result = new CordovaCLIResult("Error: some_error");
 		doReturn(result).when(cli).run(any(IProgressMonitor.class), any(String.class));
-		try{
+		try {
 			mockProject.run(new NullProgressMonitor(), "");
 		} catch (CoreException e) {
 			assertEquals("some_error", e.getStatus().getMessage());
@@ -233,80 +233,81 @@ public class HybridProjectTest {
 		}
 		fail("run should throw CoreException");
 	}
-	
+
 	@Test
-	public void testProjectDerivedFolders() throws CoreException{
+	public void testProjectDerivedFolders() throws CoreException {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
 		HybridProject hProject = HybridProject.getHybridProject(theProject);
 		createFolders(hProject);
 		hProject.updateDerivedFolders(new NullProgressMonitor());
-		
-		for(String folderName: PlatformConstants.DERIVED_SUBFOLDERS){
+
+		for (String folderName : PlatformConstants.DERIVED_SUBFOLDERS) {
 			checkDerivedSubFolders(hProject, folderName);
 		}
-		for(String folderName: PlatformConstants.DERIVED_FOLDERS){
+		for (String folderName : PlatformConstants.DERIVED_FOLDERS) {
 			IFolder folder = hProject.getProject().getFolder(folderName);
 			assertTrue(folder.isDerived());
 		}
 	}
-	
-	private void checkDerivedSubFolders(HybridProject hProject, String folderName){
+
+	private void checkDerivedSubFolders(HybridProject hProject, String folderName) {
 		IFolder folder = hProject.getProject().getFolder(folderName);
-		IFolder subFolder1 = folder.getFolder(folder.getName()+"0");
+		IFolder subFolder1 = folder.getFolder(folder.getName() + "0");
 		assertTrue(subFolder1.isDerived());
-		IFolder subFolder2 = folder.getFolder(folder.getName()+"1");
+		IFolder subFolder2 = folder.getFolder(folder.getName() + "1");
 		assertTrue(subFolder2.isDerived());
-		
+
 		IFile subFile1 = folder.getFile("file0");
 		assertFalse(subFile1.isDerived());
-		
+
 		IFile subFile2 = folder.getFile("file1");
 		assertFalse(subFile2.isDerived());
 	}
-	
-	private void createFolders(HybridProject hProject) throws CoreException{
-		for(String folderName: PlatformConstants.DERIVED_FOLDERS){
+
+	private void createFolders(HybridProject hProject) throws CoreException {
+		for (String folderName : PlatformConstants.DERIVED_FOLDERS) {
 			IFolder folder = hProject.getProject().getFolder(new Path(folderName));
-			if(!folder.exists()){
+			if (!folder.exists()) {
 				folder.create(true, true, new NullProgressMonitor());
 			}
 		}
-		for(int i=0; i<PlatformConstants.DERIVED_SUBFOLDERS.length; i++){
+		for (int i = 0; i < PlatformConstants.DERIVED_SUBFOLDERS.length; i++) {
 			String folderName = PlatformConstants.DERIVED_SUBFOLDERS[i];
 			IFolder folder = hProject.getProject().getFolder(new Path(folderName));
-			if(!folder.exists()){
+			if (!folder.exists()) {
 				folder.create(true, true, new NullProgressMonitor());
 			}
-			//create 2 subfolders and 2 files
-			for(int y=0;y<2;y++){
-				IFolder subFolder = hProject.getProject().getFolder(new Path(folderName+"/"+folderName+y));
-				if(!subFolder.exists()){
+			// create 2 subfolders and 2 files
+			for (int y = 0; y < 2; y++) {
+				IFolder subFolder = hProject.getProject().getFolder(new Path(folderName + "/" + folderName + y));
+				if (!subFolder.exists()) {
 					subFolder.create(true, true, new NullProgressMonitor());
 				}
-				IFile subFile = hProject.getProject().getFile(new Path(folderName+"/file"+y));
-				if(!subFile.exists()){
+				IFile subFile = hProject.getProject().getFile(new Path(folderName + "/file" + y));
+				if (!subFile.exists()) {
 					subFile.create(null, true, new NullProgressMonitor());
 				}
 			}
 		}
 		hProject.getProject().refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
 	}
-	
+
 	private CordovaProjectCLI setupMockCLI(HybridProject project) throws CoreException {
 		IProcess mockProcess = mock(IProcess.class);
-    	IStreamsProxy2 mockStreams  = mock(IStreamsProxy2.class);
+		IStreamsProxy2 mockStreams = mock(IStreamsProxy2.class);
 		CordovaProjectCLI mockCLI = spy(CordovaProjectCLI.newCLIforProject(mockProject));
-		
-		doReturn(mockProcess).when(mockCLI).startShell(any(IStreamListener.class), any(IProgressMonitor.class),any(ILaunchConfiguration.class));
-		
+
+		doReturn(mockProcess).when(mockCLI).startShell(any(IStreamListener.class), any(IProgressMonitor.class),
+				any(ILaunchConfiguration.class));
+
 		when(mockProcess.getStreamsProxy()).thenReturn(mockStreams);
 		when(mockProcess.isTerminated()).thenReturn(Boolean.TRUE);
-		
+
 		doReturn(mockCLI).when(project).getProjectCLI();
 		return mockCLI;
 	}
-	
+
 	private void setupProjectMock() {
 		IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
 		IProject theProject = workspaceRoot.getProject(PROJECT_NAME);
@@ -314,7 +315,7 @@ public class HybridProjectTest {
 		assertNotNull(hProject);
 		mockProject = spy(hProject);
 		mockEclipseProject = spy(mockProject.getProject());
-		
+
 		doReturn(mockEclipseProject).when(mockProject).getProject();
 	}
 

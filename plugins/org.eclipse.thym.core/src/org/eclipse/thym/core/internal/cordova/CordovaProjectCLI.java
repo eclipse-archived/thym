@@ -30,6 +30,7 @@ import org.eclipse.thym.core.HybridProject;
  */
 public class CordovaProjectCLI extends CordovaCLI{
 	
+	public static final String OPTION_NO_SAVE = "--nosave";
 	public static final String OPTION_SAVE = "--save";
 	private static final String P_COMMAND_PLUGIN = "plugin";
 	private static final String P_COMMAND_PLATFORM = "platform";
