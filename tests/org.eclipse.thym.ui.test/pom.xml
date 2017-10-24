@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.eclipse.thym</groupId>
+		<artifactId>tests</artifactId>
+		<version>2.1.0-SNAPSHOT</version>
+	</parent>
+	<groupId>org.eclipse.thym.tests</groupId>
+	<artifactId>org.eclipse.thym.ui.test</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+
+	<properties>
+		<testSuite>${project.artifactId}</testSuite>
+		<testClass>org.eclipse.thym.ui.test.AllUITests</testClass>
+		<excluded-test-categories>
+		</excluded-test-categories>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<configuration>
+					<providerHint>junit47</providerHint>
+					<providerProperties>
+						<excludegroups>${excluded-test-categories}</excludegroups>
+					</providerProperties>
+					<useUIHarness>true</useUIHarness>
+					<useUIThread>true</useUIThread>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
