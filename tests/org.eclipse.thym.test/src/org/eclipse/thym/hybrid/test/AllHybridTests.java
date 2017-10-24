@@ -22,7 +22,6 @@ import org.eclipse.thym.core.test.HybridMobileEngineTests;
 import org.eclipse.thym.core.test.HybridProjectConventionsTest;
 import org.eclipse.thym.core.test.TestBundleHttpStorage;
 import org.eclipse.thym.hybrid.test.ios.pbxproject.PBXProjectTest;
-import org.eclipse.thym.ui.platforms.PlatformRemovalActionTest;
 import org.eclipse.thym.ui.wizard.project.HybridProjectConvertTest;
 import org.eclipse.thym.ui.wizard.project.HybridProjectCreatorTest;
 import org.junit.runner.RunWith;
@@ -46,7 +45,6 @@ import org.junit.runners.Suite.SuiteClasses;
 	ExternalProcessUtilityTest.class,
 	CordovaProjectCLITest.class, 
 	HybridProjectTest.class,
-	PlatformRemovalActionTest.class,
 	CordovaCLITest.class
 })
 public class AllHybridTests {

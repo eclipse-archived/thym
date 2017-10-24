@@ -8,7 +8,7 @@
  * 	Contributors:
  * 		 Red Hat Inc. - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.thym.ui.platforms;
+package org.eclipse.thym.ui.test.platforms;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;

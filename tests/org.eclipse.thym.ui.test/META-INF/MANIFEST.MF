@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test
+Bundle-SymbolicName: org.eclipse.thym.ui.test;singleton:=true
+Bundle-Version: 2.1.0.qualifier
+Bundle-Activator: org.eclipse.thym.ui.test.Activator
+Bundle-Vendor: Eclipse.org - Thym 
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.junit,
+ org.mockito,
+ org.eclipse.thym.test,
+ org.eclipse.thym.core,
+ org.eclipse.thym.ui
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy

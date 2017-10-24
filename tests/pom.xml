@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.eclipse.thym</groupId>
 		<artifactId>parent</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+		<version>2.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>tests</artifactId>
 	<name>Eclipse THyM tests</name>
 	<packaging>pom</packaging>
-	
+
 	<properties>
 		<!-- To handle OSX-specific settings -->
 		<os.testArgs></os.testArgs>
@@ -17,7 +17,8 @@
 
 	<modules>
 		<module>org.eclipse.thym.test</module>
-        <module>org.eclipse.thym.ui.importer.test</module>
+		<module>org.eclipse.thym.ui.test</module>
+		<module>org.eclipse.thym.ui.importer.test</module>
 	</modules>
 
 	<build>
@@ -39,11 +40,13 @@
 		<profile>
 			<id>macosx-jvm-flags</id>
 			<activation>
-				<os><family>mac</family></os>
+				<os>
+					<family>mac</family>
+				</os>
 			</activation>
 			<properties>
 				<os.testArgs>-XstartOnFirstThread</os.testArgs>
 			</properties>
 		</profile>
-	</profiles>	
+	</profiles>
 </project>
