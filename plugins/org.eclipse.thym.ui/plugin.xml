@@ -44,7 +44,7 @@
            id="org.eclipse.thym.ui.internal.preferences.HybridMoblePreferencePage"
            name="Hybrid Mobile">
         <keywordReference
-              id="org.eclispe.thym.ui.keyword">
+              id="org.eclipse.thym.ui.keyword">
         </keywordReference>
      </page>
      <page
