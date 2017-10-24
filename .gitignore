@@ -1,3 +1,6 @@
 **/node_modules
 bin/
 target/
+.project
+.settings
+.classpath

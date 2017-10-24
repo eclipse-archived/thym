@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tests for THyM Easymport support
-Bundle-SymbolicName: org.eclipse.thym.ui.importer.tests
+Bundle-SymbolicName: org.eclipse.thym.ui.importer.test
 Bundle-Version: 0.3.0.qualifier
 Bundle-Vendor: Eclipse.org - Thym
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

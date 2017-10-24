@@ -56,12 +56,6 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 		return shouldBeAnEclipseProject(project, monitor);
 	}
 
-	// @Override
-	// TODO Remove when fully migrated to Platform 4.6.M7
-	public IWizard getConfigurationWizard() {
-		return null;
-	}
-
 	@Override
 	public void configure(IProject project, Set<IPath> ignoredDirectories, IProgressMonitor monitor) {
 		try {
@@ -105,15 +99,8 @@ public class CordovaProjectConfigurator implements ProjectConfigurator {
 		return res;
 	}
 
-	// @Override
-	// TODO Uncomment when fully migrated to Platform 4.6.M7
+	@Override
 	public Set<IFolder> getFoldersToIgnore(IProject project, IProgressMonitor monitor) {
 		return Collections.emptySet();
-	}
-	
-	// @Override
-	// TODO Remove when fully migrated to Platform 4.6.M7
-	public Set<IFolder> getDirectoriesToIgnore(IProject project, IProgressMonitor monitor) {
-		return getDirectoriesToIgnore(project, monitor);
 	}
 }
