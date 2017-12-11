@@ -23,6 +23,7 @@ import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.thym.core.HybridProject;
 import org.eclipse.thym.core.engine.HybridMobileEngine;
 import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection;
@@ -31,73 +32,79 @@ import org.eclipse.thym.ui.internal.engine.AvailableCordovaEnginesSection.Engine
 public class EngineConfigurationPage extends WizardPage {
 
 	private AvailableCordovaEnginesSection engineSection;
+	private HybridProject project;
 
-	protected EngineConfigurationPage(String pageName) {
-		super(pageName);
+	public EngineConfigurationPage() {
+		this(null);
+	}
+
+	public EngineConfigurationPage(HybridProject project) {
+		super("Configure Platforms");
 		setTitle("Select a Hybrid Mobile Engine");
 		setDescription("Select a hybrid mobile engine that will be used for building the mobile application");
+		this.project = project;
 	}
 
 	@Override
 	public void createControl(Composite parent) {
 		((WizardDialog) this.getWizard().getContainer()).setMinimumPageSize(300, 400);
 		Composite control = new Composite(parent, SWT.NONE);
-		
+
 		initializeDialogUnits(control);
-		
+
 		GridLayoutFactory.fillDefaults().applyTo(control);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(control);
-		
+
 		engineSection = new AvailableCordovaEnginesSection();
 		engineSection.createControl(control);
-		
+
 		engineSection.addSelectionChangedListener(new ISelectionChangedListener() {
-			
+
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				setPageComplete(validatePage());
-				
+
 			}
 		});
 		engineSection.addEngineListChangeListener(new EngineListChangeListener() {
-			
+
 			@Override
 			public void listChanged() {
 				setPageComplete(validatePage());
-				
+
 			}
 		});
-		
+
 		setControl(control);
-		setDefaultEngine();
+		setEngines();
 		setPageComplete(validatePage());
 		Dialog.applyDialogFont(getControl());
 	}
-	
-	private boolean validatePage(){
-		IStructuredSelection selection =  (IStructuredSelection)engineSection.getSelection();
-		if(selection.isEmpty() ){
-			setErrorMessage("Please select a Hybrid Mobile Engine ");
-			return false;
-		}
-		setErrorMessage(null);
-		setMessage(null);
+
+	private boolean validatePage() {
 		return true;
 	}
-	
-	private void setDefaultEngine() {
-		List<HybridMobileEngine> engines = CordovaEngineProvider.getInstance().defaultEngines();
-		if(engines != null && engines.size() > 0 ){
-			engineSection.setSelection(new StructuredSelection(engines));
+
+	private void setEngines() {
+		if (project == null) {
+			List<HybridMobileEngine> engines = CordovaEngineProvider.getInstance().defaultEngines();
+			if (engines != null && engines.size() > 0) {
+				engineSection.setSelection(new StructuredSelection(engines));
+			}
+		} else {
+			HybridMobileEngine[] activeEngines = project.getEngineManager().getEngines();
+			if(activeEngines != null){
+				engineSection.setSelection(new StructuredSelection(activeEngines));
+			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public HybridMobileEngine[] getSelectedEngines(){
+	public HybridMobileEngine[] getSelectedEngines() {
 		IStructuredSelection selection = (IStructuredSelection) engineSection.getSelection();
 		@SuppressWarnings("rawtypes")
-		List selected =  selection.toList();
+		List selected = selection.toList();
 		return (HybridMobileEngine[]) selected.toArray(new HybridMobileEngine[selected.size()]);
 	}
-	
+
 }

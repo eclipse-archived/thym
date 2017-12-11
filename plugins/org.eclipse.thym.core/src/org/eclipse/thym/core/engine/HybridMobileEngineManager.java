@@ -11,12 +11,17 @@
 package org.eclipse.thym.core.engine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -34,6 +39,7 @@ import org.eclipse.thym.core.engine.internal.cordova.CordovaEngineProvider;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI;
 import org.eclipse.thym.core.internal.cordova.CordovaProjectCLI.Command;
 import org.eclipse.thym.core.internal.util.EngineUtils;
+import org.eclipse.thym.core.platform.PlatformConstants;
 import org.eclipse.thym.core.plugin.PluginMessagesCLIResult;
 
 /**
@@ -82,9 +88,12 @@ public class HybridMobileEngineManager {
 			throws OperationCanceledException, CoreException {
 		removeEngine(engine.getName(), monitor, save);
 	}
-	
-	public void removeEngine(String engineName, IProgressMonitor monitor, boolean save) 
+
+	public void removeEngine(String engineName, IProgressMonitor monitor, boolean save)
 			throws OperationCanceledException, CoreException {
+		if (!isPlatformInstalled(engineName)) {
+			return;
+		}
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
@@ -96,8 +105,7 @@ public class HybridMobileEngineManager {
 		} else {
 			options = CordovaProjectCLI.OPTION_NO_SAVE;
 		}
-		IStatus status = project.getProjectCLI()
-				.platform(Command.REMOVE, subMonitor.split(90), engineName, options)
+		IStatus status = project.getProjectCLI().platform(Command.REMOVE, subMonitor.split(90), engineName, options)
 				.convertTo(PluginMessagesCLIResult.class).asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE,
 				subMonitor.split(10, SubMonitor.SUPPRESS_ALL_LABELS));
@@ -105,14 +113,17 @@ public class HybridMobileEngineManager {
 			throw new CoreException(status);
 		}
 	}
-	
-	public void addEngine(String engineName, String engineSpec, IProgressMonitor monitor, boolean save) 
+
+	public void addEngine(String engineName, String engineSpec, IProgressMonitor monitor, boolean save)
 			throws OperationCanceledException, CoreException {
+		if (isPlatformInstalled(engineName)) {
+			return;
+		}
 		if (monitor == null) {
 			monitor = new NullProgressMonitor();
 		}
 		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
-		String fullSpec = engineName +"@"+engineSpec;
+		String fullSpec = engineName + "@" + engineSpec;
 		subMonitor.setTaskName("Adding engine: " + fullSpec);
 		String options = "";
 		if (save) {
@@ -120,15 +131,51 @@ public class HybridMobileEngineManager {
 		} else {
 			options = CordovaProjectCLI.OPTION_NO_SAVE;
 		}
-		
-		IStatus status = project.getProjectCLI()
-				.platform(Command.ADD, subMonitor.split(90), fullSpec, options)
+
+		IStatus status = project.getProjectCLI().platform(Command.ADD, subMonitor.split(90), fullSpec, options)
 				.convertTo(PluginMessagesCLIResult.class).asStatus();
 		project.getProject().refreshLocal(IResource.DEPTH_INFINITE,
 				subMonitor.split(10, SubMonitor.SUPPRESS_ALL_LABELS));
 		if (!status.isOK()) {
 			throw new CoreException(status);
 		}
+	}
+
+	private boolean isPlatformInstalled(String platformName) {
+		if (platformName == null) {
+			return false;
+		}
+		try {
+			IFolder platformHome = getPlatformHomeFolder(platformName);
+			if (platformHome != null) {
+				IFile platformJson = platformHome.getFile(platformName + ".json");
+				return platformJson.getLocation() != null && platformJson.getLocation().toFile().exists();
+			}
+		} catch (CoreException e) {
+			// ignore to return false
+		}
+		return false;
+	}
+
+	private IFolder getPlatformHomeFolder(String platform) throws CoreException {
+		if (platform == null) {
+			return null;
+		}
+		IFolder platforms = getPlatformsFolder();
+		if (!platforms.exists()) {
+			throw new CoreException(new Status(IStatus.ERROR, HybridCore.PLUGIN_ID, "Platforms folder does not exist"));
+		}
+		IFolder platformHome = platforms.getFolder(platform);
+		IPath location = platformHome.getLocation();
+		if (platformHome.exists() && location != null && location.toFile().isDirectory()) {
+			return platformHome;
+		}
+		return null;
+	}
+
+	private IFolder getPlatformsFolder() {
+		IFolder platforms = this.project.getProject().getFolder(PlatformConstants.DIR_PLATFORMS);
+		return platforms;
 	}
 
 	/**
@@ -146,27 +193,75 @@ public class HybridMobileEngineManager {
 			@Override
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 
-				WidgetModel model = WidgetModel.getModel(project);
-				Widget w = model.getWidgetForEdit();
-				List<Engine> existingEngines = w.getEngines();
-				SubMonitor sm = SubMonitor.convert(monitor, 100);
-				if (existingEngines != null) {
-					for (Engine existingEngine : existingEngines) {
-						w.removeEngine(existingEngine);
+				HybridMobileEngine[] existingEngines = getEngines();
+
+				List<HybridMobileEngine> newEngines = Arrays.asList(engines);
+				List<HybridMobileEngine> oldEngines = Arrays.asList(existingEngines);
+
+				List<HybridMobileEngine> toInstall = new ArrayList<>();
+
+				List<HybridMobileEngine> toUninstall = new ArrayList<>();
+
+				List<HybridMobileEngine> enginesToUpdate = new ArrayList<>();
+
+				for (HybridMobileEngine oldEngine : oldEngines) {
+					boolean engineFound = false;
+					for (HybridMobileEngine newEngine : newEngines) {
+						if (newEngine.getName().equals(oldEngine.getName())) {
+							if (!newEngine.getSpec().equals(oldEngine.getSpec())) {
+								enginesToUpdate.add(newEngine);
+							}
+							engineFound = true;
+							break;
+						}
+					}
+					if (!engineFound) {
+						toUninstall.add(oldEngine);
 					}
 				}
-				sm.worked(30);
-				for (HybridMobileEngine engine : engines) {
-					Engine e = model.createEngine(w);
-					e.setName(engine.getName());
-					e.setSpec(engine.getSpec());
-					w.addEngine(e);
+
+				for (HybridMobileEngine newEngine : newEngines) {
+					boolean engineFound = false;
+					for (HybridMobileEngine oldEngine : oldEngines) {
+						if (oldEngine.getName().equals(newEngine.getName())) {
+							engineFound = true;
+							break;
+						}
+					}
+					if (!engineFound) {
+						toInstall.add(newEngine);
+					}
 				}
-				model.save();
-				if (w.getEngines() != null && !w.getEngines().isEmpty()) {
-					project.prepare(sm.newChild(70));
+
+				SubMonitor subMonitor = SubMonitor.convert(monitor);
+				subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + enginesToUpdate.size() * 2);
+				for (HybridMobileEngine uninstall : toUninstall) {
+					try {
+						removeEngine(uninstall, subMonitor.split(1), true);
+					} catch (CoreException e) {
+						HybridCore.log(Status.ERROR, "Unable to remove engine " + uninstall.getName(), e);
+					}
 				}
-				sm.done();
+				for (HybridMobileEngine install : toInstall) {
+					try {
+						addEngine(install.getName(), install.getSpec(), subMonitor.split(1), true);
+					} catch (CoreException e) {
+						HybridCore.log(Status.ERROR, "Unable to add engine " + install.getName(), e);
+					}
+				}
+
+				// update versions
+				for (HybridMobileEngine engineToUpdate : enginesToUpdate) {
+					try {
+						// some engines do not support "in place" update. They require platform remove,
+						// then platform add
+						project.getEngineManager().removeEngine(engineToUpdate, subMonitor.split(1), true);
+						project.getEngineManager().addEngine(engineToUpdate.getName(), engineToUpdate.getSpec(),
+								subMonitor.split(1), true);
+					} catch (CoreException e) {
+						HybridCore.log(Status.ERROR, "Unable to update engine " + engineToUpdate.getName(), e);
+					}
+				}
 				return Status.OK_STATUS;
 			}
 		};

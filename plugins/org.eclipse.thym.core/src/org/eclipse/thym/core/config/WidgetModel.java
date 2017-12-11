@@ -45,7 +45,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -233,27 +232,6 @@ public class WidgetModel implements IModelStateListener {
 		return configFileCandidates[0];
 	}
 
-	/**
-	 * Syncs the changes done to the config.xml directly to the model by reloading
-	 * it. This method needs to be called any time config.xml is modified without
-	 * using the {@link Widget} instance.
-	 * 
-	 * @throws CoreException
-	 */
-	public void resyncModel() throws CoreException {
-		if (this.underLyingModel != null) {
-			try {
-				IFile configXml = configXMLtoIFile();
-				if (configXml != null) {
-					configXml.refreshLocal(IResource.DEPTH_ONE, new NullProgressMonitor());
-					underLyingModel.getModelHandler().getModelLoader().load(configXml, underLyingModel);
-				}
-			} catch (IOException e) {
-				HybridCore.log(IStatus.ERROR, "Error resyncing the editable model", e);
-			}
-		}
-	}
-
 	private static File getConfigXml(HybridProject project) {
 		IFile configXml = project.getConfigFile();
 		if (configXml != null && configXml.exists()) {
@@ -436,6 +414,7 @@ public class WidgetModel implements IModelStateListener {
 		}
 		this.editableWidget = null;
 		this.readonlyWidget = null;
+		this.lastWidget = null;
 	}
 
 	/**
@@ -459,16 +438,17 @@ public class WidgetModel implements IModelStateListener {
 	public void modelDirtyStateChanged(IStructuredModel model, boolean isDirty) {
 		if (!isDirty) {
 			synchronized (this) {
-				reloadEditableWidget();
 				final HybridProject project = getProject();
 
 				final IDOMModel domModel = (IDOMModel) model;
-				
-				Job updatePlugins = new Job("Synchronize project "+project.getProject().getName()+" with config.xml") {
+
+				Job updatePlugins = new Job(
+						"Synchronize project " + project.getProject().getName() + " with config.xml") {
 
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {
 						if (project.getProject().exists()) {
+							reloadEditableWidget();
 							Widget newWidget = load(domModel.getDocument());
 							syncEngines(project, newWidget, monitor);
 							syncPlugins(project, newWidget, monitor);
@@ -481,7 +461,7 @@ public class WidgetModel implements IModelStateListener {
 
 					@Override
 					public void done(IJobChangeEvent event) {
-						lastWidget = load(domModel.getDocument());
+						lastWidget.reload(domModel.getDocument().getDocumentElement());
 						reloadEditableWidget();
 						readonlyWidget = null;
 						readonlyTimestamp = -1;
@@ -493,36 +473,34 @@ public class WidgetModel implements IModelStateListener {
 			}
 		}
 	}
-	
+
 	private void syncEngines(HybridProject project, Widget newWidget, IProgressMonitor monitor) {
 		List<Engine> oldEngines = lastWidget.getEngines();
 		List<Engine> newEngines = newWidget.getEngines();
-		
-		if(oldEngines == null) {
+
+		if (oldEngines == null) {
 			oldEngines = new ArrayList<>();
 		}
-		if(newEngines == null) {
+		if (newEngines == null) {
 			newEngines = new ArrayList<>();
 		}
 
 		SubMonitor subMonitor = SubMonitor.convert(monitor);
 
-		List<Engine> toInstall =  new ArrayList<>(newEngines);
+		List<Engine> toInstall = new ArrayList<>(newEngines);
 		toInstall.removeAll(oldEngines);
 
-		List<Engine> toUninstall =  new ArrayList<>(oldEngines);
+		List<Engine> toUninstall = new ArrayList<>(oldEngines);
 		toUninstall.removeAll(newEngines);
 
 		List<Engine> enginesToUpdate = getEnginesToUpdate(oldEngines, newEngines);
 
-		subMonitor.setWorkRemaining(
-				toInstall.size() + toUninstall.size() + enginesToUpdate.size() * 2);
+		subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + enginesToUpdate.size() * 2);
 		for (Engine uninstall : toUninstall) {
 			try {
 				project.getEngineManager().removeEngine(uninstall.getName(), subMonitor.split(1), false);
 			} catch (CoreException e) {
-				HybridCore.log(Status.ERROR, "Unable to remove engine " + uninstall.getName(),
-						e);
+				HybridCore.log(Status.ERROR, "Unable to remove engine " + uninstall.getName(), e);
 			}
 		}
 		for (Engine install : toInstall) {
@@ -538,46 +516,46 @@ public class WidgetModel implements IModelStateListener {
 			int index = newEngines.indexOf(engine);
 			if (index != -1) { // not really needed but just in case..
 				try {
-					//some engines do not support "in place" update. They require platform remove, then platform add 
-					project.getEngineManager().removeEngine(newEngines.get(index).getName(), subMonitor.split(1), false);
-					project.getEngineManager().addEngine(newEngines.get(index).getName(), newEngines.get(index).getSpec(),
-							subMonitor.split(1), false);
+					// some engines do not support "in place" update. They require platform remove,
+					// then platform add
+					project.getEngineManager().removeEngine(newEngines.get(index).getName(), subMonitor.split(1),
+							false);
+					project.getEngineManager().addEngine(newEngines.get(index).getName(),
+							newEngines.get(index).getSpec(), subMonitor.split(1), false);
 				} catch (CoreException e) {
 					HybridCore.log(Status.ERROR, "Unable to update engine " + engine.getName(), e);
 				}
 			}
 		}
 	}
-	
+
 	private void syncPlugins(HybridProject project, Widget newWidget, IProgressMonitor monitor) {
 		List<Plugin> oldPlugins = lastWidget.getPlugins();
 		List<Plugin> newPlugins = newWidget.getPlugins();
-		
-		if(oldPlugins == null) {
+
+		if (oldPlugins == null) {
 			oldPlugins = new ArrayList<>();
 		}
-		if(newPlugins == null) {
+		if (newPlugins == null) {
 			newPlugins = new ArrayList<>();
 		}
 
 		SubMonitor subMonitor = SubMonitor.convert(monitor);
 
-		List<Plugin> toInstall =  new ArrayList<>(newPlugins);
+		List<Plugin> toInstall = new ArrayList<>(newPlugins);
 		toInstall.removeAll(oldPlugins);
 
-		List<Plugin> toUninstall =  new ArrayList<>(oldPlugins);
+		List<Plugin> toUninstall = new ArrayList<>(oldPlugins);
 		toUninstall.removeAll(newPlugins);
 
 		List<Plugin> pluginsToUpdate = getPluginsToUpdate(oldPlugins, newPlugins);
 
-		subMonitor.setWorkRemaining(
-				toInstall.size() + toUninstall.size() + pluginsToUpdate.size() * 2);
+		subMonitor.setWorkRemaining(toInstall.size() + toUninstall.size() + pluginsToUpdate.size() * 2);
 		for (Plugin uninstall : toUninstall) {
 			try {
 				project.getPluginManager().unInstallPlugin(uninstall, subMonitor.split(1), false);
 			} catch (CoreException e) {
-				HybridCore.log(Status.ERROR, "Unable to uninstall plugin " + uninstall.getName(),
-						e);
+				HybridCore.log(Status.ERROR, "Unable to uninstall plugin " + uninstall.getName(), e);
 			}
 		}
 		for (Plugin install : toInstall) {
@@ -594,8 +572,7 @@ public class WidgetModel implements IModelStateListener {
 			if (index != -1) { // not really needed but just in case..
 				try {
 					project.getPluginManager().unInstallPlugin(plugin, subMonitor.split(1), false);
-					project.getPluginManager().installPlugin(newPlugins.get(index),
-							subMonitor.split(1), false);
+					project.getPluginManager().installPlugin(newPlugins.get(index), subMonitor.split(1), false);
 				} catch (CoreException e) {
 					HybridCore.log(Status.ERROR, "Unable to update plugin " + plugin.getName(), e);
 				}
@@ -617,7 +594,7 @@ public class WidgetModel implements IModelStateListener {
 		return pluginsToUpdate;
 
 	}
-	
+
 	private List<Engine> getEnginesToUpdate(List<Engine> oldEngines, List<Engine> newEngines) {
 		List<Engine> enginesToUpdate = new ArrayList<>();
 		for (Engine engine : oldEngines) {

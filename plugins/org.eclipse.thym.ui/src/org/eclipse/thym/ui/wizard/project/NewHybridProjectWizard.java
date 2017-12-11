@@ -186,7 +186,7 @@ public class NewHybridProjectWizard extends Wizard implements INewWizard,ICordov
 		super.addPages();
 		pageOne = new WizardNewHybridProjectCreationPage(getWindowTitle(), selection);
 		addPage( pageOne );
-		pageTwo = new EngineConfigurationPage("Configure Platforms");
+		pageTwo = new EngineConfigurationPage();
 		addPage( pageTwo);
 		pageThree = new CordovaPluginSelectionPage(true);
 		addPage(pageThree);

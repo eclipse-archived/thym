@@ -106,39 +106,6 @@
             	</adapt>
             </and>
         </enablement>
-        <actionProvider
-              class="org.eclipse.thym.ui.plugins.navigator.internal.PluginActionProvider"
-              id="org.eclipse.thym.ui.pluginActionProvider"
-              priority="normal">
-           <enablement>
-        	<or>
-	        	<adapt type="org.eclipse.core.resources.IProject">
-					<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.thym.core.HybridAppNature"/>
-            	</adapt>
-            	<adapt type="org.eclipse.core.resources.IFolder">
-                    <test property="org.eclipse.core.resources.name" value="plugins" />
-                    <test property="org.eclipse.core.resources.path" value="/*/plugins" />
-					<test property="org.eclipse.core.resources.projectNature" value="org.eclipse.thym.core.HybridAppNature"/>
-            	</adapt>
-            </or>
-        </enablement>
-        </actionProvider>
-        <actionProvider
-              class="org.eclipse.thym.ui.plugins.navigator.internal.CordovaPluginActionProvider">
-              <enablement>
-           		<and>
-          			<instanceof
-                    	value="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
-             	 	</instanceof>
-             	 	<adapt
-                      type="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
-                      <test
-                            property="org.eclipse.thym.ui.pluginActionTester">
-                      </test>
-             	 	</adapt>
-           		</and>
-           </enablement>
-        </actionProvider>
      </navigatorContent>
      <commonFilter
            activeByDefault="true"
@@ -169,22 +136,6 @@
             	</adapt>
             </and>
         </enablement>
-        <actionProvider
-              class="org.eclipse.thym.ui.platforms.navigator.internal.PlatformActionProvider">
-              <enablement>
-           		<and>
-          			<instanceof
-                    	value="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
-             	 	</instanceof>
-             	 	<adapt
-                      type="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
-                      <test
-                            property="org.eclipse.thym.ui.platformActionTester">
-                      </test>
-             	 	</adapt>
-           		</and>
-           </enablement>
-        </actionProvider>
      </navigatorContent>
      <commonFilter
            activeByDefault="true"
@@ -314,44 +265,145 @@
       </contentTypeIdentifier>
       </validator>
    </extension>
+   
    <extension
          point="org.eclipse.ui.menus">
+         
+       <!-- PROJECT EXPLORER MENU CONTRIBUTIONS -->
       <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
          <command
                commandId="org.eclipse.thym.ui.ConvertToHybridProject"
                style="push">
-         </command>
-        <visibleWhen checkEnabled="false">
-          <and>
-            <count value="1"/>
-            <iterate ifEmpty="false" operator="and">
-              <adapt type="org.eclipse.core.resources.IProject">
-                <and>
-                   <not>
-                      <test
-                            property="org.eclipse.core.resources.projectNature"
-                            value="org.eclipse.thym.core.HybridAppNature">
-                      </test>
-                   </not>
-                   <test
-                         forcePluginActivation="true"
-                         property="org.eclipse.thym.ui.canConvertToThym">
-                   </test>
-                </and>
-              </adapt>
-            </iterate>
-          </and>
-        </visibleWhen>
+               <visibleWhen checkEnabled="false">
+          		<and>
+            		<count value="1"/>
+            		<iterate ifEmpty="false" operator="and">
+              			<adapt type="org.eclipse.core.resources.IProject">
+                			<and>
+                   				<not>
+                      				<test
+                            			property="org.eclipse.core.resources.projectNature"
+                            			value="org.eclipse.thym.core.HybridAppNature">
+                      				</test>
+                   				</not>
+                   				<test
+                         			forcePluginActivation="true"
+                         			property="org.eclipse.thym.ui.canConvertToThym">
+                   				</test>
+                			</and>
+              			</adapt>
+            		</iterate>
+          		 </and>
+        		</visibleWhen>
+         	</command>
       </menuContribution>
+      
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <!-- CORDOVA MENU -->
+         <menu id="org.eclipse.thym.ui.cordovaProjectMenu" label="Cordova" icon="icons/obj16/cordova_16.png">
+        	<visibleWhen checkEnabled="false">
+          		<and>
+            		<count value="1"/>
+            		<iterate ifEmpty="false" operator="and">
+              			<adapt type="org.eclipse.core.resources.IProject">
+              				<test
+                				property="org.eclipse.core.resources.projectNature"
+                   				value="org.eclipse.thym.core.HybridAppNature">
+               				</test>
+              			</adapt>
+            		</iterate>
+          		</and>
+       		</visibleWhen>
+		  </menu>
+		  
+		    <!-- PLUGINS FOLDER CONTRIBUTIONS -->
+       	 	<command commandId="org.eclipse.thym.ui.RemovePluginHandler"
+           		label="Remove Cordova Plugin"
+           		icon="icons/obj16/plug16_obj.png"
+           		style="push">
+           		<visibleWhen>
+           			<with variable="selection">
+           				<and>
+           					<count value="1"/>
+           					<iterate ifEmpty="false">
+           						<adapt type="org.eclipse.thym.ui.plugins.navigator.internal.HybridPluginFolder">
+              						<test property="org.eclipse.thym.ui.pluginActionTester" />
+              					</adapt>
+              				</iterate>
+              			</and>
+           			</with>
+       	 		</visibleWhen>
+     		</command>
+     		
+     		<!-- PLATFORMS FOLDER CONTRIBUTIONS -->
+     		<command commandId="org.eclipse.thym.ui.RemovePlatformHandler"
+           		label="Remove Cordova Platform"
+           		icon="icons/obj16/cordova_16.png"
+           		style="push">
+           		<visibleWhen>
+           			<with variable="selection">
+           				<and>
+           					<count value="1"/>
+           					<iterate ifEmpty="false">
+           						<adapt type="org.eclipse.thym.ui.platforms.navigator.internal.HybridPlatformFolder">
+              						<test property="org.eclipse.thym.ui.platformActionTester" />
+              					</adapt>
+              				</iterate>
+              			</and>
+           			</with>
+       	 		</visibleWhen>
+     		</command>
+      </menuContribution>
+       
+      <!-- CORDOVA MENU CONTRIUBTIONS -->
+      <menuContribution locationURI="popup:org.eclipse.thym.ui.cordovaProjectMenu?after=additions">
+     	<command
+           commandId="org.eclipse.thym.ui.ManagePluginsHandler"
+           label="Add/Remove Plugins"
+           icon="icons/obj16/plug16_obj.png"
+           style="push">
+     	</command>
+     	<command
+           commandId="org.eclipse.thym.ui.ManagePlatformsHandler"
+           label="Add/Remove Platforms"
+           icon="icons/obj16/cordova_16.png"
+           style="push">
+     	</command>
+      </menuContribution>
+     
    </extension>
+   
+   
    <extension
          point="org.eclipse.ui.commands">
       <command
             defaultHandler="org.eclipse.thym.ui.internal.project.ConvertToHybridProjectHandler"
             id="org.eclipse.thym.ui.ConvertToHybridProject"
             name="Convert to Hybrid Mobile Project">
+      </command>
+      <command
+            defaultHandler="org.eclipse.thym.ui.internal.project.ManagePlatformsHandler"
+            id="org.eclipse.thym.ui.ManagePlatformsHandler"
+            name="Add Platform">
+      </command>
+      <command
+            defaultHandler="org.eclipse.thym.ui.internal.project.ManagePluginsHandler"
+            id="org.eclipse.thym.ui.ManagePluginsHandler"
+            name="Add Plugin">
+      </command>
+      <command
+            defaultHandler="org.eclipse.thym.ui.internal.project.RemovePluginHandler"
+            id="org.eclipse.thym.ui.RemovePluginHandler"
+            name="Remove Cordova Plugin">
+      </command>
+      <command
+            defaultHandler="org.eclipse.thym.ui.internal.project.RemovePlatformHandler"
+            id="org.eclipse.thym.ui.RemovePlatformHandler"
+            name="Remove Cordova Platform">
       </command>
    </extension>
    <extension
