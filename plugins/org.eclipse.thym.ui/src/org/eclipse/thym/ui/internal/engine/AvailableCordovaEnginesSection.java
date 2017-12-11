@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Red Hat, Inc.
+ * Copyright (c) 2013, 2017 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -389,6 +389,10 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider {
 	}
 
 	public void updateAvailableEngines(Set<HybridMobileEngine> additionalUserEngines) {
+		IStructuredSelection selection = (IStructuredSelection) getSelection();
+		@SuppressWarnings("rawtypes")
+		List selected = selection.toList();
+		
 		CordovaEngineProvider provider = CordovaEngineProvider.getInstance();
 		Set<HybridMobileEngine> engines = provider.getAvailableEngines();
 		if (additionalUserEngines != null) {
@@ -396,6 +400,8 @@ public class AvailableCordovaEnginesSection implements ISelectionProvider {
 		}
 		engineList.setInput(engines);
 		prevSelection = null;
+		setSelection(new StructuredSelection(selected));
+		
 		fireEngineListChanged();
 
 	}
