@@ -26,7 +26,7 @@ public class IosLibraryResolver extends HybridMobileLibraryResolver {
 	private HashMap<String, String> files = new HashMap<String, String>();
 	
 	private void initFiles() {
-		files.put(PlatformConstants.FILE_JS_CORDOVA, "ios/CordovaLib/cordova.js");
+		files.put(PlatformConstants.FILE_JS_CORDOVA, "ios/platform_www/cordova.js");
 	}
 
 	@Override
