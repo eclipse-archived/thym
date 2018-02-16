@@ -24,7 +24,7 @@ public class AndroidLibraryResolver extends HybridMobileLibraryResolver {
 	
 	private void initFiles() {
 		files.put(PROPERTIES, "android/project.properties");
-		files.put(PlatformConstants.FILE_JS_CORDOVA, "android/assets/www/cordova.js");
+		files.put(PlatformConstants.FILE_JS_CORDOVA, "android/platform_www/cordova.js");
 	}
 
 
